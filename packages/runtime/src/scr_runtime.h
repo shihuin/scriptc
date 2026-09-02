@@ -471,6 +471,16 @@ void scr_str_release(ScrStr *s); /* NULL-tolerant (uninitialized locals) */
 /* Borrow both args, return +1. */
 ScrStr *scr_str_concat(ScrStr *a, ScrStr *b);
 
+/* The regex UTF-16 subject cache (scr_string.c): borrow s's UTF-16 code
+ * units for the duration of one regex matching call — the last four
+ * subjects stay converted, so a loop matching the same string pays the
+ * O(n) conversion once (libregexp runs over UTF-16, cbuf_type 1). The
+ * buffer is owned by the cache and is invalidated on release/regrow and
+ * the rc==1 concat append; callers must not free or hold it. scr_regex.c
+ * is the only consumer (it is linked only into regex-using programs, so
+ * the cache stays out of regex-free binaries entirely). */
+const uint16_t *scr_str_utf16_borrow(const ScrStr *s, size_t *plen);
+
 bool scr_str_eq(ScrStr *a, ScrStr *b);
 
 /* memcmp byte order == code-point order (see SEMANTICS.md: diverges from

@@ -301,41 +301,15 @@ ScrStr *scr_regex_to_string(ScrRegex *re) {
 
 /* ── UTF-8 ⇄ UTF-16 (the exec buffer strategy) ──────────────────────── */
 
-/* Subject as freshly-malloc'd UTF-16 code units (strings are well-formed
- * UTF-8, so no validation). Unit count ≤ byte count. */
-static uint16_t *scr_to_utf16(const ScrStr *s, int *plen) {
-  uint16_t *u = malloc((s->len ? s->len : 1) * sizeof(uint16_t));
-  if (!u) scr_regex_oom();
-  int n = 0;
-  for (size_t i = 0; i < s->len;) {
-    unsigned char c = (unsigned char)s->data[i];
-    uint32_t cp;
-    if (c < 0x80) {
-      cp = c;
-      i += 1;
-    } else if (c < 0xE0) {
-      cp = ((uint32_t)(c & 0x1F) << 6) | ((unsigned char)s->data[i + 1] & 0x3F);
-      i += 2;
-    } else if (c < 0xF0) {
-      cp = ((uint32_t)(c & 0x0F) << 12) |
-           ((uint32_t)((unsigned char)s->data[i + 1] & 0x3F) << 6) |
-           ((unsigned char)s->data[i + 2] & 0x3F);
-      i += 3;
-    } else {
-      cp = ((uint32_t)(c & 0x07) << 18) |
-           ((uint32_t)((unsigned char)s->data[i + 1] & 0x3F) << 12) |
-           ((uint32_t)((unsigned char)s->data[i + 2] & 0x3F) << 6) |
-           ((unsigned char)s->data[i + 3] & 0x3F);
-      i += 4;
-    }
-    if (cp >= 0x10000) {
-      u[n++] = (uint16_t)(0xD800 + ((cp - 0x10000) >> 10));
-      u[n++] = (uint16_t)(0xDC00 + ((cp - 0x10000) & 0x3FF));
-    } else {
-      u[n++] = (uint16_t)cp;
-    }
-  }
-  *plen = n;
+/* Subject as UTF-16 code units (strings are well-formed UTF-8, so no
+ * validation). The conversion itself lives in scr_string.c's subject
+ * cache: the last four subjects stay converted, so a loop matching the
+ * same string pays the O(n) walk once instead of per call. The buffer
+ * is cache-owned — borrowed, never freed here. */
+static const uint16_t *scr_to_utf16(const ScrStr *s, int *plen) {
+  size_t n;
+  const uint16_t *u = scr_str_utf16_borrow(s, &n);
+  *plen = (int)n;
   return u;
 }
 
@@ -445,7 +419,7 @@ ScrArr *scr_regex_exec(ScrStr *s, ScrRegex *re) {
   uint8_t *bc = scr_regex_bc(re);
   bool stateful = (lre_get_flags(bc) & (LRE_FLAG_GLOBAL | LRE_FLAG_STICKY)) != 0;
   int len;
-  uint16_t *u = scr_to_utf16(s, &len);
+  const uint16_t *u = scr_to_utf16(s, &len);
   uint8_t **capture = scr_capture_alloc(bc);
   int pos = stateful ? scr_regex_start(re, len) : 0;
   int rc = pos < 0 ? 0 : scr_exec(capture, bc, u, pos, len);
@@ -470,7 +444,6 @@ ScrArr *scr_regex_exec(ScrStr *s, ScrRegex *re) {
     }
   }
   free(capture);
-  free(u);
   return out; /* +1, or NULL (no match) */
 }
 
@@ -486,7 +459,7 @@ ScrArr *scr_regex_match(ScrStr *s, ScrRegex *re) {
   re->last_index = 0;
   bool unicode = (flags & (LRE_FLAG_UNICODE | LRE_FLAG_UNICODE_SETS)) != 0;
   int len;
-  uint16_t *u = scr_to_utf16(s, &len);
+  const uint16_t *u = scr_to_utf16(s, &len);
   uint8_t **capture = scr_capture_alloc(bc);
   const uint8_t *ubase = (const uint8_t *)u;
   ScrArr *out = NULL;
@@ -500,7 +473,6 @@ ScrArr *scr_regex_match(ScrStr *s, ScrRegex *re) {
     pos = start == end ? scr_advance(u, len, end, unicode) : end;
   }
   free(capture);
-  free(u);
   return out;
 }
 
@@ -514,13 +486,12 @@ ScrArr *scr_regex_match(ScrStr *s, ScrRegex *re) {
 double scr_regex_search(ScrStr *s, ScrRegex *re) {
   uint8_t *bc = scr_regex_bc(re);
   int len;
-  uint16_t *u = scr_to_utf16(s, &len);
+  const uint16_t *u = scr_to_utf16(s, &len);
   uint8_t **capture = scr_capture_alloc(bc);
   int rc = scr_exec(capture, bc, u, 0, len);
   double out = -1;
   if (rc == 1) out = (double)((capture[0] - (const uint8_t *)u) >> 1);
   free(capture);
-  free(u);
   return out;
 }
 
@@ -545,7 +516,7 @@ static ScrArr *scr_regex_match_all_core(ScrStr *s, ScrRegex *re, ScrArr *indices
   bool unicode = (re_flags & (LRE_FLAG_UNICODE | LRE_FLAG_UNICODE_SETS)) != 0;
   int capture_count = lre_get_capture_count(bc);
   int len;
-  uint16_t *u = scr_to_utf16(s, &len);
+  const uint16_t *u = scr_to_utf16(s, &len);
   uint8_t **capture = scr_capture_alloc(bc);
   const uint8_t *ubase = (const uint8_t *)u;
   ScrArr *out = scr_arr_new(SCR_ELEM_ARR, 4);
@@ -570,7 +541,6 @@ static ScrArr *scr_regex_match_all_core(ScrStr *s, ScrRegex *re, ScrArr *indices
     pos = end == start ? scr_advance(u, len, end, unicode) : end;
   }
   free(capture);
-  free(u);
   return out; /* +1 (possibly empty — Node's no-match drain is []) */
 }
 
@@ -689,7 +659,7 @@ static ScrStr *scr_replace_impl(ScrStr *s, ScrRegex *re, ScrStr *rep) {
   int capture_count = lre_get_capture_count(bc);
   const char *groupnames = lre_get_groupnames(bc);
   int len;
-  uint16_t *u = scr_to_utf16(s, &len);
+  const uint16_t *u = scr_to_utf16(s, &len);
   uint8_t **capture = scr_capture_alloc(bc);
   const uint8_t *ubase = (const uint8_t *)u;
   ScrJsonBuf b;
@@ -711,7 +681,6 @@ static ScrStr *scr_replace_impl(ScrStr *s, ScrRegex *re, ScrStr *rep) {
   }
   scr_jb_put_utf16(&b, u, next, len);
   free(capture);
-  free(u);
   return scr_jb_finish(&b);
 }
 
@@ -796,7 +765,7 @@ ScrArr *scr_regex_split_limit(ScrStr *s, ScrRegex *re, double limit_num) {
   bool unicode = (re_flags & (LRE_FLAG_UNICODE | LRE_FLAG_UNICODE_SETS)) != 0;
   bool sticky = (re_flags & LRE_FLAG_STICKY) != 0;
   int len;
-  uint16_t *u = scr_to_utf16(s, &len);
+  const uint16_t *u = scr_to_utf16(s, &len);
   uint8_t **capture = scr_capture_alloc(bc);
   const uint8_t *ubase = (const uint8_t *)u;
   ScrArr *out = scr_arr_new(SCR_ELEM_STR, 0);
@@ -812,7 +781,6 @@ ScrArr *scr_regex_split_limit(ScrStr *s, ScrRegex *re, double limit_num) {
       scr_arr_push_ref(out, scr_str_new("", 0));
     }
     free(capture);
-    free(u);
     return out;
   }
   int p = 0, q = 0;
@@ -854,7 +822,6 @@ ScrArr *scr_regex_split_limit(ScrStr *s, ScrRegex *re, double limit_num) {
   scr_arr_push_ref(out, scr_str_from_utf16(u, p, len));
 done:
   free(capture);
-  free(u);
   return out;
 }
 

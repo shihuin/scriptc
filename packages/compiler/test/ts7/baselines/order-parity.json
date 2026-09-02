@@ -5791,6 +5791,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/2702-regex-subject-cache.ts": {
+   "order": [
+    "<repo>/tests/corpus/2702-regex-subject-cache.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/2702-type-import-link-static/main.ts": {
    "order": [
     "<repo>/tests/corpus/2702-type-import-link-static/types.ts",

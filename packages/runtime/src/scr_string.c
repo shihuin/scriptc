@@ -211,6 +211,111 @@ static void scr_sidx_concat_append(const ScrStr *s, size_t oldlen) {
   }
 }
 
+/* ── regex UTF-16 subject cache ───────────────────────────────────────
+ * libregexp matches over UTF-16 while strings are UTF-8, so every exec/
+ * test/replace/split call converts the whole subject first — O(n) per
+ * call, paid again and again when the same subject is matched in a loop.
+ * This cache keeps the last four converted subjects keyed by the ScrStr
+ * identity, the sidx stance exactly: a fixed residency SCR_TL table,
+ * never a registry that grows with live strings, purged on release and
+ * regrow (the address may be recycled) and invalidated on the one
+ * in-place mutation (the rc==1 concat append — same hook points the
+ * index cache uses), freed at exit. The converted buffer is owned by the
+ * cache; scr_regex.c borrows it for the duration of one matching call.
+ * Entries are only taken by regex users, so string-heavy regex-free
+ * programs never allocate here. */
+#define SCR_RSUBJ_N 4
+typedef struct {
+  const ScrStr *s; /* NULL = empty slot */
+  uint16_t *u;     /* owned; len units */
+  size_t len;      /* unit count (== s's u16 length at convert time) */
+} ScrRSubject;
+static SCR_TL ScrRSubject scr_rsubject_tab[SCR_RSUBJ_N];
+static SCR_TL unsigned scr_rsubject_clock;
+static SCR_TL bool scr_rsubject_cleanup_registered;
+
+static void scr_rsubject_reset_all(void) {
+  for (int i = 0; i < SCR_RSUBJ_N; i++) {
+    free(scr_rsubject_tab[i].u);
+    memset(&scr_rsubject_tab[i], 0, sizeof(scr_rsubject_tab[i]));
+  }
+  scr_rsubject_clock = 0;
+}
+
+static void scr_rsubject_register_cleanup(void) {
+  if (!scr_rsubject_cleanup_registered) {
+    scr_rsubject_cleanup_registered = true;
+    scr_atexit(scr_rsubject_reset_all);
+  }
+}
+
+static void scr_rsubject_purge(const ScrStr *s) {
+  for (int i = 0; i < SCR_RSUBJ_N; i++) {
+    if (scr_rsubject_tab[i].s == s) {
+      free(scr_rsubject_tab[i].u);
+      memset(&scr_rsubject_tab[i], 0, sizeof(scr_rsubject_tab[i]));
+    }
+  }
+}
+
+/* The one in-place mutation: the appended suffix is unconverted, so the
+ * entry must drop (a partial-append reuse is possible but the prefix
+ * would need re-validating — punt, correctness first). */
+static void scr_rsubject_concat_append(const ScrStr *s) {
+  scr_rsubject_purge(s);
+}
+
+/* Borrow the subject as UTF-16 units. The buffer stays owned by the
+ * cache — callers must not free or retain it past the call. */
+const uint16_t *scr_str_utf16_borrow(const ScrStr *s, size_t *plen) {
+  for (int i = 0; i < SCR_RSUBJ_N; i++) {
+    if (scr_rsubject_tab[i].s == s) {
+      *plen = scr_rsubject_tab[i].len;
+      return scr_rsubject_tab[i].u;
+    }
+  }
+  /* Miss: convert once, claim a clock slot. */
+  ScrRSubject *e = &scr_rsubject_tab[scr_rsubject_clock++ % SCR_RSUBJ_N];
+  free(e->u);
+  size_t n = 0;
+  uint16_t *u = malloc((s->len ? s->len : 1) * sizeof *u);
+  if (!u) scr_oom();
+  for (size_t i = 0; i < s->len;) {
+    unsigned char c = (unsigned char)s->data[i];
+    uint32_t cp;
+    if (c < 0x80) {
+      cp = c;
+      i += 1;
+    } else if (c < 0xE0) {
+      cp = ((uint32_t)(c & 0x1F) << 6) | ((unsigned char)s->data[i + 1] & 0x3F);
+      i += 2;
+    } else if (c < 0xF0) {
+      cp = ((uint32_t)(c & 0x0F) << 12) |
+           ((uint32_t)((unsigned char)s->data[i + 1] & 0x3F) << 6) |
+           ((unsigned char)s->data[i + 2] & 0x3F);
+      i += 3;
+    } else {
+      cp = ((uint32_t)(c & 0x07) << 18) |
+           ((uint32_t)((unsigned char)s->data[i + 1] & 0x3F) << 12) |
+           ((uint32_t)((unsigned char)s->data[i + 2] & 0x3F) << 6) |
+           ((unsigned char)s->data[i + 3] & 0x3F);
+      i += 4;
+    }
+    if (cp >= 0x10000) {
+      u[n++] = (uint16_t)(0xD800 + ((cp - 0x10000) >> 10));
+      u[n++] = (uint16_t)(0xDC00 + ((cp - 0x10000) & 0x3FF));
+    } else {
+      u[n++] = (uint16_t)cp;
+    }
+  }
+  e->s = s;
+  e->u = u;
+  e->len = n;
+  scr_rsubject_register_cleanup();
+  *plen = n;
+  return u;
+}
+
 /* ── allocation ─────────────────────────────────────────────────────── */
 
 static ScrStr *scr_str_alloc(size_t len, size_t cap) {
@@ -273,6 +378,7 @@ ScrStr *scr_str_alloc_raw(size_t len, size_t cap) {
 ScrStr *scr_str_regrow(ScrStr *s, size_t newcap) {
   scr_short_forget(s);
   scr_sidx_purge(s); /* realloc may move; the old address may be recycled */
+  scr_rsubject_purge(s);
   ScrStr *r = realloc(s, sizeof(ScrStr) + newcap + 1);
   if (!r) scr_oom();
   r->cap = newcap;
@@ -284,6 +390,7 @@ void scr_str_release(ScrStr *s) {
   if (--s->rc == 0) {
     scr_short_forget(s);
     scr_sidx_purge(s); /* the address may be recycled by the next malloc */
+    scr_rsubject_purge(s);
 #ifdef SCR_RC_AUDIT
     scr_live_strings--;
 #endif
@@ -318,8 +425,10 @@ ScrStr *scr_str_concat(ScrStr *a, ScrStr *b) {
      * fact (u16len is invalidated below), but remains an excellent ordinary
      * checkpoint for accesses around the append boundary. The next mapper
      * lazily continues from oldlen rather than scanning the unchanged prefix
-     * again. */
+     * again. The regex subject cache cannot extend an entry incrementally
+     * — the appended suffix is unconverted — so its entry drops. */
     scr_sidx_concat_append(a, oldlen);
+    scr_rsubject_concat_append(a);
     a->rc = 2; /* +1 for the returned reference, beside the caller's borrow */
     return a;
   }
