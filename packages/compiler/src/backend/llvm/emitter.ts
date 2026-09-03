@@ -144,6 +144,7 @@ import {
   type UnionSources,
 } from "./local-union-storage.js";
 import { BlockBuilder } from "./blocks.js";
+import { PURE_DECLARE_MEMORY } from "./lib-shared.js";
 import { NullableRefFields, type NullableRefField } from "./nullable-fields.js";
 import {
   InlineUnionFields,
@@ -4121,7 +4122,15 @@ export class LlEmitter {
   }
 
   declare(decl: string): void {
-    this.decls.add(decl);
+    // The ONE chokepoint for external declarations. Verified-pure symbols
+    // (PURE_DECLARE_MEMORY) get their memory effects stamped here so LICM
+    // can hoist loop-invariant calls and CSE repeats — this is what lets
+    // `xs.length` leave counted loops and loop-invariant math collapse to
+    // one evaluation. Everything else keeps the exact spelling it was
+    // handed (unknown effects, correctly conservative).
+    const m = /@([A-Za-z_][A-Za-z0-9_]*)/.exec(decl);
+    const attr = m ? PURE_DECLARE_MEMORY[m[1]!] : undefined;
+    this.decls.add(attr === undefined ? decl : `${decl} ${attr}`);
   }
 
   needOom(): void {
