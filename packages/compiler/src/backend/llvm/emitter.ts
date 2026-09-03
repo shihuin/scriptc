@@ -47,6 +47,7 @@ import { RUNTIME_ABI_MARKER } from "../runtime-abi.js";
 import { computeMayThrow } from "../may-throw.js";
 import { mangleArgPack, mangleAsyncSpawn, mangleClassObj, mangleClassStruct, mangleFnClosure, mangleFunction, mangleGenDrop, mangleGenSpawn, mangleGlobal, mangleLocal, mangleRecordStruct, mangleTrampoline, mangleWrapper, mangleVtInstance } from "../mangle.js";
 import { BlockBuilder } from "./blocks.js";
+import { PURE_DECLARE_MEMORY } from "./lib-shared.js";
 import { LlvmDebugInfo } from "./debug-info.js";
 import { f64Lit, ffiNativeTypeLl, ffiNativeParamLl, ffiNativeReturnLl, llvmCommentText } from "./common.js";
 import { ffiExtendsNarrowIntegers } from "../targets.js";
@@ -2392,7 +2393,15 @@ export class LlEmitter {
   }
 
   declare(decl: string): void {
-    this.decls.add(decl);
+    // The ONE chokepoint for external declarations. Verified-pure symbols
+    // (PURE_DECLARE_MEMORY) get their memory effects stamped here so LICM
+    // can hoist loop-invariant calls and CSE repeats — this is what lets
+    // `xs.length` leave counted loops and loop-invariant math collapse to
+    // one evaluation. Everything else keeps the exact spelling it was
+    // handed (unknown effects, correctly conservative).
+    const m = /@([A-Za-z_][A-Za-z0-9_]*)/.exec(decl);
+    const attr = m ? PURE_DECLARE_MEMORY[m[1]!] : undefined;
+    this.decls.add(attr === undefined ? decl : `${decl} ${attr}`);
   }
 
   needOom(): void {

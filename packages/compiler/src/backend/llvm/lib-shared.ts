@@ -2,6 +2,61 @@
 import type { LibCallExpr, LlValue, LlvmEmitterContext } from "./expr-context.js";
 import { f64Lit } from "./common.js";
 
+/** Memory-effect attributes stamped onto declare lines for runtime/library
+ * symbols VERIFIED to have exactly these effects. Without them every
+ * external call is an unknown-effect barrier: LLVM's LICM cannot hoist
+ * `xs.length` out of a counted loop, cannot CSE repeated calls, and will
+ * not reason about loop-invariant math. The set is deliberately tiny —
+ * anything that allocates, writes memory, performs I/O, or unwinds
+ * except by the noted abort is EXCLUDED (a wrong attribute is a
+ * miscompile, the differential corpus is the gate):
+ *   - the libm one-to-ones and the scr_math_* helpers: compute a value
+ *     from their arguments, touch nothing (errno is invisible to the IR —
+ *     no lowering reads it; -fno-math-errno is on the compile line);
+ *   - scr_arr_len / scr_arr_get_f64 and the variadic math readers
+ *     (scr_math_min_arr / scr_math_max_arr / scr_math_hypot_arr): read the
+ *     array header/elements and never write; the out-of-bounds trap aborts,
+ *     it does not write — `memory(read)` lets the loop-invariant len and the
+ *     spread fold hoist out of pure-read bodies while every unmarked
+ *     (unknown-effect) call such as scr_arr_push still clobbers and
+ *     re-orders them correctly.
+ * fmod/pow appear via the `%`/`**` binop emission; fmod is C's fmod. */
+export const PURE_DECLARE_MEMORY: Record<string, string> = {
+  sin: "memory(none)",
+  cos: "memory(none)",
+  tan: "memory(none)",
+  asin: "memory(none)",
+  acos: "memory(none)",
+  atan: "memory(none)",
+  atan2: "memory(none)",
+  exp: "memory(none)",
+  expm1: "memory(none)",
+  log: "memory(none)",
+  log1p: "memory(none)",
+  log2: "memory(none)",
+  log10: "memory(none)",
+  sinh: "memory(none)",
+  cosh: "memory(none)",
+  tanh: "memory(none)",
+  asinh: "memory(none)",
+  acosh: "memory(none)",
+  atanh: "memory(none)",
+  cbrt: "memory(none)",
+  sqrt: "memory(none)",
+  pow: "memory(none)",
+  fmod: "memory(none)",
+  fabs: "memory(none)",
+  hypot: "memory(none)",
+  scr_math_pow: "memory(none)",
+  scr_math_imul: "memory(none)",
+  scr_math_clz32: "memory(none)",
+  scr_arr_len: "memory(read)",
+  scr_math_min_arr: "memory(read)",
+  scr_math_max_arr: "memory(read)",
+  scr_math_hypot_arr: "memory(read)",
+  scr_arr_get_f64: "memory(read)",
+};
+
 /** Emit a validation-ladder call that always throws, preserving the typed
  * dummy-result ownership shape until the pending check unwinds it. */
 export function emitAlwaysThrowLibCall(
