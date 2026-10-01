@@ -5448,6 +5448,21 @@ export class Lowerer {
     // dyn→static edge, trust-but-verify: a lying `any` throws a catchable
     // TypeError instead of corrupting memory (SEMANTICS.md). Unmarshalable
     // and unextractable types fall through to requireExactShape's fences.
+    // A seqExpr whose RESULT is a bare unit (`return (effect, null)`, whose
+    // comma has contextual type `none`, so nothing wrapped it where it was
+    // built). Wrapping the WHOLE seqExpr would put the unit INSIDE the wrap,
+    // which the validator rejects: a unionWrap's unit arm is validated as its
+    // direct value. Coerce the result in place instead — the effects still
+    // run, and the unit takes the destination arm where the destination is
+    // known.
+    if (
+      expr.kind === "seqExpr" &&
+      expr.result.kind === "unitLit" &&
+      expected.kind !== expr.result.type.kind
+    ) {
+      const inner = this.coerceToExpected(expr.result, expected);
+      if (inner !== expr.result) return { ...expr, result: inner, type: inner.type };
+    }
     if (expected.kind === "jsval" && expr.type.kind !== "jsval") {
       // Bare unit literals: the engine's own undefined/null (units have no
       // other producers, so dropping the operand loses nothing).
