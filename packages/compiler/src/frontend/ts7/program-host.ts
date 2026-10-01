@@ -26,6 +26,7 @@ import type { SourceFile } from "./ast-types.js";
 import type { Ts7SessionProject as Project, Ts7SessionSnapshot as Snapshot } from "./session.js";
 import { CheckerFacade } from "./checker.js";
 import {
+  jsxName,
   moduleDetectionKindName,
   moduleKindName,
   moduleResolutionKindName,
@@ -75,6 +76,12 @@ function serializeOptions(options: Ts7CompilerOptions): Record<string, unknown> 
         break;
       case "moduleDetection":
         out[key] = moduleDetectionKindName(value as number)?.toLowerCase() ?? value;
+        break;
+      case "jsx":
+        // Enum-valued like the others: the option parser wants the name, and
+        // the name is lowercase ("react-jsx"). Without this case the option
+        // reached the parser as a number and createProgram refused it.
+        out[key] = jsxName(value as number) ?? value;
         break;
       case "lib":
         // 5.9.3 spells lib entries "lib.es2025.d.ts"; tsconfig wants "es2025".
