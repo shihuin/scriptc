@@ -27,6 +27,17 @@ export const ADOPTED_OPTIONS = [
   // SC1012 "not supported yet" beats a raw TS1259 at the same site.
   "esModuleInterop",
   "allowSyntheticDefaultImports",
+  // JSX is a project-level choice, not a semantic one: which runtime the
+  // elements lower to (react-jsx, react, preserve) and which package owns the
+  // factory (jsxImportSource) is exactly the kind of decision a tsconfig
+  // makes. Without these, every .tsx file is rejected at preflight with
+  // TS17004 ("Cannot use JSX unless the '--jsx' flag is provided") before a
+  // single construct is analyzed — the checker never sees the code at all.
+  "jsx",
+  "jsxImportSource",
+  "jsxFactory",
+  "jsxFragmentFactory",
+  "reactNamespace",
 ] as const;
 
 /* The JAVASCRIPT strictness stance (the JS-input design made real):
