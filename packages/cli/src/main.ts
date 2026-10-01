@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyze, compile, compileLibrary, resolveProvenanceSources, sourceTargetPlatform, warmNativeCaches } from "@scriptc/compiler";
+import { generateAll } from "@scriptc/compiler/embed";
+import { loadLibraryProfile } from "@scriptc/compiler";
 import { runCli } from "./command.js";
 
 /** The version of the installed package. Read from the manifest rather than
@@ -18,6 +20,13 @@ function version(): string {
 
 process.exitCode = await runCli(process.argv.slice(2), {
   version, analyze: async (entry, options) => analyze(entry, options), compile, compileLibrary, resolveProvenanceSources, sourceTargetPlatform, warmNativeCaches,
+  emitLibraryHeader: async (profilePath, outDir) => {
+    const loaded = loadLibraryProfile(resolve(profilePath));
+    if (!loaded.ok) return { ok: false, diagnostics: loaded.diagnostics };
+    const files = generateAll(loaded.profile);
+    for (const file of files) writeFileSync(join(outDir, file.name), file.text, "utf8");
+    return { ok: true, files };
+  },
   run: (binary) => new Promise<number>((resolveExit) => {
     let child;
     if (sourceTargetPlatform() === "wasi") {

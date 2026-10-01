@@ -15,7 +15,7 @@ import {
   generateShim,
   signaturesOf,
   stemOf,
-} from "../src/index.js";
+} from "@scriptc/compiler/embed";
 
 const repo = process.cwd();
 const fixture = (name: string): LibraryProfile => {
@@ -23,6 +23,12 @@ const fixture = (name: string): LibraryProfile => {
   if (!loaded.ok) throw new Error(`fixture profile ${name} did not load`);
   return loaded.profile;
 };
+
+test("the header names both regeneration paths", () => {
+  const header = generateHeader(fixture("scalars"));
+  expect(header).toContain("scriptc build --lib --profile <profile.json> --header");
+  expect(header).toContain("scriptc-c-embed --profile <profile.json> --out <dir>");
+});
 
 test("the scalars fixture header declares the lifecycle entries and exports", () => {
   const profile = fixture("scalars");

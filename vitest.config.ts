@@ -39,6 +39,12 @@ export default defineConfig({
       "@scriptc/compiler/cli/paths": fileURLToPath(new URL("./packages/compiler/src/cli/paths.ts", import.meta.url)),
       "@scriptc/compiler/cli/output-options": fileURLToPath(new URL("./packages/compiler/src/cli/output-options.ts", import.meta.url)),
       "@scriptc/compiler/cli/usage": fileURLToPath(new URL("./packages/compiler/src/cli/usage.ts", import.meta.url)),
+      // Subpath aliases must precede the bare specifier: Vite resolves the
+      // longest matching alias, and the bare one would otherwise swallow
+      // "@scriptc/compiler/embed".
+      "@scriptc/compiler/embed": fileURLToPath(
+        new URL("./packages/compiler/src/embed/index.ts", import.meta.url),
+      ),
       // Tests run against compiler source directly — no build step needed.
       "@scriptc/compiler": fileURLToPath(
         new URL("./packages/compiler/src/index.ts", import.meta.url),

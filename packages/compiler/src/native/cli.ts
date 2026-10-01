@@ -1,7 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { generateAll } from "../embed/index.js";
+import { loadLibraryProfile } from "../library/library-profile.js";
 import { runCli } from "../cli/command.js";
 import type { NativeCacheWarmProfile } from "../cli/host.js";
 import { selectNativeRuntimePack, stageNativeRuntimeSelection } from "../backend/runtime-pack-native.js";
@@ -37,6 +39,13 @@ async function main(): Promise<number> {
     analyze: (entry, options) => runCompilerTask(() => getCompiler().analyze(entry, options)),
     compile: (entry, options) => runCompilerTask(() => getCompiler().compile(entry, options)),
     compileLibrary: (options) => runCompilerTask(() => getCompiler().compileLibrary(options)),
+    emitLibraryHeader: async (profilePath, outDir) => {
+      const loaded = loadLibraryProfile(resolve(profilePath));
+      if (!loaded.ok) return { ok: false, diagnostics: loaded.diagnostics };
+      const files = generateAll(loaded.profile);
+      for (const file of files) writeFileSync(join(outDir, file.name), file.text, "utf8");
+      return { ok: true, files };
+    },
     resolveProvenanceSources: async (entry) => {
       const toolchain = getCompiler().toolchain;
       const services = new FrontendServices((options) => createNativeTs7Api({ ...options, executable: toolchain.ts7Executable }));

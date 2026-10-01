@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { compileLibrary, loadLibraryProfile } from "@scriptc/compiler";
-import { generateAll } from "../src/index.js";
+import { generateAll } from "@scriptc/compiler/embed";
 
 const repo = process.cwd();
 

@@ -18,7 +18,7 @@ import {
   sinkTypedefName,
   splitsInC,
   type AbiClass,
-} from "../src/c-abi.js";
+} from "@scriptc/compiler/embed";
 
 test("every value class has exactly one C spelling", () => {
   const expected: Record<AbiClass, string> = {

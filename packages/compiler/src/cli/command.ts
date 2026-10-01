@@ -136,6 +136,21 @@ async function main(args: string[], host: CliHost): Promise<number> {
     // The contract sidecar rides the same invocation when the profile
     // declares one — name it so the embedder's tooling knows where to look.
     if (result.sidecarPath !== undefined) process.stdout.write(`${result.sidecarPath}\n`);
+    if (values.header) {
+      // The C embedding: generated from the SAME profile the archive was just
+      // built from, into the archive's directory (libOutDir, above), so the
+      // header an embedder compiles and the archive it links are always the
+      // same build.
+      const header = await host.emitLibraryHeader(profilePath, libOutDir);
+      if (!header.ok) {
+        const color = process.stderr.isTTY ?? false;
+        process.stderr.write(renderDiagnostics(header.diagnostics, new Map(), { color }) + "\n");
+        const n = header.diagnostics.length;
+        process.stderr.write(`\n${n} error${n === 1 ? "" : "s"}.\n`);
+        return 1;
+      }
+      for (const file of header.files) process.stdout.write(`${join(libOutDir, file.name)}\n`);
+    }
     return 0;
   }
   if (values["emit-ir"] && (command === "build" || command === "run")) {
@@ -158,6 +173,9 @@ async function main(args: string[], host: CliHost): Promise<number> {
   }
   if (printNativeLinkInfo && values.emit !== undefined && values.emit !== "obj") {
     fail(`--print=native-link-info requires --emit=obj\n\n${USAGE}`);
+  }
+  if (values.header && !values.lib) {
+    fail(`--header is a library-build option (scriptc build --lib --profile <p.json> --header)\n\n${USAGE}`);
   }
   if (externalTypeArgs.length > 0 && command !== "coverage") {
     fail(`--external-types is a coverage-only option\n\n${USAGE}`);

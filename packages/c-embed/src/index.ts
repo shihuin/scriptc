@@ -1,22 +1,26 @@
-/* @scriptc/c-embed — C embedding for scriptc library-mode archives.
+/* @scriptc/c-embed — the command line and public re-export for scriptc's C
+ * embedding generator.
  *
- *   import { loadLibraryProfile } from "@scriptc/compiler";
- *   import { generateAll, signaturesOf } from "@scriptc/c-embed";
+ * The generator itself lives in the compiler (`@scriptc/compiler/embed`),
+ * because it is derived from the compiler's own library ABI. This package is
+ * the packaged face of it: the `scriptc-c-embed` command, plus a stable import
+ * path for tooling that should not reach into the compiler.
  *
- *   const loaded = loadLibraryProfile("app.profile.json");
- *   if (!loaded.ok) throw new Error("bad profile");
- *   for (const file of generateAll(loaded.profile)) writeFileSync(file.name, file.text);
- *
- * The generated header declares exactly the C ABI the library emitter
- * produces, so an embedder compiles against the archive without hand-writing
- * prototypes. `test/ir-audit.test.ts` checks that claim against the archive's
- * own LLVM IR.
+ *   import { generateAll } from "@scriptc/c-embed";
  */
 
 export {
+  carriesBuffer,
   cTypeOf,
   callbackTypedef,
+  declareParam,
   exportSignature,
+  generateAll,
+  generateCMake,
+  generateDescriptor,
+  generateHeader,
+  generateShim,
+  generateShimHeader,
   includeGuard,
   isCIdentifier,
   outParamsFor,
@@ -24,22 +28,14 @@ export {
   prefixOf,
   returnsFor,
   signaturesOf,
+  sinkTypedefName,
   splitsInC,
+  stemOf,
   type AbiClass,
   type CParam,
   type CSignature,
-} from "./c-abi.js";
-
-export {
-  carriesBuffer,
-  generateAll,
-  generateDescriptor,
-  generateHeader,
-  generateShim,
-  generateShimHeader,
-  stemOf,
   type GeneratedFile,
   type HeaderOptions,
-} from "./c-header.js";
+} from "@scriptc/compiler/embed";
 
 export { runEmbedCli, EXPLAIN, USAGE, type CliIo, type CliOutcome } from "./cli.js";

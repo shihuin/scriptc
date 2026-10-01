@@ -2,13 +2,24 @@
 
 Generate the C header, shim, and CMake fragment an embedder compiles against a **scriptc library-mode archive**.
 
-scriptc's `build --lib` emits a static archive whose exported functions are C-ABI wrappers around a compiled TypeScript module's exports — and, until now, no declaration of that surface. Every embedder wrote the header by hand (`tests/library-mode/scalars/probe.c` is one). This package writes it down instead, from the same profile the archive was built with.
+scriptc's `build --lib` emits a static archive whose exported functions are C-ABI wrappers around a compiled TypeScript module's exports — and, until now, no declaration of that surface. Every embedder wrote the header by hand (`tests/library-mode/scalars/probe.c` is one). This writes it down instead, from the same profile the archive was built with.
 
 ```console
-$ scriptc build --lib --profile app.profile.json --out dist/libapp.a
+$ scriptc build --lib --profile app.profile.json --out dist/libapp.a --header
+dist/libapp.a
+dist/app.h
+dist/app.c-embed.json
+dist/app.cmake
+```
+
+`--header` generates into the artifact's directory, so the header an embedder compiles and the archive it links are always the same build. The standalone command exists for the case where the archive is already built, or where generation is a separate CI step:
+
+```console
 $ scriptc-c-embed --profile app.profile.json --out dist
 app: wrote app.h, app.c-embed.json, app.cmake into dist
 ```
+
+The generator lives in the compiler (`@scriptc/compiler/embed`) because it is derived from the compiler's own library ABI — the marshalling classes, the mode-provided symbol names, and the profile schema are compiler decisions. This package is the packaged face of it: the command and a stable import path.
 
 Then:
 
@@ -38,12 +49,13 @@ target_link_libraries(my_app PRIVATE scriptc::app)
 
 A generated header is worse than useless if it disagrees with the archive: C will happily compile a call with the wrong pointee and corrupt memory at runtime. So the surface is checked from four directions, and all four are in this package's test suite:
 
-| Check | What it catches |
-| --- | --- |
-| `test/c-abi.test.ts` | The class→C mapping itself: every marshalling class, every position |
-| `test/ir-audit.test.ts` | **The archive's own LLVM IR**: every generated symbol exists there, with the right parameter shapes. Four real fixtures, including i64/u64 returns |
-| `test/e2e-link.test.ts` | A C program that includes **only the generated header**, links the real archive, runs, and produces the expected transcript — plus the same through the generated CMake fragment |
-| `test/header.test.ts`, `test/cli.test.ts` | Structure, the descriptor, reproducibility (no timestamps, no absolute paths), and the CLI's exit codes |
+| Check | Where | What it catches |
+| --- | --- | --- |
+| class→C mapping | `packages/compiler/test/embed/c-abi.test.ts` | every marshalling class in every position |
+| **the archive's own LLVM IR** | `packages/compiler/test/embed/ir-audit.test.ts` | every generated symbol must exist there, with the right parameter shapes — four fixtures, including i64/u64 returns |
+| a real link-and-run | `packages/compiler/test/embed/e2e-link.test.ts` | a C program that includes **only the generated header**, links the real archive, runs, and produces the expected transcript — plus the same through the generated CMake fragment |
+| the CLI flag | `packages/compiler/test/embed/build-header.test.ts` | `--lib --header` writes the files and prints their names; `--header` without `--lib` is a loud error |
+| structure and contract | `packages/compiler/test/embed/header.test.ts`, `packages/c-embed/test/cli.test.ts` | the prose, the descriptor, reproducibility (no timestamps, no absolute paths), exit codes, `--check` staleness |
 
 The IR audit is the load-bearing one: it is what makes this "derived from the compiler's own decisions" rather than "a plausible second opinion".
 
@@ -74,7 +86,7 @@ The generated `-shim.c` exists for exactly this: `app_shim_shout(...)` calls the
 
 | File | Purpose |
 | --- | --- |
-| `<stem>.h` | The C ABI: marshalling rules, memory and threading posture in prose, then the declarations |
+| `<stem>.h` | The C ABI: marshalling rules, memory and threading posture in prose, then the declarations, and both regeneration commands in the banner |
 | `<stem>.c-embed.json` | The same surface as JSON, for non-C embedders (Zig, Rust, Python ctypes) |
 | `<stem>.cmake` | Imports the archive and exposes `scriptc::<stem>` as one interface target |
 | `<stem>-shim.h` / `<stem>-shim.c` | Host-owned-buffer wrappers, emitted only when the profile moves buffers |
@@ -96,7 +108,9 @@ Exit codes: `0` written (or up to date), `1` `--check` found a difference, `2` t
 
 ```ts
 import { loadLibraryProfile } from "@scriptc/compiler";
-import { generateAll, signaturesOf } from "@scriptc/c-embed";
+import { generateAll, signaturesOf } from "@scriptc/compiler/embed";
+// or, from the packaged face:
+// import { generateAll } from "@scriptc/c-embed";
 
 const loaded = loadLibraryProfile("app.profile.json");
 if (!loaded.ok) throw new Error("bad profile");
@@ -109,7 +123,7 @@ for (const file of generateAll(loaded.profile, { stem: "app" })) {
 
 ## Limits, stated plainly
 
-- **It does not build the library.** Run `scriptc build --lib` first; this reads the same profile and writes the declaration.
+- **It does not build the library.** `scriptc build --lib --header` does both; the standalone command only reads the profile and writes the declaration.
 - **It does not promise link compatibility.** The archive's target triple must match the host's.
 - **It does not make the ABI stable across compiles.** Use the identity getters (`<prefix>build_id`, `<prefix>abi_version`) to fence a stale archive before calling in.
 - **Threading is the profile's**, not the header's: one instance per linked archive unless the profile sets `instance_per_thread`, and calls are not re-entrant across threads. The header says which.
