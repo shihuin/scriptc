@@ -1,0 +1,41 @@
+{
+  "name": "@scriptc/c-embed",
+  "version": "0.1.0",
+  "description": "C embedding for scriptc: generate the header, shim, and descriptor an embedder compiles against a library-mode archive",
+  "license": "Apache-2.0",
+  "homepage": "https://scriptc.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel-labs/scriptc.git",
+    "directory": "packages/c-embed"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "scriptc-c-embed": "bin/scriptc-c-embed.mjs"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./abi": "./dist/c-abi.js",
+    "./header": "./dist/c-header.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+    "check": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@scriptc/compiler": "workspace:*"
+  }
+}
