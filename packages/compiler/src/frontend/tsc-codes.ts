@@ -61,6 +61,19 @@ export const JS_RELAXED_TSC_CODES: ReadonlySet<number> = new Set([
   // expand-patterns passes an ignoreUnknown member its own JSDoc type
   // never declared)
   2353, 2561,
+  // OPERATOR type mismatch (unary, binary, comparison) and
+  // "no properties in common": ordinary, working JavaScript. The operators
+  // coerce at runtime, and an unannotated variable is reused across scopes
+  // for unrelated values — the shape a minified or flow-compiled library
+  // produces (one name is a PropertyDescriptor on one line and a loop index
+  // on the next). The values stay any/loose and every USE meets the lowerer's
+  // per-site fences, exactly like the call shapes above.
+  // 2364 STAYS OUT on purpose: it is the left-hand-side validity check
+  // ("must be a variable or a property access") — the assignment-target
+  // early error test262 pins (`(x => x) = 1` is a SyntaxError in JS), not
+  // an operator type mismatch. Relaxing it lets invalid assignment targets
+  // compile past the parse-phase rejection.
+  2362, 2363, 2365, 2559,
   // JSDoc TYPE-SPACE claims that fail to check: a value name in a type
   // position (2749/2702), generic constraints and index types spelled in
   // typedefs (2344/2536/2538), an async @returns that is not Promise
