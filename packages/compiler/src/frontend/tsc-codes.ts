@@ -74,6 +74,11 @@ export const JS_RELAXED_TSC_CODES: ReadonlySet<number> = new Set([
   // an operator type mismatch. Relaxing it lets invalid assignment targets
   // compile past the parse-phase rejection.
   2362, 2363, 2365, 2559,
+  // SWITCH FALLTHROUGH (7029): legal, ordinary JavaScript, and the shape a
+  // compiled state machine takes (React's work loops switch on a tag and
+  // fall through deliberately). It is a lint-grade style check, not a
+  // soundness one — nothing about a fallthrough is unrepresentable.
+  7029,
   // JSDoc TYPE-SPACE claims that fail to check: a value name in a type
   // position (2749/2702), generic constraints and index types spelled in
   // typedefs (2344/2536/2538), an async @returns that is not Promise
