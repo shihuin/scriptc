@@ -121,7 +121,10 @@ export {
   LIB_RETURN_CLASSES,
   type LibraryProfile,
   type LibraryExportEntry,
+  type LibraryCallbackEntry,
   type LibrarySidecarConfig,
+  type LibCallbackParamClass,
+  type LibCallbackReturnClass,
   type LibParamClass,
   type LibReturnClass,
 } from "./library/library-profile.js";
