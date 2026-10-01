@@ -167,6 +167,12 @@ importers:
 
   packages/experimental: {}
 
+  packages/linter:
+    dependencies:
+      '@scriptc/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+
   packages/llvm-darwin-arm64: {}
 
   packages/llvm-darwin-x64: {}

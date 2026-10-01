@@ -13,6 +13,7 @@
     "bench:ast-access": "node scripts/bench-ast-access.mjs",
     "bench:backend-analysis": "node scripts/bench-backend-analysis.mjs",
     "test": "vitest run",
+    "lint:scriptc": "node packages/linter/bin/scriptc-lint.mjs",
     "test:ts7": "node scripts/test-ts7.mjs",
     "generate:ts7-ast": "node scripts/generate-ts7-ast-schema.mjs",
     "test:fetch-conformance": "vitest run tests/harness/fetch-conformance.test.ts",

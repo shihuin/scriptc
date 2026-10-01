@@ -63,6 +63,7 @@ new tests should follow this convention.
 - `packages/compiler` — the frontend (tsc API to IR), typed IR, validator, serializer, and LLVM backend.
 - `packages/runtime` — the C runtime distributed as precompiled runtime packs.
 - `packages/cli` — `scriptc build | run | coverage`.
+- `packages/linter` — `@scriptc/linter` / `scriptc-lint`: compiler-derived linting that answers "will this build?", driving `analyze()` and `compile({ outputKind: "llvm" })`. Its promise is exact: a green lint means the frontend, typed-IR validation, and LLVM emission accept the program. Keep it on the compiler's public entry point only, and keep the guarantee's `checked`/`notChecked` lists honest. Its tests run the real compiler against corpus and coverage fixtures.
 - `internal/compatibility` — generated Node.js parity inventory, implementation-owned compatibility manifests, and engineering backlog.
 - `tests/` — the differential corpus, diagnostics snapshots, and harness.
 - `docs/` — the standalone Next.js App Router + MDX documentation workspace.
