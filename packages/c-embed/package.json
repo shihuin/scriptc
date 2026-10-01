@@ -16,9 +16,7 @@
     "scriptc-c-embed": "bin/scriptc-c-embed.mjs"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./abi": "./dist/c-abi.js",
-    "./header": "./dist/c-header.js"
+    ".": "./dist/index.js"
   },
   "files": [
     "bin",

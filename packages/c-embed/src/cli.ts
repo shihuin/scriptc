@@ -10,7 +10,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { loadLibraryProfile, renderDiagnostics, type LibraryProfile } from "@scriptc/compiler";
-import { generateAll, stemOf } from "./c-header.js";
+import { generateAll, stemOf } from "@scriptc/compiler/embed";
 
 export const USAGE = `scriptc-c-embed — generate the C header, shim, and descriptor for a scriptc library
 

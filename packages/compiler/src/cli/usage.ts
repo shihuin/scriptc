@@ -13,6 +13,11 @@ Usage:
                                             exporting the profile symbols; a profile
                                             with a sidecar section also gets the
                                             contract sidecar JSON beside the archive
+  scriptc build --lib --profile <p.json> --header
+                                            also write the C embedding of the
+                                            archive (header, host-buffer shim,
+                                            JSON descriptor, CMake fragment)
+                                            into the artifact directory
   scriptc cache warm [runtime|tls…] verify and load precompiled runtime families
                                             for the current compiler/SDK/target
 
@@ -91,6 +96,7 @@ export const CLI_OPTIONS = {
   "provenance-sources": { type: "boolean", default: false },
   "external-types": { type: "string", multiple: true },
   lib: { type: "boolean", default: false },
+  header: { type: "boolean", default: false },
   profile: { type: "string" },
   help: { type: "boolean", short: "h", default: false },
   version: { type: "boolean", short: "v", default: false },

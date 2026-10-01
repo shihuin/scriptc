@@ -26,7 +26,8 @@
     "postinstall": "node scripts/install-native.mjs"
   },
   "devDependencies": {
-    "@scriptc/compiler": "workspace:*"
+    "@scriptc/compiler": "workspace:*",
+    "@scriptc/c-embed": "workspace:*"
   },
   "optionalDependencies": {
     "@scriptc/cli-darwin-arm64": "workspace:*",

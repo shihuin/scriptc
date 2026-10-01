@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeAll, expect, test } from "vitest";
 import { compileLibrary, loadLibraryProfile, type LibraryProfile } from "@scriptc/compiler";
-import { generateAll, signaturesOf, type CSignature } from "../src/index.js";
+import { generateAll, signaturesOf, type CSignature } from "@scriptc/compiler/embed";
 
 const repo = process.cwd();
 const FIXTURES = ["scalars", "buffers", "callbacks", "int-returns"] as const;

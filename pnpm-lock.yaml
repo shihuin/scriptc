@@ -58,6 +58,9 @@ importers:
 
   packages/cli:
     devDependencies:
+      '@scriptc/c-embed':
+        specifier: workspace:*
+        version: link:../c-embed
       '@scriptc/compiler':
         specifier: workspace:*
         version: link:../compiler

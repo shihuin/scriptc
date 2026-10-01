@@ -44,7 +44,7 @@
  * scriptc target, and it is what an embedder already has in hand.
  */
 
-import type { LibraryProfile, LibraryExportEntry, LibraryCallbackEntry } from "@scriptc/compiler";
+import type { LibraryProfile, LibraryExportEntry, LibraryCallbackEntry } from "../library/library-profile.js";
 
 /** A parameter or return position's marshalling class. */
 export type AbiClass =

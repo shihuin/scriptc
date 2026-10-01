@@ -16,7 +16,7 @@
  *     produce the same bytes, so the header is reproducible and diffable.
  */
 
-import type { LibraryProfile } from "@scriptc/compiler";
+import type { LibraryProfile } from "../library/library-profile.js";
 import {
   callbackTypedef,
   declareParam,
@@ -139,6 +139,8 @@ export function generateHeader(profile: LibraryProfile, options: HeaderOptions =
   out.push(` * The C ABI of the scriptc library-mode archive built from`);
   out.push(` * \`${relativeProfileEntry(profile)}\` under the profile "${profile.name}".`);
   out.push(` * Regenerate with:`);
+  out.push(` *   scriptc build --lib --profile <profile.json> --header`);
+  out.push(` * or, without rebuilding the archive:`);
   out.push(` *   scriptc-c-embed --profile <profile.json> --out <dir>`);
   out.push(` */`);
   out.push("");
