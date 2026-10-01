@@ -6796,9 +6796,19 @@ export function lowerPrefixUnary(lowerer: Lowerer, expr: ts.PrefixUnaryExpressio
     if (target.type.kind === "dyn") {
       const old = lowerer.declareHiddenLocal("%numericOld", DYN);
       const next = lowerer.declareHiddenLocal("%numericNext", DYN);
+      // The STORAGE is dyn, but the READ need not be: TypeScript narrows a
+      // dynamic variable inside a guard (`typeof x === "number"`, then `x++`),
+      // so the operand lowers to its narrowed type while the target stays dyn.
+      // `dyn.toNumeric` takes a dyn argument, so an unboxed narrowed read was
+      // an internal error ("expected dyn, got f64") at every such site —
+      // eleven of them in vendored react-reconciler alone.
       const read = lowerer.lowerExpr(expr.operand);
+      const readDyn: IrExpr =
+        read.type.kind === "dyn" || read.type.kind === "jsval"
+          ? read
+          : { kind: "dynFrom", value: read, type: DYN, loc };
       return { kind: "seqExpr", stmts: [
-        { kind: "varDecl", localId: old.id, init: { kind: "libCall", fn: "dyn.toNumeric", args: [read], type: DYN, loc }, loc },
+        { kind: "varDecl", localId: old.id, init: { kind: "libCall", fn: "dyn.toNumeric", args: [readDyn], type: DYN, loc }, loc },
         { kind: "varDecl", localId: next.id, init: { kind: "libCall", fn: "dyn.increment", args: [varRef(old.id, DYN, loc), { kind: "boolLit", value: op === "+", type: BOOL, loc }], type: DYN, loc }, loc },
         { kind: "assign", localId: target.id, value: varRef(next.id, DYN, loc), loc },
       ], result: varRef(prefix ? next.id : old.id, DYN, loc), type: DYN, loc };
