@@ -1,0 +1,42 @@
+{
+  "name": "@scriptc/linter",
+  "version": "0.1.0",
+  "description": "The scriptc linter — fail the lint, and the program builds: compiler-derived checks for the statically supported subset",
+  "license": "Apache-2.0",
+  "homepage": "https://scriptc.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel-labs/scriptc.git",
+    "directory": "packages/linter"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "scriptc-lint": "bin/scriptc-lint.mjs"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./rules": "./dist/rules.js",
+    "./report": "./dist/report.js",
+    "./cli": "./dist/cli.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+    "check": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@scriptc/compiler": "workspace:*"
+  }
+}
