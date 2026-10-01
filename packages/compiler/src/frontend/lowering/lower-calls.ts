@@ -4256,6 +4256,35 @@ export function lowerCall(lowerer: Lowerer, expr: ts.CallExpression): IrExpr {
       if (name === "String") return lowerer.ensureString(arg, argNode);
     }
 
+    // `Error(msg)` WITHOUT `new`. The error constructors are the legacy
+    // callable ones: ECMAScript defines calling them to construct exactly as
+    // `new` does, and real code uses both spellings interchangeably (React's
+    // shipped build throws `Error()` in its production fast paths). It emits
+    // the SAME `error.newOptions` libCall the `new` form does — not a second
+    // construction path that could drift, and not a `new` node, which is not
+    // how a runtime error class is built at all (they have no lowerable
+    // constructor function; the runtime owns them).
+    if (
+      ts.isIdentifier(expr.expression) &&
+      expr.expression.text === "Error" &&
+      lowerer.isStdlibSymbol(lowerer.resolveValueSymbol(expr.expression) ?? undefined)
+    ) {
+      const errorInfo = lowerer.builtinErrorInfoOf(lowerer.resolveValueSymbol(expr.expression));
+      // DOMException is not one of the legacy callable constructors, so the
+      // bare form stays a fence there (the `new` path owns its WebIDL
+      // argument resolution).
+      if (errorInfo !== null && errorInfo.def.name !== "%DOMException") {
+        const args = lowerer.errorConstructorArgs(expr.arguments ?? [], loc, expr);
+        return {
+          kind: "libCall",
+          fn: "error.newOptions",
+          args,
+          type: { kind: "object", className: errorInfo.def.name },
+          loc,
+        };
+      }
+    }
+
     // __island_eval: the internal island testing hook (eval in the embedded
     // engine, String(result) back). Provenance-checked like setTimeout.
     // Only meaningful when the engine is linked: without --dynamic it is a
