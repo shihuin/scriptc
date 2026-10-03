@@ -888,6 +888,11 @@ export const BUILTIN_MODULE_FNS: Record<string, Record<string, BuiltinModuleFn |
     parseArgs: { fn: "util.parseArgs", params: [DYN], result: DYN },
     parseEnv: { fn: "util.parseEnv", params: [DYN], result: DYN },
   },
+  buffer: {
+    isAscii: { fn: "buffer.isAscii", params: [DYN], result: BOOL },
+    isUtf8: { fn: "buffer.isUtf8", params: [DYN], result: BOOL },
+    transcode: { fn: "buffer.transcode", params: [DYN, DYN, DYN], result: BYTES_U8 },
+  },
   process: {
     loadEnvFile: { fn: "process.loadEnvFile", params: [DYN], result: VOID },
   },
@@ -1650,12 +1655,10 @@ export const BUILTIN_MODULE_FENCE_HINTS: Record<string, Record<string, string | 
         "everything else through the static util.inspect)";
     } else if (container === "TextEncoder") {
       hint =
-        "TextEncoder instances can be stored, passed, and captured; encode(string) and encode() compile, " +
-        "while encodeInto and other members have no static lowering";
+        "TextEncoder instances can be stored, passed, and captured; encode(), encodeInto(string, Uint8Array), and encoding compile";
     } else if (container === "TextDecoder") {
       hint =
-        "TextDecoder instances with recognized literal WHATWG labels and default options can be stored, passed, and captured; " +
-        "decode(Uint8Array/Buffer) and decode() compile; streaming, constructor options, and other members have no static lowering";
+        "TextDecoder instances support recognized labels, encoding/fatal/ignoreBOM properties, literal constructor options, and streaming UTF-8/UTF-16/single-byte decode; runtime option objects remain unsupported";
     } else if (member === "prototype") {
       hint =
         "prototype objects are not values here (method lookup is static) — call the method on an instance instead";

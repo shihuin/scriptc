@@ -2923,6 +2923,34 @@ static JSValue isl_host_parse_env(JSContext *ctx, JSValueConst this_val, int arg
   return result;
 }
 
+static JSValue isl_host_transcode(JSContext *ctx, JSValueConst this_val, int argc,
+                                   JSValueConst *argv) {
+  (void)this_val;
+  if (argc != 3) return JS_ThrowTypeError(ctx, "invalid transcode bridge arity");
+  size_t length = 0;
+  uint8_t *data = JS_GetUint8Array(ctx, &length, argv[0]);
+  if (!data && length) return JS_EXCEPTION;
+  ScrBytes bytes = {0};
+  bytes.elem = SCR_BYTES_U8; bytes.len = length; bytes.data = data;
+  ScrDyn source = {0};
+  source.kind = SCR_DYN_BYTES; source.v.bytes = &bytes;
+  ScrDyn *from = isl_dyn_from_value(argv[1]), *to = isl_dyn_from_value(argv[2]);
+  ScrBytes *result = scr_buffer_transcode(&source, from, to);
+  scr_dyn_release(from); scr_dyn_release(to);
+  if (!result) {
+    JSValue error = isl_pending_to_value(ctx);
+    JSValue code = JS_GetPropertyStr(ctx, error, "code");
+    const char *name = JS_ToCString(ctx, code);
+    if (name && strcmp(name, "U_INVALID_CHAR_FOUND") == 0) JS_SetPropertyStr(ctx, error, "errno", JS_NewInt32(ctx, 10));
+    else if (name && strcmp(name, "U_ILLEGAL_ARGUMENT_ERROR") == 0) JS_SetPropertyStr(ctx, error, "errno", JS_NewInt32(ctx, 1));
+    JS_FreeCString(ctx, name); JS_FreeValue(ctx, code);
+    return JS_Throw(ctx, error);
+  }
+  JSValue value = JS_NewUint8ArrayCopy(ctx, result->data, result->len);
+  scr_bytes_release(result);
+  return value;
+}
+
 static JSValue isl_host_load_env_file(JSContext *ctx, JSValueConst this_val, int argc,
                                       JSValueConst *argv) {
   (void)this_val;
@@ -4915,7 +4943,7 @@ static const char isl_modules_bootstrap[] =
     "    return e;\n"
     "  };\n"
     "  const invalidArg = (name, expected, actual) => {\n"
-    "    const t = actual === null ? \"null\" : typeof actual === \"object\" ? \"an instance of \" + (actual.constructor && actual.constructor.name || \"Object\") : typeof actual === \"string\" ? \"type string ('\" + actual + \"')\" : \"type \" + typeof actual + \" (\" + String(actual) + \")\";\n"
+    "    const t = actual == null ? String(actual) : typeof actual === \"object\" ? \"an instance of \" + (actual.constructor && actual.constructor.name || \"Object\") : typeof actual === \"string\" ? \"type string ('\" + actual + \"')\" : \"type \" + typeof actual + \" (\" + String(actual) + (typeof actual === 'bigint' ? 'n' : '') + \")\";\n"
     "    const label = name === \"first argument\" ? \"The first argument\" : 'The \"' + name + '\" argument';\n"
     "    const e = new TypeError(label + \" must be \" + expected + \". Received \" + t);\n"
     "    e.code = \"ERR_INVALID_ARG_TYPE\";\n"
@@ -5577,15 +5605,20 @@ static const char isl_modules_bootstrap[] =
     "    return -1;\n"
     "  };\n"
     "  function SlowBuffer(size) { return Buffer.alloc(size); }\n"
+    "  const validationBytes = (input) => {\n"
+    "    if (ArrayBuffer.isView(input) && !(input instanceof DataView)) return new Uint8Array(input.buffer, input.byteOffset, input.byteLength);\n"
+    "    if (input instanceof ArrayBuffer || (typeof SharedArrayBuffer === 'function' && input instanceof SharedArrayBuffer)) return new Uint8Array(input);\n"
+    "    throw invalidArg('input', 'an instance of ArrayBuffer, Buffer, or TypedArray', input);\n"
+    "  };\n"
     "  const isAscii = (input) => {\n"
-    "    const u8 = input instanceof Uint8Array ? input : new Uint8Array(input);\n"
+    "    const u8 = validationBytes(input);\n"
     "    for (let i = 0; i < u8.length; i++) {\n"
     "      if (u8[i] > 0x7f) return false;\n"
     "    }\n"
     "    return true;\n"
     "  };\n"
     "  const isUtf8 = (input) => {\n"
-    "    const u8 = input instanceof Uint8Array ? input : new Uint8Array(input);\n"
+    "    const u8 = validationBytes(input);\n"
     "    let i = 0;\n"
     "    while (i < u8.length) {\n"
     "      const b = u8[i];\n"
@@ -5623,8 +5656,9 @@ static const char isl_modules_bootstrap[] =
      * (scr_web.c) owns the implementations. */
     "    Blob: globalThis.Blob,\n"
     "    File: globalThis.File,\n"
-    "    transcode: () => {\n"
-    "      throw new Error(\"buffer.transcode is not available in the scriptc island\");\n"
+    "    transcode: (source, from, to) => {\n"
+    "      if (!(source instanceof Uint8Array)) throw invalidArg('source', 'an instance of Buffer or Uint8Array', source);\n"
+    "      return Buffer.from(host.transcode(source, from, to));\n"
     "    },\n"
     "    resolveObjectURL: () => undefined,\n"
     "  };\n"
@@ -9945,6 +9979,7 @@ static void isl_modules_boot(void) {
   JS_SetPropertyStr(isl_ctx, host, "envSet", JS_NewCFunction(isl_ctx, isl_host_env_set, "envSet", 2));
   JS_SetPropertyStr(isl_ctx, host, "envDelete", JS_NewCFunction(isl_ctx, isl_host_env_delete, "envDelete", 1));
   JS_SetPropertyStr(isl_ctx, host, "parseEnv", JS_NewCFunction(isl_ctx, isl_host_parse_env, "parseEnv", 1));
+  JS_SetPropertyStr(isl_ctx, host, "transcode", JS_NewCFunction(isl_ctx, isl_host_transcode, "transcode", 3));
   JS_SetPropertyStr(isl_ctx, host, "loadEnvFile", JS_NewCFunction(isl_ctx, isl_host_load_env_file, "loadEnvFile", 2));
   JS_SetPropertyStr(isl_ctx, host, "write", JS_NewCFunction(isl_ctx, isl_host_write, "write", 2));
   JS_SetPropertyStr(isl_ctx, host, "readStdin",

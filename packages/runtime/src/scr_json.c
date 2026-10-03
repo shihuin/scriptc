@@ -2311,7 +2311,7 @@ const char *scr_dyn_specific_type(const ScrDyn *cb, char *detail, size_t cap) {
   case SCR_DYN_OBJ: d = "an instance of Object"; break;
   case SCR_DYN_ARR: d = "an instance of Array"; break;
   case SCR_DYN_BYTES:
-    snprintf(detail, cap, "an instance of %s", cb->buffer ? "Buffer" : scr_bytes_elem_name(cb->v.bytes->elem));
+    snprintf(detail, cap, "an instance of %s", cb->buffer ? "Buffer" : cb->v.bytes->is_data_view ? "DataView" : scr_bytes_elem_name(cb->v.bytes->elem));
     break;
   case SCR_DYN_FUNC:
     /* determineSpecificType: `function ${value.name}` — anonymous

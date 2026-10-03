@@ -57,6 +57,21 @@ double scr_text_decoder_encoding(const ScrDyn *label) {
   return -1;
 }
 
+ScrStr *scr_text_decoder_name(double encoding) {
+  static const char *names[] = {
+    "ibm866", "iso-8859-2", "iso-8859-3", "iso-8859-4", "iso-8859-5",
+    "iso-8859-6", "iso-8859-7", "iso-8859-8", "iso-8859-10", "iso-8859-13",
+    "iso-8859-14", "iso-8859-15", "iso-8859-16", "koi8-r", "koi8-u",
+    "macintosh", "windows-874", "windows-1250", "windows-1251", "windows-1252",
+    "windows-1253", "windows-1254", "windows-1255", "windows-1256", "windows-1257",
+    "windows-1258", "x-mac-cyrillic", "x-user-defined", "utf-16le", "utf-16be",
+    "gb18030", "big5", "euc-jp", "iso-2022-jp", "shift_jis", "euc-kr",
+    "iso-8859-8-i", "gbk",
+  };
+  const char *name = encoding < 0 ? "utf-8" : names[(unsigned)encoding];
+  return scr_str_new(name, strlen(name));
+}
+
 #ifdef SCR_RC_AUDIT
 static SCR_TL long scr_live_bytes = 0;
 long scr_bytes_live_count(void) { return scr_live_bytes; }
@@ -1675,6 +1690,8 @@ static ScrStr *scr_td_iso_2022_jp_decode(const ScrBytes *b, bool fatal) {
 
 ScrStr *scr_text_decode_legacy_options(const ScrBytes *b, double encoding_value, bool fatal, bool ignore_bom) {
   unsigned encoding = (unsigned)encoding_value;
+  if (encoding == 36) encoding = 7; /* ISO-8859-8-I */
+  if (encoding == 37) encoding = SCR_TD_GB18030; /* GBK */
   if (encoding < SCR_TD_SINGLE_COUNT) return scr_td_single_byte(b, encoding, fatal);
   switch (encoding) {
     case SCR_TD_X_USER_DEFINED: return scr_td_x_user_defined(b, fatal);
@@ -1712,6 +1729,7 @@ static size_t scr_td_utf8_tail(const uint8_t *bytes, size_t n) {
 
 ScrStr *scr_text_decode_stream(ScrDyn *state, const ScrBytes *input,
     double encoding, bool fatal, bool ignore_bom, bool stream) {
+  if (encoding == 36) encoding = 7; /* ISO-8859-8-I is a single-byte decoder. */
   ScrDyn *saved = scr_dyn_obj_read(state, "pending", 7);
   size_t pending = saved->kind == SCR_DYN_BYTES ? saved->v.bytes->len : 0;
   if (input->len > SIZE_MAX - pending) scr_bytes_oom();
@@ -1783,6 +1801,214 @@ static uint32_t scr_bytes_next_cp(const uint8_t *in, size_t *ip) {
                 ((uint32_t)(in[*ip + 2] & 0x3f) << 6) | (in[*ip + 3] & 0x3f);
   *ip += 4;
   return cp;
+}
+
+/* encodeInto consumes complete Unicode scalars while counting UTF-16 units.
+ * Borrow the destination so writes through a subarray retain their aliasing. */
+ScrDyn *scr_text_encode_into(const ScrDyn *source, const ScrDyn *destination) {
+  if (source->kind != SCR_DYN_STR) {
+    scr_dyn_arg_type_fail("src", "of type string", source);
+    return NULL;
+  }
+  if (destination->kind != SCR_DYN_BYTES || destination->v.bytes->elem != SCR_BYTES_U8 || destination->v.bytes->is_data_view) {
+    scr_dyn_arg_type_fail("dest", "an instance of Uint8Array", destination);
+    return NULL;
+  }
+  const ScrStr *text = source->v.str;
+  ScrBytes *dest = destination->v.bytes;
+  size_t read = 0, written = 0;
+  while (written < text->len) {
+    size_t end = written;
+    uint32_t cp = scr_bytes_next_cp((const uint8_t *)text->data, &end);
+    if (end > dest->len) break;
+    read += cp > 0xffff ? 2 : 1;
+    written = end;
+  }
+  if (written) memcpy(dest->data, text->data, written);
+  ScrDyn *result = scr_dyn_new_obj();
+  scr_dyn_obj_set(result, "read", 4, scr_dyn_new_num((double)read));
+  scr_dyn_obj_set(result, "written", 7, scr_dyn_new_num((double)written));
+  return result;
+}
+
+static ScrBytes *scr_buffer_validation_input(const ScrDyn *input) {
+  if ((input->kind == SCR_DYN_BYTES && !input->v.bytes->is_data_view) || scr_array_buffer_is(input)) {
+    return scr_bytes_buffer_source(input);
+  }
+  scr_dyn_arg_type_fail("input", "an instance of ArrayBuffer, Buffer, or TypedArray", input);
+  return NULL;
+}
+
+static bool scr_buffer_utf8_valid(const uint8_t *data, size_t len) {
+  size_t i = 0;
+  while (i < len) {
+    unsigned byte = data[i++], count;
+    unsigned low = 0x80, high = 0xbf;
+    if (byte < 0x80) continue;
+    if (byte >= 0xc2 && byte <= 0xdf) count = 1;
+    else if (byte >= 0xe0 && byte <= 0xef) {
+      count = 2;
+      if (byte == 0xe0) low = 0xa0;
+      if (byte == 0xed) high = 0x9f;
+    } else if (byte >= 0xf0 && byte <= 0xf4) {
+      count = 3;
+      if (byte == 0xf0) low = 0x90;
+      if (byte == 0xf4) high = 0x8f;
+    } else return false;
+    if (count > len - i || data[i] < low || data[i] > high) return false;
+    i++;
+    for (unsigned j = 1; j < count; j++, i++) if (data[i] < 0x80 || data[i] > 0xbf) return false;
+  }
+  return true;
+}
+
+bool scr_buffer_is_ascii(const ScrDyn *input) {
+  ScrBytes *bytes = scr_buffer_validation_input(input);
+  if (!bytes) return false;
+  bool result = true;
+  for (size_t i = 0; i < bytes->len; i++) if (bytes->data[i] > 0x7f) { result = false; break; }
+  scr_bytes_release(bytes);
+  return result;
+}
+
+bool scr_buffer_is_utf8(const ScrDyn *input) {
+  ScrBytes *bytes = scr_buffer_validation_input(input);
+  if (!bytes) return false;
+  bool result = scr_buffer_utf8_valid(bytes->data, bytes->len);
+  scr_bytes_release(bytes);
+  return result;
+}
+
+/* Node's ICU wrapper recognizes Buffer encoding aliases. Empty inputs return
+ * before resolving either encoding. The four actual converter families are
+ * implemented here without adding an ICU dependency to a native binary. */
+enum { SCR_TC_UTF8, SCR_TC_ASCII, SCR_TC_LATIN1, SCR_TC_UTF16 };
+
+static int scr_transcode_encoding(const ScrDyn *value) {
+  if (value->kind == SCR_DYN_NULL || value->kind == SCR_DYN_UNDEF ||
+      (value->kind == SCR_DYN_STR && value->v.str->len == 0)) return SCR_TC_UTF8;
+  if (value->kind != SCR_DYN_STR) return -1;
+  const ScrStr *name = value->v.str;
+  static const struct { const char *name; int encoding; } aliases[] = {
+    {"utf8", SCR_TC_UTF8}, {"utf-8", SCR_TC_UTF8}, {"ascii", SCR_TC_ASCII},
+    {"latin1", SCR_TC_LATIN1}, {"binary", SCR_TC_LATIN1},
+    {"utf16le", SCR_TC_UTF16}, {"utf-16le", SCR_TC_UTF16},
+    {"ucs2", SCR_TC_UTF16}, {"ucs-2", SCR_TC_UTF16},
+  };
+  for (size_t i = 0; i < sizeof aliases / sizeof aliases[0]; i++) {
+    if (strlen(aliases[i].name) != name->len) continue;
+    bool match = true;
+    for (size_t j = 0; j < name->len; j++) {
+      unsigned char c = (unsigned char)name->data[j];
+      if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
+      if (c != (unsigned char)aliases[i].name[j]) { match = false; break; }
+    }
+    if (match) return aliases[i].encoding;
+  }
+  return -1;
+}
+
+static ScrBytes *scr_transcode_error(bool invalid_data) {
+  const char *code = invalid_data ? "U_INVALID_CHAR_FOUND" : "U_ILLEGAL_ARGUMENT_ERROR";
+  char message[100];
+  int length = snprintf(message, sizeof message, "Unable to transcode Buffer [%s]", code);
+  ScrStr *text = scr_str_new(message, (size_t)length);
+  ScrError *error = scr_error_new(SCR_ERR_ERROR, text);
+  scr_str_release(text);
+  scr_error_set_code(error, code);
+  scr_throw_obj(error, &scr_error_retain_v, &scr_error_release_v, scr_error_trace_arg());
+  return NULL;
+}
+
+/* ICU's pinned substitute callback skips unmappable default-ignorable code
+ * points. Mappable Latin-1 characters (including soft hyphen) still survive. */
+static bool scr_transcode_ignorable(uint32_t cp) {
+  return cp == 0xad || cp == 0x34f || cp == 0x61c || cp == 0x115f || cp == 0x1160 ||
+    (cp >= 0x17b4 && cp <= 0x17b5) || (cp >= 0x180b && cp <= 0x180f) ||
+    (cp >= 0x200b && cp <= 0x200f) || (cp >= 0x202a && cp <= 0x202e) ||
+    (cp >= 0x2060 && cp <= 0x206f) || cp == 0x3164 ||
+    (cp >= 0xfe00 && cp <= 0xfe0f) || cp == 0xfeff || cp == 0xffa0 ||
+    (cp >= 0xfff0 && cp <= 0xfff8) || (cp >= 0x1bca0 && cp <= 0x1bca3) ||
+    (cp >= 0x1d173 && cp <= 0x1d17a) || (cp >= 0xe0000 && cp <= 0xe0fff);
+}
+
+static size_t scr_transcode_put(uint8_t *out, size_t index, uint32_t cp, int encoding) {
+  if (encoding == SCR_TC_ASCII || encoding == SCR_TC_LATIN1) {
+    unsigned limit = encoding == SCR_TC_ASCII ? 0x7f : 0xff;
+    if (cp <= limit) out[index++] = (uint8_t)cp;
+    else if (!scr_transcode_ignorable(cp)) out[index++] = '?';
+  } else if (encoding == SCR_TC_UTF16) {
+    if (cp > 0xffff) {
+      uint32_t high = 0xd800 + ((cp - 0x10000) >> 10);
+      out[index++] = (uint8_t)high;
+      out[index++] = (uint8_t)(high >> 8);
+      cp = 0xdc00 + ((cp - 0x10000) & 0x3ff);
+    }
+    out[index++] = (uint8_t)cp;
+    out[index++] = (uint8_t)(cp >> 8);
+  } else if (cp < 0x80) out[index++] = (uint8_t)cp;
+  else if (cp < 0x800) {
+    out[index++] = 0xc0 | (cp >> 6); out[index++] = 0x80 | (cp & 63);
+  } else if (cp < 0x10000) {
+    out[index++] = 0xe0 | (cp >> 12); out[index++] = 0x80 | ((cp >> 6) & 63); out[index++] = 0x80 | (cp & 63);
+  } else {
+    out[index++] = 0xf0 | (cp >> 18); out[index++] = 0x80 | ((cp >> 12) & 63);
+    out[index++] = 0x80 | ((cp >> 6) & 63); out[index++] = 0x80 | (cp & 63);
+  }
+  return index;
+}
+
+ScrBytes *scr_buffer_transcode(const ScrDyn *source, const ScrDyn *from, const ScrDyn *to) {
+  if (source->kind != SCR_DYN_BYTES || source->v.bytes->elem != SCR_BYTES_U8 || source->v.bytes->is_data_view) {
+    scr_dyn_arg_type_fail("source", "an instance of Buffer or Uint8Array", source);
+    return NULL;
+  }
+  const ScrBytes *input = source->v.bytes;
+  size_t len = input->len;
+  if (!len) { ScrBytes *empty = scr_bytes_alloc(SCR_BYTES_U8, 0); empty->is_buffer = true; return empty; }
+  int from_encoding = scr_transcode_encoding(from), to_encoding = scr_transcode_encoding(to);
+  if (from_encoding < 0 || to_encoding < 0) return scr_transcode_error(false);
+  if (len > (SIZE_MAX - 4) / 4) scr_bytes_oom();
+  ScrBytes *result = scr_bytes_alloc(SCR_BYTES_U8, len * 4 + 4);
+  result->is_buffer = true;
+  size_t written = 0;
+  if (from_encoding == SCR_TC_UTF8) {
+    if (to_encoding == SCR_TC_UTF16 && !scr_buffer_utf8_valid(input->data, len)) {
+      scr_bytes_release(result); return scr_transcode_error(true);
+    }
+    ScrStr *text = scr_str_from_utf8_lossy(input->data, len);
+    for (size_t i = 0; i < text->len;) {
+      uint32_t cp = scr_bytes_next_cp((const uint8_t *)text->data, &i);
+      written = scr_transcode_put(result->data, written, cp, to_encoding);
+    }
+    scr_str_release(text);
+  } else if (from_encoding == SCR_TC_UTF16) {
+    size_t end = to_encoding == SCR_TC_UTF16 ? len : len & ~(size_t)1;
+    if (to_encoding == SCR_TC_UTF8 && end == 0) { scr_bytes_release(result); return scr_transcode_error(true); }
+    for (size_t i = 0; i < end;) {
+      uint32_t cp = 0xfffd;
+      bool invalid = false;
+      if (i + 1 < end) {
+        cp = input->data[i] | ((uint32_t)input->data[i + 1] << 8);
+        i += 2;
+        if (cp >= 0xd800 && cp <= 0xdbff) {
+          uint32_t next = i + 1 < end ? input->data[i] | ((uint32_t)input->data[i + 1] << 8) : 0;
+          if (next >= 0xdc00 && next <= 0xdfff) { cp = 0x10000 + ((cp - 0xd800) << 10) + next - 0xdc00; i += 2; }
+          else { cp = 0xfffd; invalid = true; }
+        } else if (cp >= 0xdc00 && cp <= 0xdfff) { cp = 0xfffd; invalid = true; }
+      } else { i++; invalid = true; }
+      if (invalid && to_encoding == SCR_TC_UTF8) { scr_bytes_release(result); return scr_transcode_error(true); }
+      written = scr_transcode_put(result->data, written, cp, to_encoding);
+    }
+  } else {
+    for (size_t i = 0; i < len; i++) {
+      uint32_t cp = input->data[i];
+      if (from_encoding == SCR_TC_ASCII && cp > 0x7f && to_encoding != SCR_TC_UTF16) cp = 0xfffd;
+      written = scr_transcode_put(result->data, written, cp, to_encoding);
+    }
+  }
+  result->len = written;
+  return result;
 }
 
 static bool scr_enc_is(const ScrStr *enc, const char *name) {

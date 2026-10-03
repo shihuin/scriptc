@@ -1581,6 +1581,14 @@ function lowerFsSyncBufferWindow(
     loc: SrcLoc,): IrExpr {
     const name = expr.expression.getText();
     if (bi.module === "process" && bi.member === "loadEnvFile") return lowerProcessLoadEnvFile(lowerer, expr);
+    if (bi.module === "buffer" && ["isAscii", "isUtf8", "transcode"].includes(bi.member)) {
+      if (expr.arguments.some(ts.isSpreadElement)) lowerer.noLowering("buffer encoding call with spread arguments", expr);
+      const arity = bi.member === "transcode" ? 3 : 1;
+      const args = Array.from({ length: arity }, (_, index) => expr.arguments[index]
+        ? lowerer.lowerExprExpecting(stripTypeCasts(expr.arguments[index]!), DYN) : dynUndefinedExpr(loc));
+      if (expr.arguments.length > arity) lowerer.noLowering("buffer encoding call with extra arguments", expr);
+      return { kind: "libCall", fn: fn.fn, args, type: fn.result, loc };
+    }
     if (fn.fn === "fs.callbackCall" && bi.member !== "rename") {
       if (expr.arguments.some(ts.isSpreadElement)) lowerer.noLowering("filesystem callback call with spread arguments", expr);
       const args: IrExpr = { kind: "dynArrLit", elems: expr.arguments.map((arg) => lowerer.lowerExprExpecting(arg, DYN)), type: DYN, loc };
@@ -6471,6 +6479,20 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
    * chain (and its fences) keeps going. */
   export function lowerBuiltinExtraProperty(lowerer: Lowerer, expr: ts.PropertyAccessExpression): IrExpr | null {
     if (expr.questionDotToken && !lowerer.chainHandled.has(expr)) return null;
+    const codec = storedTextCodecClassOf(lowerer, expr.expression);
+    if (codec && lowerer.isStdlibMember(expr) && ["encoding", "fatal", "ignoreBOM"].includes(expr.name.text)) {
+      const receiver = lowerer.lowerExpr(expr.expression);
+      if (receiver.type.kind !== "record") lowerer.badType(expr.expression, lowerer.typeOf(expr.expression));
+      const loc = locOf(expr);
+      if (codec === "TextEncoder" && expr.name.text === "encoding") {
+        return { kind: "seqExpr", stmts: [{ kind: "exprStmt", expr: receiver, loc }], result: strLit("utf-8", loc), type: STRING, loc };
+      }
+      if (codec === "TextDecoder") {
+        const field = expr.name.text === "encoding" ? "%TextDecoder" : `%${expr.name.text}`;
+        const value: IrExpr = { kind: "recordGet", obj: receiver, shapeId: receiver.type.shapeId, field, type: expr.name.text === "encoding" ? F64 : BOOL, loc };
+        return expr.name.text === "encoding" ? { kind: "libCall", fn: "text.decoderName", args: [value], type: STRING, loc } : value;
+      }
+    }
     // decoder.encoding on a StringDecoder-typed receiver: the record's
     // hidden canonical-name field (construction folded the aliases —
     // exactly what Node's normalized `.encoding` answers).
@@ -6480,6 +6502,15 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
       return { kind: "recordGet", obj: receiver, shapeId: receiver.type.shapeId, field: "%enc", type: STRING, loc: locOf(expr) };
     }
     const kind = lowerer.mapTypeOf(lowerer.typeOf(expr.expression))?.kind;
+    if (kind === "record" && ["read", "written"].includes(expr.name.text) && lowerer.isStdlibMember(expr)) {
+      const receiver = lowerer.lowerExpr(expr.expression);
+      if (receiver.type.kind === "record") {
+        const fields = lowerer.shapes.get(receiver.type.shapeId)?.fields;
+        if (fields?.length === 2 && fields.every((field) => ["read", "written"].includes(field.name) && field.type.kind === "f64")) {
+          return { kind: "recordGet", obj: receiver, shapeId: receiver.type.shapeId, field: expr.name.text, type: F64, loc: locOf(expr) };
+        }
+      }
+    }
     if (kind !== "stats" && kind !== "fileHandle" && kind !== "spawnRes" && kind !== "child" && kind !== "childWriter") return null;
     if (kind === "child" ? !isChildSurfaceMember(lowerer, expr) : !lowerer.isStdlibMember(expr)) return null;
     const name = expr.name.text;
@@ -9163,6 +9194,16 @@ function lowerStoredTextCodecCall(lowerer: Lowerer, call: ts.CallExpression, acc
     access: ts.PropertyAccessExpression,): IrExpr | null {
     if (call.questionDotToken || access.questionDotToken) return null;
     const member = access.name.text;
+    if (member === "encodeInto" && storedTextCodecClassOf(lowerer, access.expression) === "TextEncoder" && lowerer.isStdlibMember(access)) {
+      if (call.arguments.length !== 2 || call.arguments.some(ts.isSpreadElement)) lowerer.noLowering("TextEncoder.encodeInto with this argument shape", call);
+      const loc = locOf(call);
+      const receiver = lowerer.lowerExpr(access.expression);
+      const result: IrExpr = { kind: "libCall", fn: "text.encodeInto", args: call.arguments.map((arg) => lowerer.lowerExprExpecting(stripTypeCasts(arg), DYN)), type: DYN, loc };
+      const type = lowerer.mapTypeOf(lowerer.typeOf(call));
+      if (!type) lowerer.badType(call, lowerer.typeOf(call));
+      const checked = lowerer.coerceInto(call, result, type);
+      return { kind: "seqExpr", stmts: [{ kind: "exprStmt", expr: receiver, loc }], result: checked, type, loc };
+    }
     if (member !== "decode" && member !== "encode") return null;
     const info = directTextCodecCtorOf(lowerer, access.expression);
     if (info === null) return lowerStoredTextCodecCall(lowerer, call, access);

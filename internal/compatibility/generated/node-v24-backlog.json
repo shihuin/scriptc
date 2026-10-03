@@ -8,14 +8,14 @@
     "tiers": {
       "static": {
         "replace-refusal": 43,
-        "verify-gap": 2524,
-        "audit-partial": 645,
+        "verify-gap": 2516,
+        "audit-partial": 653,
         "classify": 2,
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 810,
-        "verify-gap": 2228,
+        "audit-partial": 815,
+        "verify-gap": 2223,
         "replace-refusal": 112,
         "implement": 218
       }
@@ -2553,21 +2553,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:buffer",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:buffer.buffer.isAscii",
+          "tests": [
+            "tests/corpus/node24-buffer-encoding.ts",
+            "tests/corpus/node24-buffer-encoding-errors.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
           "status": "partial",
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:buffer.isAscii",
+          "source": "island-feature:buffer.buffer.isAscii",
           "tests": [
-            "tests/fixtures/npm/cases/buffer-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
           ]
         }
       }
@@ -2588,21 +2592,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:buffer",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:buffer.buffer.isUtf8",
+          "tests": [
+            "tests/corpus/node24-buffer-encoding.ts",
+            "tests/corpus/node24-buffer-encoding-errors.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
           "status": "partial",
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:buffer.isUtf8",
+          "source": "island-feature:buffer.buffer.isUtf8",
           "tests": [
-            "tests/fixtures/npm/cases/buffer-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
           ]
         }
       }
@@ -2658,21 +2666,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:buffer",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:buffer.buffer.transcode",
+          "tests": [
+            "tests/corpus/node24-buffer-encoding.ts",
+            "tests/corpus/node24-buffer-encoding-errors.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
           "status": "partial",
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:buffer.transcode",
+          "source": "island-feature:buffer.buffer.transcode",
           "tests": [
-            "tests/fixtures/npm/cases/buffer-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
           ]
         }
       }
@@ -94421,20 +94433,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:util.encoding",
+          "tests": [
+            "tests/corpus/node24-text-codec-properties.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:util.encoding",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+          ]
         }
       }
     },
@@ -94454,20 +94471,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:util.fatal",
+          "tests": [
+            "tests/corpus/node24-text-codec-properties.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:util.fatal",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+          ]
         }
       }
     },
@@ -94487,20 +94509,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:util.ignoreBOM",
+          "tests": [
+            "tests/corpus/node24-text-codec-properties.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:util.ignoreBOM",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+          ]
         }
       }
     },
@@ -94598,20 +94625,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:util.textEncoder.encodeInto",
+          "tests": [
+            "tests/corpus/node24-text-encode-into.ts",
+            "tests/corpus/node24-text-codec-properties.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:util.textEncoder.encodeInto",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+          ]
         }
       }
     },
@@ -94631,20 +94664,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:util.encoding",
+          "tests": [
+            "tests/corpus/node24-text-encode-into.ts",
+            "tests/corpus/node24-text-codec-properties.ts",
+            "tests/fixtures/node-types/text-encoding.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:util.encoding",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+          ]
         }
       }
     },

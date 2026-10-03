@@ -9,6 +9,7 @@ const encodings = [
   "windows-1253", "windows-1254", "windows-1255", "windows-1256", "windows-1257",
   "windows-1258", "x-mac-cyrillic", "x-user-defined", "utf-16le", "utf-16be",
   "gb18030", "big5", "euc-jp", "iso-2022-jp", "shift_jis", "euc-kr",
+  "iso-8859-8-i", "gbk",
 ];
 
 test("static encoding IDs retain the native decoder table order", () => {
@@ -22,7 +23,7 @@ test("static encoding IDs retain the native decoder table order", () => {
 });
 
 test("Node aliases select the same encoding families", () => {
-  for (const label of ["latin1", "ascii", "cp1252", "csisolatin2", "ISO_8859-6:1987", "koi8", "cp866", "windows-31j", "ms932", "ks_c_5601-1987", "utf-16", "unicodefffe", "big5-hkscs", "cseucpkdfmtjapanese"]) {
+  for (const label of ["latin1", "ascii", "cp1252", "csisolatin2", "ISO_8859-6:1987", "koi8", "cp866", "windows-31j", "ms932", "ks_c_5601-1987", "utf-16", "unicodefffe", "big5-hkscs", "cseucpkdfmtjapanese", "logical", "visual", "chinese", "gb2312"]) {
     const parsed = staticTextDecoderEncoding(label);
     expect(parsed?.kind, label).toBe("legacy");
     if (parsed?.kind === "legacy") expect(encodings[parsed.id], label).toBe(new TextDecoder(label).encoding);

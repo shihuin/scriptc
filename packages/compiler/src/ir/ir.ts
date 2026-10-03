@@ -4785,6 +4785,11 @@ export type IrLibFn =
    * (+1) string; never throws. */
   | "text.decodeLegacy"
   | "text.decoderEncoding"
+  | "text.decoderName"
+  | "text.encodeInto"
+  | "buffer.isAscii"
+  | "buffer.isUtf8"
+  | "buffer.transcode"
   /** The wider sync fs slice (scr_lib.c), all throwing catchably with
    * Node's errno message shapes and `.code` stamped like the rest of
    * sync fs. unlink/chmod/chown wrap the syscalls 1:1 (Node reports the
@@ -7430,6 +7435,10 @@ export function moduleLibNondeterministicSurface(mod: IrModule): string | null {
  * seed on `dynCheck` and `awaitExpr` nodes, which throw on validation
  * failure / promise rejection). */
 export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
+  "text.encodeInto",
+  "buffer.isAscii",
+  "buffer.isUtf8",
+  "buffer.transcode",
   "cp.spawnDynamic",
   "child.onDyn",
   "text.decoderEncoding",

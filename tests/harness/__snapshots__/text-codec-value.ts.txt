@@ -5,15 +5,6 @@ text-codec-value.ts:2:13 - error SC1090: console.log of 'TextEncoder' values (Te
     |             ^~~~~~~
   3 | 
 
-text-codec-value.ts:10:1 - error SC2020: 'TextEncoder.encodeInto' is part of the standard library types but has no scriptc lowering yet
-
-   9 | new TextDecoder("utf-8", { fatal: true });
-  10 | encoder.encodeInto("hello", new Uint8Array(10));
-     | ^~~~~~~~~~~~~~~~~~
-  11 | const forged = JSON.parse("{}") as TextDecoder;
-
-  hint: TextEncoder instances can be stored, passed, and captured; encode(string) and encode() compile, while encodeInto and other members have no static lowering
-
 text-codec-value.ts:17:5 - error SC2020: 'uninitialized lexical codec bindings' is part of the standard library types but has no scriptc lowering yet
 
   16 | var varEncoder = new TextEncoder();

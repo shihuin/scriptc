@@ -1682,6 +1682,16 @@ function mapTypeInner(type: ts.Type, ctx: TypeMapperCtx): IrType | null {
   ) {
     return F64;
   }
+  // Node names this result; the ambient WHATWG declaration uses a type literal.
+  const encodeResult = psym && checker.declarationsOf(psym).some((decl) => {
+    if (!ctx.isStdlibFile(decl.getSourceFile())) return false;
+    if (ts.isInterfaceDeclaration(decl) && decl.name.text === "EncodeIntoResult") return true;
+    const parent = decl.parent;
+    return ts.isTypeLiteralNode(decl) && parent?.kind === ts.SyntaxKind.MethodSignature &&
+      parent.name && ts.isIdentifier(parent.name) && parent.name.text === "encodeInto" &&
+      parent.parent && ts.isInterfaceDeclaration(parent.parent) && parent.parent.name.text === "TextEncoder";
+  });
+  if (encodeResult) return { kind: "record", shapeId: ctx.shapes.intern([{ name: "read", type: F64 }, { name: "written", type: F64 }]) };
   // WHATWG codec instances have ordinary reference identity and ownership.
   // Their private encoding slot is omitted from enumeration and JSON.
   if (

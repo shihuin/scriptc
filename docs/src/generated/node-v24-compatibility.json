@@ -146,9 +146,9 @@
       "apiEntries": 98,
       "static": {
         "supported": 8,
-        "partial": 1,
+        "partial": 4,
         "refused": 0,
-        "not-implemented": 89,
+        "not-implemented": 86,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -1202,18 +1202,18 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 10,
+        "partial": 15,
         "refused": 0,
-        "not-implemented": 95,
+        "not-implemented": 90,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 68,
+        "partial": 73,
         "refused": 0,
-        "not-implemented": 37,
+        "not-implemented": 32,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -3479,13 +3479,13 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.",
+        "verification": "test-backed"
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.",
         "verification": "test-backed"
       }
     },
@@ -3507,13 +3507,13 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.",
+        "verification": "test-backed"
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.",
         "verification": "test-backed"
       }
     },
@@ -3563,13 +3563,13 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Converts Buffer and Uint8Array inputs among ASCII, Latin-1, UTF-8, and UTF-16LE, including encoding aliases and conversion errors.",
+        "verification": "test-backed"
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Converts Buffer and Uint8Array inputs among ASCII, Latin-1, UTF-8, and UTF-16LE, including encoding aliases and conversion errors.",
         "verification": "test-backed"
       }
     },
@@ -84646,14 +84646,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose the canonical encoding and decoder flags.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose UTF-8 and decoder flags; other decoder encodings remain unsupported in the island.",
+        "verification": "test-backed"
       }
     },
     {
@@ -84674,14 +84674,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose the canonical encoding and decoder flags.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose UTF-8 and decoder flags; other decoder encodings remain unsupported in the island.",
+        "verification": "test-backed"
       }
     },
     {
@@ -84702,14 +84702,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose the canonical encoding and decoder flags.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose UTF-8 and decoder flags; other decoder encodings remain unsupported in the island.",
+        "verification": "test-backed"
       }
     },
     {
@@ -84786,14 +84786,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Writes complete UTF-8 characters into Uint8Array or Buffer views and reports UTF-16 units read and bytes written.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Writes complete UTF-8 characters into island-owned Uint8Array or Buffer views; byte arrays received from native code are copied.",
+        "verification": "test-backed"
       }
     },
     {
@@ -84814,14 +84814,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose the canonical encoding and decoder flags.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Codec properties expose UTF-8 and decoder flags; other decoder encodings remain unsupported in the island.",
+        "verification": "test-backed"
       }
     },
     {

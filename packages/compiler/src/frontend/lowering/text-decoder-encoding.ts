@@ -60,6 +60,9 @@ const TEXT_DECODER_LEGACY_LABELS: Record<string, number | undefined> = (() => {
   add(33, ["csiso2022jp", "iso-2022-jp"]);
   add(34, ["csshiftjis", "ms932", "ms_kanji", "shift-jis", "shift_jis", "sjis", "windows-31j", "x-sjis"]);
   add(35, ["cseuckr", "csksc56011987", "euc-kr", "iso-ir-149", "korean", "ks_c_5601-1987", "ks_c_5601-1989", "ksc5601", "ksc_5601", "windows-949"]);
+  // These names share decoders, but their observable encoding properties differ.
+  add(36, ["csiso88598i", "iso-8859-8-i", "logical"]);
+  add(37, ["chinese", "csgb2312", "csiso58gb231280", "gb2312", "gb_2312", "gb_2312-80", "gbk", "iso-ir-58", "x-gbk"]);
   return labels;
 })();
 

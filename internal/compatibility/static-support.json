@@ -100,6 +100,9 @@
     "stdlib.abort": ["tests/harness/fetch-conformance.test.ts"]
   },
   "features": [
+    { "chapter": "buffer", "symbols": ["buffer.isAscii", "buffer.isUtf8", "buffer.transcode"], "status": "partial", "evidence": ["tests/corpus/node24-buffer-encoding.ts", "tests/corpus/node24-buffer-encoding-errors.ts", "tests/fixtures/node-types/text-encoding.ts"] },
+    { "chapter": "util", "parent": "Class: `util.TextEncoder`", "signatures": ["`textEncoder.encodeInto(src, dest)`", "`encoding` Type: {string}"], "status": "partial", "evidence": ["tests/corpus/node24-text-encode-into.ts", "tests/corpus/node24-text-codec-properties.ts", "tests/fixtures/node-types/text-encoding.ts"] },
+    { "chapter": "util", "parent": "Class: `util.TextDecoder`", "signatures": ["`encoding` Type: {string}", "`fatal` Type: {boolean}", "`ignoreBOM` Type: {boolean}"], "status": "partial", "evidence": ["tests/corpus/node24-text-codec-properties.ts", "tests/fixtures/node-types/text-encoding.ts"] },
     { "chapter": "util", "symbols": ["util.parseEnv"], "status": "partial", "evidence": ["tests/corpus/node24-env-parse.ts", "tests/corpus/node24-env-parse-errors.ts", "tests/corpus/node24-env-imports.cjs", "tests/fixtures/node-types/env-files.ts", "tests/harness/project-config.test.ts"] },
     { "chapter": "process", "symbols": ["process.loadEnvFile"], "status": "partial", "evidence": ["tests/corpus/node24-env-files.ts", "tests/corpus/node24-env-files-errors.ts", "tests/corpus/node24-env-imports.cjs", "tests/fixtures/node-types/env-files.ts", "tests/harness/project-config.test.ts"] },
     { "chapter": "fs", "symbols": ["fs.readv", "fs.writev", "fs.fdatasync", "fs.fchmod", "fs.ftruncate"], "status": "partial", "evidence": ["tests/corpus/3137-fs-vector-callbacks.cjs"] },

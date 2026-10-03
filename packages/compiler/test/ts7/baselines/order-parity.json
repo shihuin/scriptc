@@ -13342,6 +13342,42 @@
     "<repo>/tests/fixtures/node-types/env-files.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/node24-buffer-encoding-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-buffer-encoding-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-buffer-encoding.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-buffer-encoding.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-codec-properties.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-codec-properties.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-encode-into.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-encode-into.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/text-encoding.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/text-encoding.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+   ],
+   "diags": []
   }
  }
 }

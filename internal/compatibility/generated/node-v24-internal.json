@@ -99,9 +99,9 @@
       "apiEntries": 98,
       "static": {
         "supported": 8,
-        "partial": 1,
+        "partial": 4,
         "refused": 0,
-        "not-implemented": 89,
+        "not-implemented": 86,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -1323,18 +1323,18 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 10,
+        "partial": 15,
         "refused": 0,
-        "not-implemented": 95,
+        "not-implemented": 90,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 68,
+        "partial": 73,
         "refused": 0,
-        "not-implemented": 37,
+        "not-implemented": 32,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -4001,14 +4001,18 @@
         "evidence": "derived:descendants",
         "tests": [
           "tests/corpus/2902-bigint-bytes.ts",
-          "tests/corpus/2904-bigint-errors.ts"
+          "tests/corpus/2904-bigint-errors.ts",
+          "tests/corpus/node24-buffer-encoding-errors.ts",
+          "tests/corpus/node24-buffer-encoding.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/buffer-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -4337,14 +4341,19 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:buffer"
+        "status": "partial",
+        "evidence": "compiler-feature:buffer.buffer.isAscii",
+        "tests": [
+          "tests/corpus/node24-buffer-encoding.ts",
+          "tests/corpus/node24-buffer-encoding-errors.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:buffer.isAscii",
+        "evidence": "island-feature:buffer.buffer.isAscii",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -4367,14 +4376,19 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:buffer"
+        "status": "partial",
+        "evidence": "compiler-feature:buffer.buffer.isUtf8",
+        "tests": [
+          "tests/corpus/node24-buffer-encoding.ts",
+          "tests/corpus/node24-buffer-encoding-errors.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:buffer.isUtf8",
+        "evidence": "island-feature:buffer.buffer.isUtf8",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -4427,14 +4441,19 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:buffer"
+        "status": "partial",
+        "evidence": "compiler-feature:buffer.buffer.transcode",
+        "tests": [
+          "tests/corpus/node24-buffer-encoding.ts",
+          "tests/corpus/node24-buffer-encoding-errors.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:buffer.transcode",
+        "evidence": "island-feature:buffer.buffer.transcode",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -111000,9 +111019,12 @@
           "tests/corpus/node24-env-imports.cjs",
           "tests/corpus/node24-env-parse-errors.ts",
           "tests/corpus/node24-env-parse.ts",
+          "tests/corpus/node24-text-codec-properties.ts",
+          "tests/corpus/node24-text-encode-into.ts",
           "tests/corpus/text-codec-values/main.ts",
           "tests/fixtures/node-types/env-files.ts",
           "tests/fixtures/node-types/text-codecs.mts",
+          "tests/fixtures/node-types/text-encoding.ts",
           "tests/harness/project-config.test.ts"
         ]
       },
@@ -111011,6 +111033,7 @@
         "evidence": "derived:descendants",
         "tests": [
           "tests/fixtures/npm/cases/node24-env/main.ts",
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts",
           "tests/fixtures/npm/cases/util-shims/main.ts"
         ]
       },
@@ -111730,12 +111753,19 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.encoding",
+        "tests": [
+          "tests/corpus/node24-text-codec-properties.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.encoding",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111757,12 +111787,19 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.fatal",
+        "tests": [
+          "tests/corpus/node24-text-codec-properties.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.fatal",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111784,12 +111821,19 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.ignoreBOM",
+        "tests": [
+          "tests/corpus/node24-text-codec-properties.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.ignoreBOM",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111880,12 +111924,20 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.textEncoder.encodeInto",
+        "tests": [
+          "tests/corpus/node24-text-encode-into.ts",
+          "tests/corpus/node24-text-codec-properties.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.textEncoder.encodeInto",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111907,12 +111959,20 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.encoding",
+        "tests": [
+          "tests/corpus/node24-text-encode-into.ts",
+          "tests/corpus/node24-text-codec-properties.ts",
+          "tests/fixtures/node-types/text-encoding.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.encoding",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },

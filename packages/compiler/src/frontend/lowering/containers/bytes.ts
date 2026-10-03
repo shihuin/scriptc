@@ -951,6 +951,7 @@ function knownBufferProducer(lowerer: Lowerer, source: ts.Expression, seen = new
       ? lowerer.builtinMemberOf(callee)
       : null;
   if (bi?.module === "crypto" && (bi.member === "randomBytes" || bi.member === "pbkdf2Sync" || bi.member === "scryptSync")) return true;
+  if (bi?.module === "buffer" && bi.member === "transcode") return true;
   if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== "digest" || node.arguments.length !== 0) return false;
   const type = lowerer.mapTypeOf(lowerer.typeOf(callee.expression));
   return type?.kind === "cryptoHash" || type?.kind === "cryptoHmac";

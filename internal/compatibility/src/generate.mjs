@@ -598,6 +598,18 @@ function publicDetail(tier) {
   if (source.startsWith("surface-manifest:")) return "Implemented for the call shapes accepted by the compiler lowering.";
   if (source.startsWith("compiler-dedicated:")) return "Implemented by a dedicated static compiler/runtime path.";
   if (source.startsWith("compiler-feature:")) {
+    if (/^compiler-feature:buffer\.buffer\.(?:isAscii|isUtf8)$/.test(source)) {
+      return "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.";
+    }
+    if (source === "compiler-feature:buffer.buffer.transcode") {
+      return "Converts Buffer and Uint8Array inputs among ASCII, Latin-1, UTF-8, and UTF-16LE, including encoding aliases and conversion errors.";
+    }
+    if (source === "compiler-feature:util.textEncoder.encodeInto") {
+      return "Writes complete UTF-8 characters into Uint8Array or Buffer views and reports UTF-16 units read and bytes written.";
+    }
+    if (/^compiler-feature:util\.(?:encoding|fatal|ignoreBOM)$/.test(source)) {
+      return "Codec properties expose the canonical encoding and decoder flags.";
+    }
     if (/^compiler-feature:process\.process\.hrtime(?:\.bigint)?$/.test(source)) {
       return "Native monotonic clock supports tuple and bigint results, including stored JavaScript callable values.";
     }
@@ -666,6 +678,18 @@ function publicDetail(tier) {
     return "No dynamic-island implementation exists for this Node API family yet.";
   }
   if (source.startsWith("island-feature:")) {
+    if (/^island-feature:buffer\.buffer\.(?:isAscii|isUtf8)$/.test(source)) {
+      return "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.";
+    }
+    if (source === "island-feature:buffer.buffer.transcode") {
+      return "Converts Buffer and Uint8Array inputs among ASCII, Latin-1, UTF-8, and UTF-16LE, including encoding aliases and conversion errors.";
+    }
+    if (source === "island-feature:util.textEncoder.encodeInto") {
+      return "Writes complete UTF-8 characters into island-owned Uint8Array or Buffer views; byte arrays received from native code are copied.";
+    }
+    if (/^island-feature:util\.(?:encoding|fatal|ignoreBOM)$/.test(source)) {
+      return "Codec properties expose UTF-8 and decoder flags; other decoder encodings remain unsupported in the island.";
+    }
     if (tier.status === "not-applicable") return "Node configuration or documentation that does not map to an island runtime API.";
     if (tier.status === "not-implemented") return "Not implemented in the embedded module-loader subset yet.";
     return "Implemented for the documented embedded module-loader subset.";
