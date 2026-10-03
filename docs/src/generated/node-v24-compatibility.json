@@ -842,18 +842,18 @@
       "apiEntries": 119,
       "static": {
         "supported": 0,
-        "partial": 35,
+        "partial": 36,
         "refused": 0,
-        "not-implemented": 84,
+        "not-implemented": 83,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 29,
+        "partial": 31,
         "refused": 0,
-        "not-implemented": 90,
+        "not-implemented": 88,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -1202,18 +1202,18 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 9,
+        "partial": 10,
         "refused": 0,
-        "not-implemented": 96,
+        "not-implemented": 95,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 67,
+        "partial": 68,
         "refused": 0,
-        "not-implemented": 38,
+        "not-implemented": 37,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -65321,9 +65321,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented embedded module-loader subset.",
+        "verification": "test-backed"
       }
     },
     {
@@ -65916,14 +65916,14 @@
       "anchor": "processloadenvfilepath",
       "nodeStability": null,
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented embedded module-loader subset.",
+        "verification": "test-backed"
       }
     },
     {
@@ -85486,14 +85486,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented embedded module-loader subset.",
+        "verification": "test-backed"
       }
     },
     {

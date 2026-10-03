@@ -56,6 +56,7 @@ export const LIB_FN_SYMS: Record<string, string> = {
   "arrayBuffer.viewDV": "scr_array_buffer_view_dv",
 
   "util.parseArgs": "scr_util_parse_args",
+  "util.parseEnv": "scr_util_parse_env",
   "math.maxArr": "scr_math_max_arr",
   "math.minArr": "scr_math_min_arr",
   "math.hypotArr": "scr_math_hypot_arr",
@@ -237,6 +238,7 @@ export const LIB_FN_SYMS: Record<string, string> = {
   "date.toISOString": "scr_date_to_iso",
   "date.toISOStringValue": "scr_date_to_iso",
   "process.chdir": "scr_process_chdir",
+  "process.loadEnvFile": "scr_process_load_env_file",
   "fs.writeFileSync": "scr_fs_write_file",
   "fs.appendFileSync": "scr_fs_append_file",
   "fs.mkdirSync": "scr_fs_mkdir",

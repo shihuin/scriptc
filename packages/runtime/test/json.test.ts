@@ -33,6 +33,9 @@ beforeAll(async () => {
     join(testDir, "../src/scr_union.c"),
     join(testDir, "../src/scr_cycle.c"),
     join(testDir, "../src/scr_lib.c"),
+    join(testDir, "../src/scr_url.c"),
+    join(testDir, "../src/scr_url_params.c"),
+    join(testDir, "../src/scr_path.c"),
     join(testDir, "../src/scr_bytes.c"),
     ...(process.platform === "linux" ? ["-D_GNU_SOURCE", "-lm"] : []),
   ]);

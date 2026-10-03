@@ -1580,6 +1580,7 @@ function lowerFsSyncBufferWindow(
     fn: BuiltinModuleFn,
     loc: SrcLoc,): IrExpr {
     const name = expr.expression.getText();
+    if (bi.module === "process" && bi.member === "loadEnvFile") return lowerProcessLoadEnvFile(lowerer, expr);
     if (fn.fn === "fs.callbackCall" && bi.member !== "rename") {
       if (expr.arguments.some(ts.isSpreadElement)) lowerer.noLowering("filesystem callback call with spread arguments", expr);
       const args: IrExpr = { kind: "dynArrLit", elems: expr.arguments.map((arg) => lowerer.lowerExprExpecting(arg, DYN)), type: DYN, loc };
@@ -8044,6 +8045,19 @@ function lowerProcessIpcSend(lowerer: Lowerer, call: ts.CallExpression): IrExpr 
     return { kind: "libCall", fn: "process.envGet", args: [key], type: lowerer.envValueType(), loc };
   }
 
+  function lowerProcessLoadEnvFile(lowerer: Lowerer, call: ts.CallExpression): IrExpr {
+    if (call.arguments.length > 1 || call.arguments.some(ts.isSpreadElement)) {
+      lowerer.noLowering("process.loadEnvFile with spread or extra arguments", call);
+    }
+    const loc = locOf(call);
+    const path: IrExpr = call.arguments[0] ? lowerer.lowerExprExpecting(call.arguments[0], DYN)
+      : { kind: "dynFrom", value: { kind: "unitLit", unit: "undefined", type: UNDEFINED_T, loc }, type: DYN, loc };
+    const load: IrExpr = { kind: "libCall", fn: "process.loadEnvFile", args: [path], type: VOID, loc };
+    if (ts.isExpressionStatement(call.parent)) return load;
+    return { kind: "seqExpr", stmts: [{ kind: "exprStmt", expr: load, loc }],
+      result: { kind: "dynFrom", value: { kind: "unitLit", unit: "undefined", type: UNDEFINED_T, loc }, type: DYN, loc }, type: DYN, loc };
+  }
+
 /** `process.exit(code)` / `process.cwd()` → libCall. The fallback
    * declaration makes exit's code required; @types/node declares it
    * optional. A bare `process.exit()` uses the current exitCode, or zero
@@ -8060,6 +8074,7 @@ function lowerProcessIpcSend(lowerer: Lowerer, call: ts.CallExpression): IrExpr 
       }
     }
     const directProcessMember = lowerer.stdlibGlobalMember(access, "process");
+    if (directProcessMember === "loadEnvFile") return lowerProcessLoadEnvFile(lowerer, call);
     if (directProcessMember === "hrtime") {
       if (call.arguments.some(ts.isSpreadElement)) lowerer.noLowering("process.hrtime with spread arguments", call);
       const loc = locOf(call);

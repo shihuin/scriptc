@@ -2663,7 +2663,7 @@ static JSValue isl_host_env(JSContext *ctx, JSValueConst this_val, int argc,
   for (size_t i = 0; i + 1 < n; i += 2) {
     ScrStr *k = scr_arr_get_ref(pairs, (double)i);
     ScrStr *v = scr_arr_get_ref(pairs, (double)(i + 1));
-    JS_SetPropertyStr(ctx, obj, k->data, JS_NewStringLen(ctx, v->data, v->len));
+    JS_DefinePropertyValueStr(ctx, obj, k->data, JS_NewStringLen(ctx, v->data, v->len), JS_PROP_C_W_E);
     scr_str_release(k);
     scr_str_release(v);
   }
@@ -2854,6 +2854,92 @@ static ScrStr *isl_arg_str(JSContext *ctx, JSValueConst v) {
   ScrStr *out = scr_str_new(s, len);
   JS_FreeCString(ctx, s);
   return out;
+}
+
+/* Dotenv and environment mutations share the native process environment.
+ * The JS layer validates types before these host calls. */
+static JSValue isl_host_env_get(JSContext *ctx, JSValueConst this_val, int argc,
+                                JSValueConst *argv) {
+  (void)this_val; (void)argc;
+  ScrStr *key = isl_arg_str(ctx, argv[0]);
+  if (!key) return JS_EXCEPTION;
+  ScrStr *value = scr_env_get(key);
+  scr_str_release(key);
+  JSValue result = value ? JS_NewStringLen(ctx, value->data, value->len) : JS_UNDEFINED;
+  scr_str_release(value);
+  return result;
+}
+
+static JSValue isl_host_chdir(JSContext *ctx, JSValueConst this_val, int argc,
+                              JSValueConst *argv) {
+  (void)this_val; (void)argc;
+  ScrStr *directory = isl_arg_str(ctx, argv[0]);
+  if (!directory) return JS_EXCEPTION;
+  scr_process_chdir(directory);
+  scr_str_release(directory);
+  return scr_exc_pending() ? isl_throw_pending(ctx) : JS_UNDEFINED;
+}
+
+static JSValue isl_host_env_set(JSContext *ctx, JSValueConst this_val, int argc,
+                                JSValueConst *argv) {
+  (void)this_val; (void)argc;
+  ScrStr *key = isl_arg_str(ctx, argv[0]);
+  if (!key) return JS_EXCEPTION;
+  ScrStr *value = isl_arg_str(ctx, argv[1]);
+  if (!value) { scr_str_release(key); return JS_EXCEPTION; }
+  scr_env_set(key, value);
+  scr_str_release(key);
+  scr_str_release(value);
+  return JS_TRUE;
+}
+
+static JSValue isl_host_env_delete(JSContext *ctx, JSValueConst this_val, int argc,
+                                   JSValueConst *argv) {
+  (void)this_val; (void)argc;
+  ScrStr *key = isl_arg_str(ctx, argv[0]);
+  if (!key) return JS_EXCEPTION;
+  scr_env_unset(key);
+  scr_str_release(key);
+  return JS_TRUE;
+}
+
+static JSValue isl_host_parse_env(JSContext *ctx, JSValueConst this_val, int argc,
+                                  JSValueConst *argv) {
+  (void)this_val; (void)argc;
+  ScrDyn *content = isl_dyn_from_value(argv[0]);
+  ScrDyn *parsed = scr_util_parse_env(content);
+  scr_dyn_release(content);
+  if (!parsed) return isl_throw_pending(ctx);
+  /* Preserve embedded NUL keys: JS_SetPropertyStr would truncate them. */
+  JSValue result = JS_NewObject(ctx);
+  for (size_t i = 0; i < parsed->v.obj.len; i++) {
+    const ScrDynEntry *entry = &parsed->v.obj.entries[i];
+    JSAtom key = JS_NewAtomLen(ctx, entry->key, entry->key_len);
+    int status = JS_SetProperty(ctx, result, key, isl_from_dyn(entry->value));
+    JS_FreeAtom(ctx, key);
+    if (status < 0) { JS_FreeValue(ctx, result); result = JS_EXCEPTION; break; }
+  }
+  scr_dyn_release(parsed);
+  return result;
+}
+
+static JSValue isl_host_load_env_file(JSContext *ctx, JSValueConst this_val, int argc,
+                                      JSValueConst *argv) {
+  (void)this_val;
+  ScrDyn *path;
+  if (argc > 1 && JS_ToBool(ctx, argv[1])) {
+    size_t len;
+    uint8_t *data = JS_GetUint8Array(ctx, &len, argv[0]);
+    if (!data) return JS_EXCEPTION;
+    ScrBytes *bytes = scr_bytes_new(SCR_BYTES_U8, (double)len);
+    if (len) memcpy(bytes->data, data, len);
+    path = scr_dyn_new_bytes(bytes);
+    path->buffer = argc > 2 && JS_ToBool(ctx, argv[2]);
+    scr_bytes_release(bytes);
+  } else path = isl_dyn_from_value(argc ? argv[0] : JS_UNDEFINED);
+  scr_process_load_env_file(path);
+  scr_dyn_release(path);
+  return scr_exc_pending() ? isl_throw_pending(ctx) : JS_UNDEFINED;
 }
 
 static JSValue isl_host_fs(JSContext *ctx, JSValueConst this_val, int argc,
@@ -7326,6 +7412,17 @@ static const char isl_modules_bootstrap[] =
      * isDeepStrictEqual, stripVTControlCharacters, styleText,
      * parseArgs, toUSVString). The host supplies what JS cannot see:
      * promise state (JS_PromiseState), the pid, and fd writes. */
+    "  const envArgumentError = (name, expected, value) => {\n"
+    "    const type = typeof value;\n"
+    "    let received;\n"
+    "    if (value === null || value === undefined) received = String(value);\n"
+    "    else if (type === 'function') received = 'function ' + value.name;\n"
+    "    else if (type === 'object' && value.constructor && value.constructor.name) received = 'an instance of ' + value.constructor.name;\n"
+    "    else received = type === 'object' ? builtins.util().inspect(value, { depth: -1 }) : 'type ' + type + ' (' + builtins.util().inspect(value) + ')';\n"
+    "    const error = new TypeError('The \"' + name + '\" argument must be ' + expected + '. Received ' + received);\n"
+    "    error.code = 'ERR_INVALID_ARG_TYPE';\n"
+    "    throw error;\n"
+    "  };\n"
     "  builtins.util = memo(() => {\n"
     "function makeUtil(env) {\n"
     "  const inspectCustom = Symbol.for(\"nodejs.util.inspect.custom\");\n"
@@ -7721,7 +7818,7 @@ static const char isl_modules_bootstrap[] =
     "        braces = [\"{\", \"}\"];\n"
     "        formatter = () => [];\n"
     "      } else {\n"
-    "        if (depth > ctx.depth && ctx.depth !== null) {\n"
+    "        if (keys.length > 0 && depth > ctx.depth && ctx.depth !== null) {\n"
     "          return \"[\" + (ctorName === null ? \"Object: null prototype\" : ctorName) + \"]\";\n"
     "        }\n"
     "        if (protoOf === null) {\n"
@@ -8404,6 +8501,10 @@ static const char isl_modules_bootstrap[] =
     "    format, formatWithOptions, inspect, inherits, promisify, callbackify,\n"
     "    deprecate, debuglog, debug: debuglog, types, isDeepStrictEqual,\n"
     "    stripVTControlCharacters, styleText, parseArgs, toUSVString, _extend,\n"
+    "    parseEnv: (content) => {\n"
+    "      if (typeof content !== 'string') envArgumentError('content', 'of type string', content);\n"
+    "      return host.parseEnv(toUSVString(content));\n"
+    "    },\n"
     "    TextEncoder: globalThis.TextEncoder, TextDecoder: globalThis.TextDecoder,\n"
     "    isArray: (v) => Array.isArray(v),\n"
     "  };\n"
@@ -9608,9 +9709,54 @@ static const char isl_modules_bootstrap[] =
     "      s.emit = () => false;\n"
     "      return s;\n"
     "    };\n"
+    "    const envPrototype = Object.create(Object.prototype);\n"
+    "    Object.defineProperty(envPrototype, 'constructor', { value: Object, writable: true, configurable: true });\n"
+    "    const envTarget = Object.create(envPrototype);\n"
+    "    const env = new Proxy(envTarget, {\n"
+    "      get: (target, key, receiver) => {\n"
+    "        if (typeof key === 'symbol') return Reflect.get(target, key, receiver);\n"
+    "        const value = host.envGet(key);\n"
+    "        return value === undefined ? Reflect.get(target, key, receiver) : value;\n"
+    "      },\n"
+    "      set: (_, key, value) => {\n"
+    "        if (typeof key === 'symbol' || typeof value === 'symbol') throw new TypeError('Cannot convert a Symbol value to a string');\n"
+    "        return host.envSet(key, String(value));\n"
+    "      },\n"
+    "      deleteProperty: (_, key) => {\n"
+    "        if (typeof key === 'symbol') return true;\n"
+    "        return host.envDelete(key);\n"
+    "      },\n"
+    "      has: (target, key) => typeof key !== 'symbol' && host.envGet(key) !== undefined || Reflect.has(target, key),\n"
+    "      ownKeys: () => Reflect.ownKeys(host.env()),\n"
+    "      getOwnPropertyDescriptor: (_, key) => {\n"
+    "        if (typeof key === 'symbol') return undefined;\n"
+    "        const value = host.envGet(key);\n"
+    "        return value === undefined ? undefined : { value, writable: true, enumerable: true, configurable: true };\n"
+    "      },\n"
+    "      defineProperty: (_, key, descriptor) => {\n"
+    "        if (!descriptor.configurable || !descriptor.writable || !descriptor.enumerable || !('value' in descriptor) || 'get' in descriptor || 'set' in descriptor) {\n"
+    "          const error = new TypeError(\"'process.env' only accepts a configurable, writable, and enumerable data descriptor\");\n"
+    "          error.code = 'ERR_INVALID_OBJECT_DEFINE_PROPERTY';\n"
+    "          throw error;\n"
+    "        }\n"
+    "        if (typeof key === 'symbol' || typeof descriptor.value === 'symbol') throw new TypeError('Cannot convert a Symbol value to a string');\n"
+    "        return host.envSet(key, String(descriptor.value));\n"
+    "      },\n"
+    "      preventExtensions: () => { throw new TypeError('Cannot prevent extensions'); },\n"
+    "    });\n"
+    "    const loadEnvFile = (path) => {\n"
+    "      if (path instanceof globalThis.URL) path = host.urlToPath(path.href);\n"
+    "      const bytes = path instanceof Uint8Array;\n"
+    "      if (path != null && typeof path !== 'string' && !bytes) envArgumentError('path', 'of type string or an instance of Buffer or URL', path);\n"
+    "      return host.loadEnvFile(path, bytes, bytes && builtins.buffer().Buffer.isBuffer(path));\n"
+    "    };\n"
     "    const p = {\n"
     "      argv,\n"
-    "      env: host.env(),\n"
+    "      env, loadEnvFile,\n"
+    "      chdir: (directory) => {\n"
+    "        if (typeof directory !== 'string') envArgumentError('directory', 'of type string', directory);\n"
+    "        return host.chdir(directory);\n"
+    "      },\n"
     "      platform: host.platform(),\n"
     "      execPath: argv[0],\n"
     "      execArgv: [],\n"
@@ -9794,6 +9940,12 @@ static void isl_modules_boot(void) {
   JS_SetPropertyStr(isl_ctx, host, "resolve", JS_NewCFunction(isl_ctx, isl_host_resolve, "resolve", 2));
   JS_SetPropertyStr(isl_ctx, host, "argv", JS_NewCFunction(isl_ctx, isl_host_argv, "argv", 0));
   JS_SetPropertyStr(isl_ctx, host, "env", JS_NewCFunction(isl_ctx, isl_host_env, "env", 0));
+  JS_SetPropertyStr(isl_ctx, host, "chdir", JS_NewCFunction(isl_ctx, isl_host_chdir, "chdir", 1));
+  JS_SetPropertyStr(isl_ctx, host, "envGet", JS_NewCFunction(isl_ctx, isl_host_env_get, "envGet", 1));
+  JS_SetPropertyStr(isl_ctx, host, "envSet", JS_NewCFunction(isl_ctx, isl_host_env_set, "envSet", 2));
+  JS_SetPropertyStr(isl_ctx, host, "envDelete", JS_NewCFunction(isl_ctx, isl_host_env_delete, "envDelete", 1));
+  JS_SetPropertyStr(isl_ctx, host, "parseEnv", JS_NewCFunction(isl_ctx, isl_host_parse_env, "parseEnv", 1));
+  JS_SetPropertyStr(isl_ctx, host, "loadEnvFile", JS_NewCFunction(isl_ctx, isl_host_load_env_file, "loadEnvFile", 2));
   JS_SetPropertyStr(isl_ctx, host, "write", JS_NewCFunction(isl_ctx, isl_host_write, "write", 2));
   JS_SetPropertyStr(isl_ctx, host, "readStdin",
                     JS_NewCFunction(isl_ctx, isl_host_read_stdin, "readStdin", 0));

@@ -17,9 +17,9 @@ static const struct {
      "sep,delimiter,basename,dirname,extname,join,resolve,normalize,relative,isAbsolute,toName"
      "spacedPath,parse,format,posix,win32"},
     {"node:process",
-     "argv,env,platform,execPath,execArgv,version,versions,stdout,stderr,stdin,cwd,exit,nextTi"
-     "ck,hrtime,pid,ppid,title,argv0,release,config,allowedNodeEnvironmentFlags,emitWarning,up"
-     "time,memoryUsage,umask,exitCode,on,once,off,removeListener,emit"},
+     "chdir,loadEnvFile,argv,env,platform,execPath,execArgv,version,versions,stdout,stderr,std"
+     "in,cwd,exit,nextTick,hrtime,pid,ppid,title,argv0,release,config,allowedNodeEnvironmentFl"
+     "ags,emitWarning,uptime,memoryUsage,umask,exitCode,on,once,off,removeListener,emit"},
     {"node:fs",
      "readFileSync,writeFileSync,appendFileSync,existsSync,realpathSync,mkdirSync,rmSync,rmdir"
      "Sync,unlinkSync,readdirSync,statSync,lstatSync,accessSync,mkdtempSync,chmodSync,copyFile"
@@ -141,9 +141,9 @@ static const struct {
      "c,X509Certificate,Certificate,checkPrime,checkPrimeSync,generatePrime,generatePrimeSync,"
      "secureHeapUsed,setEngine,setFips,getFips"},
     {"node:util",
-     "format,formatWithOptions,inspect,inherits,promisify,callbackify,deprecate,debuglog,debug"
-     ",types,isDeepStrictEqual,stripVTControlCharacters,styleText,parseArgs,toUSVString,_exten"
-     "d,TextEncoder,TextDecoder,isArray"},
+     "parseEnv,format,formatWithOptions,inspect,inherits,promisify,callbackify,deprecate,debug"
+     "log,debug,types,isDeepStrictEqual,stripVTControlCharacters,styleText,parseArgs,toUSVStri"
+     "ng,_extend,TextEncoder,TextDecoder,isArray"},
     {"node:util/types",
      "isAnyArrayBuffer,isArrayBufferView,isArgumentsObject,isArrayBuffer,isAsyncFunction,isBig"
      "Int64Array,isBigUint64Array,isBooleanObject,isBoxedPrimitive,isBigIntObject,isCryptoKey,"

@@ -13300,6 +13300,48 @@
     "<repo>/tests/fixtures/node-types/url-factories.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-parse.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-parse.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-parse-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-parse-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-files.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-files.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-files-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-files-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-imports.cjs": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-imports.cjs"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-env/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-env/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/env-files.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/env-files.ts"
+   ],
+   "diags": []
   }
  }
 }

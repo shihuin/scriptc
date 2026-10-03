@@ -915,18 +915,18 @@
       "apiEntries": 119,
       "static": {
         "supported": 0,
-        "partial": 35,
+        "partial": 36,
         "refused": 0,
-        "not-implemented": 84,
+        "not-implemented": 83,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 29,
+        "partial": 31,
         "refused": 0,
-        "not-implemented": 90,
+        "not-implemented": 88,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -1323,18 +1323,18 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 9,
+        "partial": 10,
         "refused": 0,
-        "not-implemented": 96,
+        "not-implemented": 95,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 67,
+        "partial": 68,
         "refused": 0,
-        "not-implemented": 38,
+        "not-implemented": 37,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -37224,7 +37224,8 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/misc-shims/main.ts"
+          "tests/fixtures/npm/cases/misc-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-env/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -37518,7 +37519,8 @@
         "status": "partial",
         "evidence": "island-feature:environment_variables.process.env",
         "tests": [
-          "tests/fixtures/npm/cases/misc-shims/main.ts"
+          "tests/fixtures/npm/cases/misc-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-env/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -87361,6 +87363,9 @@
           "tests/corpus/2944-process-exit-code-wrap.ts",
           "tests/corpus/2946-child-fork-ipc/main.ts",
           "tests/corpus/990-process-basics.ts",
+          "tests/corpus/node24-env-files-errors.ts",
+          "tests/corpus/node24-env-files.ts",
+          "tests/corpus/node24-env-imports.cjs",
           "tests/corpus/process-builtin-values.js",
           "tests/corpus/process-hrtime.js",
           "tests/corpus/process-named-signals.cjs",
@@ -87374,14 +87379,17 @@
           "tests/corpus/stdio-values.mjs",
           "tests/corpus/stdio-write-errors.mjs",
           "tests/corpus/stdio-write-overrides.mjs",
-          "tests/harness/event-loop.test.ts"
+          "tests/fixtures/node-types/env-files.ts",
+          "tests/harness/event-loop.test.ts",
+          "tests/harness/project-config.test.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/misc-shims/main.ts"
+          "tests/fixtures/npm/cases/misc-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-env/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -87882,8 +87890,11 @@
         ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:process"
+        "status": "partial",
+        "evidence": "island-feature:process.process.chdir",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-env/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -88531,12 +88542,22 @@
       "anchor": "processloadenvfilepath",
       "nodeStability": null,
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:process"
+        "status": "partial",
+        "evidence": "compiler-feature:process.process.loadEnvFile",
+        "tests": [
+          "tests/corpus/node24-env-files.ts",
+          "tests/corpus/node24-env-files-errors.ts",
+          "tests/corpus/node24-env-imports.cjs",
+          "tests/fixtures/node-types/env-files.ts",
+          "tests/harness/project-config.test.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:process"
+        "status": "partial",
+        "evidence": "island-feature:process.process.loadEnvFile",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-env/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -110976,7 +110997,11 @@
           "tests/corpus/2440-console-inspect-args.ts",
           "tests/corpus/2912-promisify-fs-readfile.ts",
           "tests/corpus/3133-text-decoder-streaming.ts",
+          "tests/corpus/node24-env-imports.cjs",
+          "tests/corpus/node24-env-parse-errors.ts",
+          "tests/corpus/node24-env-parse.ts",
           "tests/corpus/text-codec-values/main.ts",
+          "tests/fixtures/node-types/env-files.ts",
           "tests/fixtures/node-types/text-codecs.mts",
           "tests/harness/project-config.test.ts"
         ]
@@ -110985,6 +111010,7 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
+          "tests/fixtures/npm/cases/node24-env/main.ts",
           "tests/fixtures/npm/cases/util-shims/main.ts"
         ]
       },
@@ -112687,12 +112713,22 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.util.parseEnv",
+        "tests": [
+          "tests/corpus/node24-env-parse.ts",
+          "tests/corpus/node24-env-parse-errors.ts",
+          "tests/corpus/node24-env-imports.cjs",
+          "tests/fixtures/node-types/env-files.ts",
+          "tests/harness/project-config.test.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.util.parseEnv",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-env/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },

@@ -2821,10 +2821,12 @@ function preflight7(load: LoadResult): {
         // project's explicit or implied synthetic-default permission accepts
         // the spelling. A TS project without that permission keeps the
         // SC1012 fence. The callable module objects (assert, events, test)
-        // stay allowed everywhere.
+        // stay allowed everywhere. The process default is the global process
+        // alias, including when combined with named builtin imports.
         const syntheticDefaultsOn =
           (program.getCompilerOptions() as { allowSyntheticDefaultImports?: boolean }).allowSyntheticDefaultImports === true;
         const defaultOk =
+          spec === "process" || spec === "node:process" ||
           builtinDefaultImportModule(spec) !== null ||
           ((isJsSourceFileName(sf.fileName) || syntheticDefaultsOn) && canonicalBuiltinModule(spec) !== null);
         if (clause.name && !isJson && dep === null && !defaultOk) {

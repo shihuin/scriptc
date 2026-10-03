@@ -2338,6 +2338,18 @@ const char *scr_dyn_specific_type(const ScrDyn *cb, char *detail, size_t cap) {
   case SCR_DYN_BOOL:
     snprintf(detail, cap, "type boolean (%s)", cb->v.b ? "true" : "false");
     break;
+  case SCR_DYN_BIGINT: {
+    ScrStr *value = scr_bigint_inspect(cb->v.bigint);
+    snprintf(detail, cap, "type bigint (%.*s)", (int)value->len, value->data);
+    scr_str_release(value);
+    break;
+  }
+  case SCR_DYN_SYMBOL: {
+    ScrStr *value = cb->v.symbol.render(cb->v.symbol.value);
+    snprintf(detail, cap, "type symbol (%.*s)", (int)value->len, value->data);
+    scr_str_release(value);
+    break;
+  }
   case SCR_DYN_NUM: {
     char num[32];
     size_t n = scr_f64_to_str(cb->v.num, num);

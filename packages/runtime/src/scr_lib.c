@@ -729,6 +729,233 @@ void scr_env_unset(const ScrStr *name) {
 #endif
 }
 
+static ScrStr *scr_fs_read_file_core(ScrStr *path, bool env_file);
+
+/* Node's dotenv parser trims ASCII space/tab/newline and removes every CR,
+ * including CR inside quoted values. Quoted values can span lines; only
+ * double quotes expand backslash-n. Preserve the pinned parser's ordering
+ * of empty-value and export-prefix handling, including its unusual forms. */
+static bool scr_env_space(char c) { return c == ' ' || c == '\t' || c == '\n'; }
+
+static void scr_env_trim(const char *text, size_t *start, size_t *end) {
+  while (*start < *end && scr_env_space(text[*start])) (*start)++;
+  while (*end > *start && scr_env_space(text[*end - 1])) (*end)--;
+}
+
+static void scr_env_store(ScrDyn *out, const char *text, size_t ks, size_t ke,
+                          size_t vs, size_t ve, bool expand) {
+  ScrJsonBuf value;
+  scr_jb_init(&value);
+  for (size_t i = vs; i < ve; i++) {
+    if (expand && text[i] == '\\' && i + 1 < ve && text[i + 1] == 'n') {
+      scr_jb_putc(&value, '\n');
+      i++;
+    } else scr_jb_putc(&value, text[i]);
+  }
+  ScrStr *s = scr_jb_finish(&value);
+  scr_dyn_obj_set(out, text + ks, ke - ks, scr_dyn_new_str(s));
+  scr_str_release(s);
+}
+
+static int scr_env_entry_order(const void *left, const void *right) {
+  const ScrDynEntry *a = *(const ScrDynEntry *const *)left;
+  const ScrDynEntry *b = *(const ScrDynEntry *const *)right;
+  size_t n = a->key_len < b->key_len ? a->key_len : b->key_len;
+  int cmp = memcmp(a->key, b->key, n);
+  return cmp ? cmp : (a->key_len > b->key_len) - (a->key_len < b->key_len);
+}
+
+static ScrDyn *scr_env_parse_content(const ScrStr *input, bool ordinary) {
+  char *text = malloc(input->len + 1);
+  if (!text) scr_trap("scriptc: out of memory\n");
+  size_t end = 0;
+  for (size_t i = 0; i < input->len; i++) if (input->data[i] != '\r') text[end++] = input->data[i];
+  text[end] = '\0';
+  size_t pos = 0;
+  scr_env_trim(text, &pos, &end);
+  ScrDyn *entries = scr_dyn_new_obj_null_proto();
+  while (pos < end) {
+    if (text[pos] == '\n' || text[pos] == '#') {
+      while (pos < end && text[pos] != '\n') pos++;
+      if (pos < end) pos++;
+      continue;
+    }
+    size_t equal = pos;
+    while (equal < end && text[equal] != '=' && text[equal] != '\n') equal++;
+    if (equal == end) break;
+    if (text[equal] == '\n') {
+      pos = equal + 1;
+      scr_env_trim(text, &pos, &end);
+      continue;
+    }
+    size_t ks = pos, ke = equal;
+    scr_env_trim(text, &ks, &ke);
+    pos = equal + 1;
+    if (pos == end || text[pos] == '\n') {
+      scr_env_store(entries, text, ks, ke, pos, pos, false);
+      continue;
+    }
+    scr_env_trim(text, &pos, &end);
+    if (ks == ke) continue;
+    if (ke - ks >= 7 && memcmp(text + ks, "export ", 7) == 0) {
+      ks += 7;
+      scr_env_trim(text, &ks, &ke);
+    }
+    if (pos == end) {
+      scr_env_store(entries, text, ks, ke, pos, pos, false);
+      break;
+    }
+    char quote = text[pos];
+    if (quote == '\'' || quote == '"' || quote == '`') {
+      size_t closing = pos + 1;
+      while (closing < end && text[closing] != quote) closing++;
+      if (closing < end) {
+        scr_env_store(entries, text, ks, ke, pos + 1, closing, quote == '"');
+        pos = closing + 1;
+        while (pos < end && text[pos] != '\n') pos++;
+        if (pos < end) pos++;
+        continue;
+      }
+      size_t newline = pos;
+      while (newline < end && text[newline] != '\n') newline++;
+      scr_env_store(entries, text, ks, ke, pos, newline, false);
+      pos = newline < end ? newline + 1 : end;
+    } else {
+      size_t newline = pos;
+      while (newline < end && text[newline] != '\n') newline++;
+      size_t vs = pos, ve = pos;
+      while (ve < newline && text[ve] != '#') ve++;
+      scr_env_trim(text, &vs, &ve);
+      scr_env_store(entries, text, ks, ke, vs, ve, false);
+      pos = newline < end ? newline + 1 : end;
+    }
+    scr_env_trim(text, &pos, &end);
+  }
+  free(text);
+  /* Node's std::map orders UTF-8 keys before installing object properties.
+   * Ordinary objects ignore string-valued __proto__ assignments; loading
+   * the native environment retains that name as an ordinary variable. */
+  size_t count = entries->v.obj.len;
+  const ScrDynEntry **sorted = count ? malloc(count * sizeof(*sorted)) : NULL;
+  if (count && !sorted) scr_trap("scriptc: out of memory\n");
+  for (size_t i = 0; i < count; i++) sorted[i] = &entries->v.obj.entries[i];
+  if (count > 1) qsort(sorted, count, sizeof(*sorted), scr_env_entry_order);
+  ScrDyn *result = ordinary ? scr_dyn_new_obj() : scr_dyn_new_obj_null_proto();
+  for (size_t i = 0; i < count; i++) {
+    const ScrDynEntry *entry = sorted[i];
+    if (ordinary && entry->key_len == 9 && memcmp(entry->key, "__proto__", 9) == 0) continue;
+    if (!ordinary) {
+      scr_dyn_obj_set(result, entry->key, entry->key_len, scr_dyn_retain(entry->value));
+      continue;
+    }
+    /* Convert sorted entries to JS strings after parsing. */
+    ScrStr *key = scr_str_from_utf8_lossy((const uint8_t *)entry->key, entry->key_len);
+    const ScrStr *raw = entry->value->v.str;
+    ScrStr *value = scr_str_from_utf8_lossy((const uint8_t *)raw->data, raw->len);
+    scr_dyn_obj_set(result, key->data, key->len, scr_dyn_new_str(value));
+    scr_str_release(key);
+    scr_str_release(value);
+  }
+  free(sorted);
+  scr_dyn_release(entries);
+  return result;
+}
+
+ScrDyn *scr_util_parse_env(const ScrDyn *content) {
+  if (content->kind != SCR_DYN_STR) {
+    scr_dyn_arg_type_fail("content", "of type string", content);
+    return NULL;
+  }
+  return scr_env_parse_content(content->v.str, true);
+}
+
+static void scr_env_invalid_path(const ScrDyn *value, const ScrStr *path) {
+  ScrJsonBuf b;
+  scr_jb_init(&b);
+  scr_jb_puts(&b, "The argument 'path' must be a string, Uint8Array, or URL without null bytes. Received ");
+  if (value->kind == SCR_DYN_BYTES) {
+    const ScrBytes *bytes = value->v.bytes;
+    if (value->buffer) {
+      scr_jb_puts(&b, "<Buffer");
+      for (size_t i = 0; i < bytes->len; i++) {
+        char hex[4];
+        snprintf(hex, sizeof hex, " %02x", bytes->data[i]);
+        scr_jb_puts(&b, hex);
+      }
+      scr_jb_putc(&b, '>');
+    } else {
+      char length[48];
+      snprintf(length, sizeof length, "Uint8Array(%zu) [ ", bytes->len);
+      scr_jb_puts(&b, length);
+      for (size_t i = 0; i < bytes->len; i++) {
+        char number[8];
+        snprintf(number, sizeof number, "%s%u", i ? ", " : "", bytes->data[i]);
+        scr_jb_puts(&b, number);
+      }
+      scr_jb_puts(&b, " ]");
+    }
+  } else {
+    char quote = memchr(path->data, '\'', path->len) ? '"' : '\'';
+    scr_jb_putc(&b, quote);
+    for (size_t i = 0; i < path->len; i++) {
+      unsigned char c = (unsigned char)path->data[i];
+      if (c == (unsigned char)quote || c == '\\') { scr_jb_putc(&b, '\\'); scr_jb_putc(&b, (char)c); }
+      else if (c == '\n') scr_jb_puts(&b, "\\n");
+      else if (c == '\r') scr_jb_puts(&b, "\\r");
+      else if (c == '\t') scr_jb_puts(&b, "\\t");
+      else if (c < 0x20 || c == 0x7f) {
+        char escape[5];
+        snprintf(escape, sizeof escape, "\\x%02X", c);
+        scr_jb_puts(&b, escape);
+      } else scr_jb_putc(&b, (char)c);
+    }
+    scr_jb_putc(&b, quote);
+  }
+  ScrStr *message = scr_jb_finish(&b);
+  scr_throw_error_msg_code(SCR_ERR_TYPE, message->data, message->len, "ERR_INVALID_ARG_VALUE");
+  scr_str_release(message);
+}
+
+void scr_process_load_env_file(const ScrDyn *value) {
+  ScrStr *path;
+  if (value->kind == SCR_DYN_UNDEF || value->kind == SCR_DYN_NULL) path = scr_str_new("./.env", 6);
+  else if (value->kind == SCR_DYN_STR) path = scr_str_retain(value->v.str);
+  else if (scr_dyn_native_url_is(value)) path = scr_url_to_path(value->v.handle.ptr);
+  else if (scr_dyn_bytes_is(value, SCR_BYTES_U8)) path = scr_str_new((const char *)value->v.bytes->data, value->v.bytes->len);
+  else {
+    scr_dyn_arg_type_fail("path", "of type string or an instance of Buffer or URL", value);
+    return;
+  }
+  if (!path) return;
+  if (memchr(path->data, 0, path->len)) {
+    scr_env_invalid_path(value, path);
+    scr_str_release(path);
+    return;
+  }
+  ScrStr *content = scr_fs_read_file_core(path, true);
+  scr_str_release(path);
+  if (!content) return;
+  ScrDyn *entries = scr_env_parse_content(content, false);
+  scr_str_release(content);
+  for (size_t i = 0; i < entries->v.obj.len; i++) {
+    const ScrDynEntry *entry = &entries->v.obj.entries[i];
+    /* Node normalizes each raw sorted entry immediately before checking
+     * the environment. Distinct invalid byte keys can normalize alike;
+     * the first absent name wins, rather than the last parsed entry. */
+    ScrStr *key = scr_str_from_utf8_lossy((const uint8_t *)entry->key, entry->key_len);
+    ScrStr *existing = scr_env_get(key);
+    if (!existing) {
+      const ScrStr *raw = entry->value->v.str;
+      ScrStr *value = scr_str_from_utf8_lossy((const uint8_t *)raw->data, raw->len);
+      scr_env_set(key, value);
+      scr_str_release(value);
+    }
+    scr_str_release(existing);
+    scr_str_release(key);
+  }
+  scr_dyn_release(entries);
+}
+
 /* The whole environment as one fresh string[] of alternating
  * [k0, v0, k1, v1, ...] entries in environ order — the raw material of the
  * compiler's process.env snapshot record (insertion order = environ order,
@@ -2057,7 +2284,7 @@ static FILE *scr_fs_fopen(const ScrStr *path, const char *mode) {
 #endif
 }
 
-ScrStr *scr_fs_read_file(ScrStr *path) {
+static ScrStr *scr_fs_read_file_core(ScrStr *path, bool env_file) {
   FILE *f = scr_fs_fopen(path, "rb");
   if (!f) {
     scr_fs_throw(errno, "open", path);
@@ -2085,7 +2312,16 @@ ScrStr *scr_fs_read_file(ScrStr *path) {
     int e = errno;
     fclose(f);
     free(buf);
-    scr_fs_throw(e, "read", path);
+    if (env_file) {
+      ScrJsonBuf b;
+      scr_jb_init(&b);
+      scr_jb_puts(&b, "Contents of '");
+      scr_jb_put_str(&b, path);
+      scr_jb_puts(&b, "' should be a valid string.");
+      ScrStr *message = scr_jb_finish(&b);
+      scr_throw_error_msg_code(SCR_ERR_TYPE, message->data, message->len, "ERR_INVALID_ARG_TYPE");
+      scr_str_release(message);
+    } else scr_fs_throw(e, "read", path);
     return NULL;
   }
   fclose(f);
@@ -2093,6 +2329,11 @@ ScrStr *scr_fs_read_file(ScrStr *path) {
   free(buf);
   return s;
 }
+
+ScrStr *scr_fs_read_file(ScrStr *path) {
+  return scr_fs_read_file_core(path, false);
+}
+
 
 static ScrStr *scr_fs_realpath_common(ScrStr *path, const char *op) {
 #ifdef _WIN32

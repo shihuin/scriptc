@@ -19,6 +19,7 @@ test.each([false, true])("weak metadata releases values when native keys die (au
         "scr_json.test.c", "scr_json.c", "scr_string.c", "scr_array.c", "scr_map.c",
         "scr_exception.c", "scr_error.c", "scr_number.c", "scr_console.c", "scr_closure.c",
         "scr_object.c", "scr_union.c", "scr_cycle.c", "scr_lib.c", "scr_bytes.c", "scr_bigint.c",
+        "scr_url.c", "scr_url_params.c", "scr_path.c",
       ].map((file) => join(src, file)),
       ...(process.platform === "linux" ? ["-D_GNU_SOURCE", "-lm"] : []),
     ]);

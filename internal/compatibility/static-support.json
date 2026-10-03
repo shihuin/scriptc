@@ -100,6 +100,8 @@
     "stdlib.abort": ["tests/harness/fetch-conformance.test.ts"]
   },
   "features": [
+    { "chapter": "util", "symbols": ["util.parseEnv"], "status": "partial", "evidence": ["tests/corpus/node24-env-parse.ts", "tests/corpus/node24-env-parse-errors.ts", "tests/corpus/node24-env-imports.cjs", "tests/fixtures/node-types/env-files.ts", "tests/harness/project-config.test.ts"] },
+    { "chapter": "process", "symbols": ["process.loadEnvFile"], "status": "partial", "evidence": ["tests/corpus/node24-env-files.ts", "tests/corpus/node24-env-files-errors.ts", "tests/corpus/node24-env-imports.cjs", "tests/fixtures/node-types/env-files.ts", "tests/harness/project-config.test.ts"] },
     { "chapter": "fs", "symbols": ["fs.readv", "fs.writev", "fs.fdatasync", "fs.fchmod", "fs.ftruncate"], "status": "partial", "evidence": ["tests/corpus/3137-fs-vector-callbacks.cjs"] },
     { "chapter": "fs", "parent": "Class: `FileHandle`", "symbols": ["fd"], "status": "partial", "evidence": ["tests/corpus/2686-fs-file-handle.ts"] },
     { "chapter": "fs", "symbols": ["FileHandle", "filehandle.fd", "filehandle.close", "filehandle.read", "filehandle.write", "filehandle.readFile", "filehandle.writeFile", "filehandle.appendFile", "filehandle.stat"], "status": "partial", "evidence": ["tests/corpus/2686-fs-file-handle.ts", "tests/corpus/3136-fs-file-handle-options.ts"] },

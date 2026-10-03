@@ -8,14 +8,14 @@
     "tiers": {
       "static": {
         "replace-refusal": 43,
-        "verify-gap": 2526,
-        "audit-partial": 643,
+        "verify-gap": 2524,
+        "audit-partial": 645,
         "classify": 2,
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 807,
-        "verify-gap": 2231,
+        "audit-partial": 810,
+        "verify-gap": 2228,
         "replace-refusal": 112,
         "implement": 218
       }
@@ -18137,7 +18137,8 @@
           "confidence": "high",
           "source": "island-feature:environment_variables.process.env",
           "tests": [
-            "tests/fixtures/npm/cases/misc-shims/main.ts"
+            "tests/fixtures/npm/cases/misc-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-env/main.ts"
           ]
         }
       }
@@ -71236,12 +71237,14 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:process",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:process.process.chdir",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-env/main.ts"
+          ]
         }
       }
     },
@@ -71993,20 +71996,28 @@
       "priority": "normal",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:process",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:process.process.loadEnvFile",
+          "tests": [
+            "tests/corpus/node24-env-files.ts",
+            "tests/corpus/node24-env-files-errors.ts",
+            "tests/corpus/node24-env-imports.cjs",
+            "tests/fixtures/node-types/env-files.ts",
+            "tests/harness/project-config.test.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:process",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:process.process.loadEnvFile",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-env/main.ts"
+          ]
         }
       }
     },
@@ -95446,20 +95457,28 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:util.util.parseEnv",
+          "tests": [
+            "tests/corpus/node24-env-parse.ts",
+            "tests/corpus/node24-env-parse-errors.ts",
+            "tests/corpus/node24-env-imports.cjs",
+            "tests/fixtures/node-types/env-files.ts",
+            "tests/harness/project-config.test.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:util.util.parseEnv",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-env/main.ts"
+          ]
         }
       }
     },

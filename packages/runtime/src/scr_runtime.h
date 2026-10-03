@@ -912,6 +912,12 @@ void scr_qs_parse_into(ScrMap *out, const ScrStr *qs, const ScrStr *sep,
  * Borrows config; returns +1, or NULL with a Node-coded TypeError pending. */
 struct ScrDyn *scr_util_parse_args(const struct ScrDyn *config);
 
+/* Node 24's dotenv grammar, shared by util.parseEnv and process.loadEnvFile.
+ * Arguments are borrowed; parseEnv returns a fresh ordinary object (+1).
+ * Validation and file failures leave a coded exception pending. */
+struct ScrDyn *scr_util_parse_env(const struct ScrDyn *content);
+void scr_process_load_env_file(const struct ScrDyn *path);
+
 /* querystring.stringify — Node's stringify over a borrowed dyn value (the
  * frontend dynFroms the typed record; JS-world dyn values pass straight
  * through). Non-object dyn values answer "" like Node; object keys iterate in

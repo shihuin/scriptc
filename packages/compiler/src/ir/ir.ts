@@ -2570,6 +2570,7 @@ export type IrLibFn =
    * validate their values when leaving that tree. The native parser may
    * throw Node's coded validation/grammar TypeErrors. */
   | "util.parseArgs"
+  | "util.parseEnv"
   /** ES Symbol values (scr_symbol.c — link-gated by moduleUsesSymbol).
    * sym.new: `Symbol(desc)` — a fresh runtime-unique identity (+1) whose
    * one arg is the description string (borrowed); sym.newAnon is the
@@ -3752,6 +3753,7 @@ export type IrLibFn =
   /** chdir(2) — throws Node's fs-shaped error (ENOENT/EACCES/ENOTDIR,
    * syscall "chdir") on failure. */
   | "process.chdir"
+  | "process.loadEnvFile"
   /** process._exiting: true once the exit sequence began (exit listeners
    * running) — the runtime flag scr_run_exit_listeners/process.exit set.
    * Never throws. */
@@ -7762,6 +7764,7 @@ export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
   "date.nativeNew",
   "date.checkedValue",
   "util.parseArgs",
+  "util.parseEnv",
   // decodeURIComponent throws the spec's URIError on bad hex/invalid
   // UTF-8 octets (encodeURIComponent never throws — see the IrLibFn doc).
   "str.decodeUriComponent",
@@ -7847,6 +7850,7 @@ export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
   "dyn.getOwnPropertyDescriptor",
   "dyn.arrayProtoCall",
   "process.chdir",
+  "process.loadEnvFile",
   "fs.realpathSync",
   "fs.realpathNativeSync",
   "fs.readFileSync",

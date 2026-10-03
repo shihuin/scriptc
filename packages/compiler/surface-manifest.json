@@ -1548,6 +1548,13 @@
       "note": "the global performance object and the performance.now.bind(performance) function value reach the same clock"
     },
     {
+      "id": "node-builtin.process",
+      "kind": "node-builtin",
+      "name": "process",
+      "status": "static",
+      "note": "recognized module (bare and node:-prefixed specifiers)"
+    },
+    {
       "id": "node-builtin.process.argv",
       "kind": "node-builtin",
       "name": "process.argv",
@@ -1657,6 +1664,12 @@
       "name": "process.kill",
       "status": "static",
       "note": "the signal-name and signal-number forms are one surface"
+    },
+    {
+      "id": "node-builtin.process.loadEnvFile",
+      "kind": "node-builtin",
+      "name": "process.loadEnvFile",
+      "status": "static"
     },
     {
       "id": "node-builtin.process.pid",
@@ -1918,6 +1931,12 @@
       "id": "node-builtin.util.parseArgs",
       "kind": "node-builtin",
       "name": "util.parseArgs",
+      "status": "static"
+    },
+    {
+      "id": "node-builtin.util.parseEnv",
+      "kind": "node-builtin",
+      "name": "util.parseEnv",
       "status": "static"
     },
     {

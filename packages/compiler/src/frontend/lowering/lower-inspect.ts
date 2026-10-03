@@ -38,7 +38,7 @@ import * as ts from "../ts7/adapter.js";
 import { unsignedHex } from "../../format-integer.js";
 import type { Lowerer } from "./lowerer.js";
 import { isJsSourceFile } from "../program.js";
-import { BOOL, DYN, F64, type IrExpr, type IrStmt, type IrType, RUNTIME_ERROR_CLASSES, STRING, type SrcLoc, canConvertToDyn, canDynCheckTo, recordTextCodecClass, shapeHasAccessorSlots, typeKey } from "../../ir/ir.js";
+import { BOOL, DYN, F64, type IrExpr, type IrStmt, type IrType, RUNTIME_ERROR_CLASSES, STRING, UNDEFINED_T, type SrcLoc, canConvertToDyn, canDynCheckTo, recordTextCodecClass, shapeHasAccessorSlots, typeKey } from "../../ir/ir.js";
 import type { ClassInfo } from "./lower-classes.js";
 import { isSafeToRepeat } from "./expressions/evaluation-safety.js";
 import { boolLit, numLit, strLit, varRef } from "../../ir/build.js";
@@ -1390,6 +1390,20 @@ export function lowerUtilModuleCall(
       return lowerFormatCall(lowerer, expr, loc, true);
     case "parseArgs":
       return lowerParseArgsCall(lowerer, expr, loc);
+    case "parseEnv": {
+      if (expr.arguments.length > 1 || expr.arguments.some(ts.isSpreadElement)) {
+        lowerer.noLowering("util.parseEnv with spread or extra arguments", expr);
+      }
+      const input: IrExpr = expr.arguments[0] ? lowerer.lowerExprExpecting(expr.arguments[0], DYN)
+        : { kind: "dynFrom", value: { kind: "unitLit", unit: "undefined", type: UNDEFINED_T, loc }, type: DYN, loc };
+      const parsed: IrExpr = { kind: "libCall", fn: "util.parseEnv", args: [input], type: DYN, loc };
+      const result = lowerer.mapTypeOf(lowerer.typeOf(expr));
+      if (result && result.kind !== "dyn" && result.kind !== "jsval" &&
+          canDynCheckTo(result, (id) => lowerer.shapes.get(id), (id) => lowerer.unions.get(id))) {
+        return { kind: "dynCheck", value: parsed, type: result, loc };
+      }
+      return parsed;
+    }
     case "getCallSites":
       return lowerGetCallSitesCall(lowerer, expr, loc);
     default:

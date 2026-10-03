@@ -201,6 +201,7 @@ declare var process: {
   umask(mask?: number): number;
   /* chdir(2) — failures throw Node's fs-shaped catchable error. */
   chdir(directory: string): void;
+  loadEnvFile(path?: string | URL | Uint8Array): void;
   /* The extra CLI arguments Node itself consumed (--expose-internals,
    * ...): a compiled binary consumed none, so this is always []. */
   readonly execArgv: string[];
@@ -1882,6 +1883,7 @@ declare module "node:child_process" {
  * the latter resolves the callback's data argument. Other targets and bare
  * promisify values fence per site. */
 declare module "util" {
+  export function parseEnv(content: string): { [key: string]: string | undefined };
   export type TextEncoder = globalThis.TextEncoder;
   export type TextDecoder = globalThis.TextDecoder;
   export var TextEncoder: typeof globalThis.TextEncoder;

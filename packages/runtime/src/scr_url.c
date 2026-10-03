@@ -899,7 +899,7 @@ static int hex_val(char c) {
  * letter otherwise. The public wrappers below select by TARGET. */
 static ScrStr *scr_url_to_path_impl(ScrUrl *u, bool win32) {
   if (!(u->scheme->len == 4 && memcmp(u->scheme->data, "file", 4) == 0)) {
-    scr_throw_error_msg(SCR_ERR_TYPE, "The URL must be of scheme file", 30);
+    scr_throw_error_msg_code(SCR_ERR_TYPE, "The URL must be of scheme file", 30, "ERR_INVALID_URL_SCHEME");
     return NULL;
   }
   const char *p = u->path->data;
@@ -911,8 +911,8 @@ static ScrStr *scr_url_to_path_impl(ScrUrl *u, bool win32) {
       char c1 = p[n + 1];
       int third = (n + 2 < len ? (unsigned char)p[n + 2] : 0) | 0x20;
       if ((c1 == '2' && third == 'f') || (c1 == '5' && third == 'c')) {
-        scr_throw_error_msg(SCR_ERR_TYPE,
-                             "File URL path must not include encoded \\ or / characters", 56);
+        scr_throw_error_msg_code(SCR_ERR_TYPE,
+                             "File URL path must not include encoded \\ or / characters", 56, "ERR_INVALID_FILE_URL_PATH");
         return NULL;
       }
     }
@@ -943,7 +943,7 @@ static ScrStr *scr_url_to_path_impl(ScrUrl *u, bool win32) {
     char drive_sep = plen > 2 ? pp[2] : 0;
     if (letter < 'a' || letter > 'z' || drive_sep != ':') {
       free(out.data);
-      scr_throw_error_msg(SCR_ERR_TYPE, "File URL path must be absolute", 30);
+      scr_throw_error_msg_code(SCR_ERR_TYPE, "File URL path must be absolute", 30, "ERR_INVALID_FILE_URL_PATH");
       return NULL;
     }
     /* pathname.slice(1): the leading backslash drops. */
@@ -965,7 +965,7 @@ static ScrStr *scr_url_to_path_impl(ScrUrl *u, bool win32) {
 #endif
     char msg[96];
     int mlen = snprintf(msg, sizeof msg, "File URL host must be \"localhost\" or empty on %s", plat);
-    scr_throw_error_msg(SCR_ERR_TYPE, msg, (size_t)mlen);
+    scr_throw_error_msg_code(SCR_ERR_TYPE, msg, (size_t)mlen, "ERR_INVALID_FILE_URL_HOST");
     return NULL;
   }
   for (size_t i = 0; i < len; i++) {
@@ -975,8 +975,8 @@ static ScrStr *scr_url_to_path_impl(ScrUrl *u, bool win32) {
       if (hi >= 0 && lo >= 0) {
         unsigned char decoded = (unsigned char)((hi << 4) | lo);
         if (decoded == '/') {
-          scr_throw_error_msg(SCR_ERR_TYPE,
-                               "File URL path must not include encoded / characters", 51);
+          scr_throw_error_msg_code(SCR_ERR_TYPE,
+                               "File URL path must not include encoded / characters", 51, "ERR_INVALID_FILE_URL_PATH");
           return NULL;
         }
         i += 2;

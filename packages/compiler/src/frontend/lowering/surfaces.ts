@@ -886,6 +886,10 @@ export const BUILTIN_MODULE_FNS: Record<string, Record<string, BuiltinModuleFn |
   // call-site-specific result type before this canonical signature is used.
   util: {
     parseArgs: { fn: "util.parseArgs", params: [DYN], result: DYN },
+    parseEnv: { fn: "util.parseEnv", params: [DYN], result: DYN },
+  },
+  process: {
+    loadEnvFile: { fn: "process.loadEnvFile", params: [DYN], result: VOID },
   },
   // node:string_decoder's surface is the StringDecoder CLASS — new/write/
   // end are special-cased (lowerNew + lowerStringDecoderMethodCall); no
