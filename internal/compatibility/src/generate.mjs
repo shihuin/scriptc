@@ -678,6 +678,9 @@ function publicDetail(tier) {
     return "No dynamic-island implementation exists for this Node API family yet.";
   }
   if (source.startsWith("island-feature:")) {
+    if (source.startsWith("island-feature:events.")) {
+      return "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.";
+    }
     if (/^island-feature:util\.util\.(?:promisify|callbackify)$/.test(source)) {
       return "Adapts callbacks and promises with receiver preservation, custom promisify hooks, function metadata, and Node-compatible argument and rejection handling; scheduling follows the island microtask queue.";
     }

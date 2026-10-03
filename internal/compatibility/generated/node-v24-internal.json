@@ -48354,6 +48354,7 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts",
           "tests/fixtures/npm/cases/stream-shims/main.ts"
         ]
       },
@@ -49716,9 +49717,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.addListener",
+        "evidence": "island-feature:events.emitter.addListener",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -49750,9 +49752,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.emit",
+        "evidence": "island-feature:events.emitter.emit",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -49784,9 +49787,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.eventNames",
+        "evidence": "island-feature:events.emitter.eventNames",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -49852,9 +49856,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.listenerCount",
+        "evidence": "island-feature:events.emitter.listenerCount",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -49920,9 +49925,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.off",
+        "evidence": "island-feature:events.emitter.off",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -49954,9 +49960,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.on",
+        "evidence": "island-feature:events.emitter.on",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -49988,9 +49995,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.once",
+        "evidence": "island-feature:events.emitter.once",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50022,9 +50030,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.prependListener",
+        "evidence": "island-feature:events.emitter.prependListener",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50056,9 +50065,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.prependOnceListener",
+        "evidence": "island-feature:events.emitter.prependOnceListener",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50090,9 +50100,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.removeAllListeners",
+        "evidence": "island-feature:events.emitter.removeAllListeners",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50124,9 +50135,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.emitter.removeListener",
+        "evidence": "island-feature:events.emitter.removeListener",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50692,9 +50704,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:events.errorMonitor",
+        "evidence": "island-feature:events.events.errorMonitor",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/stream-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-event-emitter/main.ts"
         ]
       },
       "anchorSource": "exact"

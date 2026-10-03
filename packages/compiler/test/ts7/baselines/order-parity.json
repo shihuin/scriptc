@@ -13414,6 +13414,12 @@
     "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts"
+   ],
+   "diags": []
   }
  }
 }

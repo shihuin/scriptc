@@ -34123,7 +34123,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34151,7 +34151,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34179,7 +34179,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34235,7 +34235,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34291,7 +34291,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34319,7 +34319,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34347,7 +34347,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34375,7 +34375,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34403,7 +34403,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34431,7 +34431,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34459,7 +34459,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -34963,7 +34963,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
