@@ -372,9 +372,9 @@
       },
       "dynamic": {
         "supported": 0,
-        "partial": 14,
+        "partial": 26,
         "refused": 0,
-        "not-implemented": 55,
+        "not-implemented": 43,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -32984,7 +32984,11 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -33071,7 +33075,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.hasSubscribers",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -33104,7 +33112,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.channel",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -33137,7 +33149,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.subscribe",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -33170,7 +33186,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.unsubscribe",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -33203,7 +33223,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.tracingChannel",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -33257,8 +33281,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.start",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -33284,8 +33314,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.end",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -33311,8 +33347,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.asyncStart",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -33338,8 +33380,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.asyncEnd",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -33365,8 +33413,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.error",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -34823,8 +34877,15 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-export:node:diagnostics_channel.Channel",
+        "tests": [
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -34853,7 +34914,11 @@
         "status": "partial",
         "evidence": "island-member:node:diagnostics_channel.channel.publish",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -34883,7 +34948,11 @@
         "status": "partial",
         "evidence": "island-member:node:diagnostics_channel.channel.subscribe",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -34913,7 +34982,11 @@
         "status": "partial",
         "evidence": "island-member:node:diagnostics_channel.channel.unsubscribe",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -34940,8 +35013,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.channel.bindStore",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -34967,8 +35046,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.channel.unbindStore",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -34994,8 +35079,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.channel.runStores",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -35027,7 +35118,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.hasSubscribers",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -35054,8 +35149,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.TracingChannel",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -35081,8 +35182,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.tracingChannel.subscribe",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -35108,8 +35215,14 @@
         "evidence": "compiler-unmatched:diagnostics_channel"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:diagnostics_channel"
+        "status": "partial",
+        "evidence": "island-feature:diagnostics_channel.tracingChannel.unsubscribe",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -35136,9 +35249,12 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:diagnostics_channel.tracingChannel.traceSync",
+        "evidence": "island-feature:diagnostics_channel.tracingChannel.traceSync",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -35166,9 +35282,12 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:diagnostics_channel.tracingChannel.tracePromise",
+        "evidence": "island-feature:diagnostics_channel.tracingChannel.tracePromise",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -35196,9 +35315,12 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:diagnostics_channel.tracingChannel.traceCallback",
+        "evidence": "island-feature:diagnostics_channel.tracingChannel.traceCallback",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -35231,7 +35353,11 @@
         "status": "partial",
         "evidence": "island-export:node:diagnostics_channel.hasSubscribers",
         "tests": [
-          "tests/fixtures/npm/cases/builtin-shims/main.ts"
+          "tests/fixtures/npm/cases/builtin-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts",
+          "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
         ]
       },
       "anchorSource": "ancestor"

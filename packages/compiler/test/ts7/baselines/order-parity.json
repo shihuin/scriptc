@@ -13456,6 +13456,30 @@
     "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-async/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-async/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+   ],
+   "diags": []
   }
  }
 }

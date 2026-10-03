@@ -50,7 +50,7 @@ static const struct {
     {"node:tls",
      "connect,createServer,createSecureContext,TLSSocket,rootCertificates"},
     {"node:diagnostics_channel",
-     "channel,subscribe,unsubscribe,hasSubscribers,tracingChannel"},
+     "channel,subscribe,unsubscribe,hasSubscribers,tracingChannel,Channel"},
     {"node:module",
      "createRequire,builtinModules,isBuiltin,syncBuiltinESMExports,register,findSourceMap"},
     {"node:url",

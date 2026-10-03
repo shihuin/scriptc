@@ -678,6 +678,7 @@ function publicDetail(tier) {
     return "No dynamic-island implementation exists for this Node API family yet.";
   }
   if (source.startsWith("island-feature:")) {
+    if (source.startsWith("island-feature:diagnostics_channel.")) return "Publishes synchronous, promise, and callback tracing lifecycle events with result/error identity, subscriber management, and store bindings. Bound stores follow the embedded engine's synchronous AsyncLocalStorage model and do not propagate across awaits.";
     if (source.startsWith("island-feature:timers.timersPromises.")) return "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.";
     if (source.startsWith("island-feature:timers.")) return "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.";
     if (source === "island-feature:events.events.once") return "Waits for EventEmitter or EventTarget events with AbortSignal cancellation, Node abort errors, and listener cleanup.";
