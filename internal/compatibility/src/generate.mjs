@@ -625,6 +625,12 @@ function publicDetail(tier) {
     if (source === "compiler-feature:url.URL") {
       return "Supports absolute inputs and relative inputs with string or URL bases; setters and some WHATWG parsing behavior remain unsupported.";
     }
+    if (source === "compiler-feature:util.util.getSystemErrorMap") {
+      return "Returns a fresh Map of platform-specific error codes, names, and messages; entry tuples support updates but retain their fixed size.";
+    }
+    if (/^compiler-feature:util\.util\.getSystemError(?:Name|Message)$/.test(source)) {
+      return "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.";
+    }
     if (source === "compiler-feature:url.url.fileURLToPathBuffer") {
       return "Converts file URLs to raw path bytes with POSIX or Windows options, preserving invalid UTF-8 and malformed escapes; internationalized hostnames remain unsupported.";
     }
@@ -704,6 +710,12 @@ function publicDetail(tier) {
     }
     if (source === "island-feature:buffer.buffer.transcode") {
       return "Converts Buffer and Uint8Array inputs among ASCII, Latin-1, UTF-8, and UTF-16LE, including encoding aliases and conversion errors.";
+    }
+    if (source === "island-feature:util.util.getSystemErrorMap") {
+      return "Returns a fresh mutable Map of platform-specific error codes, names, and messages.";
+    }
+    if (/^island-feature:util\.util\.getSystemError(?:Name|Message)$/.test(source)) {
+      return "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.";
     }
     if (source === "island-feature:url.url.fileURLToPathBuffer") {
       return "Converts file URLs to raw path bytes with POSIX or Windows options, preserving invalid UTF-8 and malformed escapes; internationalized hostnames remain unsupported.";

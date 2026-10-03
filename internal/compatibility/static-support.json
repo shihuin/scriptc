@@ -102,6 +102,7 @@
     "stdlib.abort": ["tests/harness/fetch-conformance.test.ts"]
   },
   "features": [
+    { "chapter": "util", "symbols": ["util.getSystemErrorName", "util.getSystemErrorMessage", "util.getSystemErrorMap"], "status": "partial", "evidence": ["tests/corpus/node24-system-errors.ts", "tests/corpus/node24-system-error-validation.js", "tests/corpus/node24-system-errors.cjs", "tests/fixtures/node-types/system-errors.ts"] },
     { "chapter": "buffer", "symbols": ["buffer.isAscii", "buffer.isUtf8", "buffer.transcode"], "status": "partial", "evidence": ["tests/corpus/node24-buffer-encoding.ts", "tests/corpus/node24-buffer-encoding-errors.ts", "tests/fixtures/node-types/text-encoding.ts"] },
     { "chapter": "util", "parent": "Class: `util.TextEncoder`", "signatures": ["`textEncoder.encodeInto(src, dest)`", "`encoding` Type: {string}"], "status": "partial", "evidence": ["tests/corpus/node24-text-encode-into.ts", "tests/corpus/node24-text-codec-properties.ts", "tests/fixtures/node-types/text-encoding.ts"] },
     { "chapter": "util", "parent": "Class: `util.TextDecoder`", "signatures": ["`encoding` Type: {string}", "`fatal` Type: {boolean}", "`ignoreBOM` Type: {boolean}"], "status": "partial", "evidence": ["tests/corpus/node24-text-codec-properties.ts", "tests/fixtures/node-types/text-encoding.ts"] },

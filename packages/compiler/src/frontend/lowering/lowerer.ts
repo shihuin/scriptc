@@ -133,6 +133,7 @@ import { lowerDgramDnsModuleCall, lowerDgramMethodCall } from "./lower-dgram.js"
 import { lowerNodeTestModuleCall, lowerTestDirectCall, lowerTestMethodCall, lowerTestCtxProperty } from "./lower-test.js";
 import { lowerAssertModuleCall, lowerAssertDirectCall } from "./lower-assert.js";
 import { lowerUtilModuleCall } from "./lower-inspect.js";
+import { lowerSystemErrorMapValue } from "./lower-system-errors.js";
 import { lowerComptime, comptimeBakeable, rejectComptimeCaptures, comptimeValueToIr } from "./lower-comptime.js";
 import { lowerStmts, hasJsTypeAnnotation, noteBlockedBindings, isBlockedBinding, lowerScopedBlock, predeclareForwardCapture, predeclareForwardFnDecl, predeclareForwardVar, lowerStmt, lowerVarStatement, lowerDestructuringDecl, lowerDestructuringAssignParts, lowerBindingPattern, lowerJsvalBindingPattern, checkBindingElement, bindPatternTarget, isParseArgsDynCheckerType, lowerVarDeclList, lowerVarDecl, lowerSwitch, lowerTry, lowerExprStatement, lowerForOf, lowerForStatement } from "./lower-stmts.js";
 import { type FieldTarget, lowerExpr, maybeNarrow, lowerUnitComparison, lowerNullishCoalesce, lowerCondition, ensureBool, requireTruthyUnion, eqComparableUnion, lowerIntrinsicProperty, lowerArrayLiteral, lowerElementAccess, lowerElementWrite, lowerRecordKeyRead, ensureString, lowerTemplate, lowerAsExpression, lowerPrefixUnary, lowerBinary, lowerCaughtTypeofTest, caughtRead, caughtLocalOf, caughtToString, lowerInstanceOf, lowerRegexLiteral, lowerFieldRead, lowerUnionProperty, fieldTarget, fieldGetExpr, fieldSetStmt, lowerFieldCompound, uniqueSymbolKeyOf } from "./lower-exprs.js";
@@ -10710,6 +10711,7 @@ export class Lowerer {
     bi: { module: string; member: string },
     loc: SrcLoc,
   ): IrExpr | null {
+    if (bi.module === "util" && bi.member === "getSystemErrorMap") return lowerSystemErrorMapValue(this, loc);
     if (bi.module === "fs" && builtinModuleFnOf(this, bi.module, bi.member)?.fn === "fs.callbackCall") {
       return { kind: "libCall", fn: "fs.callbackValue", args: [{ kind: "strLit", value: bi.member, type: STRING, loc }], type: DYN, loc };
     }

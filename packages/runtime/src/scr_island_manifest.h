@@ -141,9 +141,10 @@ static const struct {
      "c,X509Certificate,Certificate,checkPrime,checkPrimeSync,generatePrime,generatePrimeSync,"
      "secureHeapUsed,setEngine,setFips,getFips"},
     {"node:util",
-     "parseEnv,format,formatWithOptions,inspect,inherits,promisify,callbackify,deprecate,debug"
-     "log,debug,types,isDeepStrictEqual,stripVTControlCharacters,styleText,parseArgs,toUSVStri"
-     "ng,_extend,TextEncoder,TextDecoder,MIMEType,MIMEParams,isArray"},
+     "getSystemErrorName,getSystemErrorMessage,getSystemErrorMap,parseEnv,format,formatWithOpt"
+     "ions,inspect,inherits,promisify,callbackify,deprecate,debuglog,debug,types,isDeepStrictE"
+     "qual,stripVTControlCharacters,styleText,parseArgs,toUSVString,_extend,TextEncoder,TextDe"
+     "coder,MIMEType,MIMEParams,isArray"},
     {"node:util/types",
      "isAnyArrayBuffer,isArrayBufferView,isArgumentsObject,isArrayBuffer,isAsyncFunction,isBig"
      "Int64Array,isBigUint64Array,isBooleanObject,isBoxedPrimitive,isBigIntObject,isCryptoKey,"

@@ -885,6 +885,9 @@ export const BUILTIN_MODULE_FNS: Record<string, Record<string, BuiltinModuleFn |
   util: {
     parseArgs: { fn: "util.parseArgs", params: [DYN], result: DYN },
     parseEnv: { fn: "util.parseEnv", params: [DYN], result: DYN },
+    getSystemErrorName: { fn: "util.getSystemErrorName", params: [DYN], result: STRING, valueParams: exactValueParams(DYN) },
+    getSystemErrorMessage: { fn: "util.getSystemErrorMessage", params: [DYN], result: STRING, valueParams: exactValueParams(DYN) },
+    getSystemErrorMap: { fn: "util.systemErrorEntries", params: [], result: DYN },
   },
   buffer: {
     isAscii: { fn: "buffer.isAscii", params: [DYN], result: BOOL },

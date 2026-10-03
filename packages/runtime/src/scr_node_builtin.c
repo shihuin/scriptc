@@ -1,10 +1,88 @@
 /* Native builtin export objects. The compiler supplies the existing static
  * callable implementations; this unit owns lookup, identity, and mutations. */
 #include "scr_runtime.h"
+#include "scr_system_errors.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+typedef struct { int value; const char *name; const char *message; } ScrSystemError;
+#define SCR_SYSTEM_ERROR(name, message) { SCR_NODE_UV__##name, #name, message },
+static const ScrSystemError scr_system_errors[] = {
+  SCR_NODE_UV_ERRNO_MAP(SCR_SYSTEM_ERROR)
+};
+#undef SCR_SYSTEM_ERROR
+
+static bool scr_system_error_number(const ScrDyn *error, double *number) {
+  if (!error || error->kind != SCR_DYN_NUM) {
+    scr_dyn_arg_type_fail("err", "of type number", error ? error : scr_dyn_undefined());
+    return false;
+  }
+  double n = error->v.num;
+  if (!(isfinite(n) && n < 0 && trunc(n) == n && n >= -9007199254740991.0)) {
+    char received[48];
+    scr_num_received(n, received);
+    if (n == 0 && signbit(n)) strcpy(received, "-0");
+    ScrJsonBuf buffer;
+    scr_jb_init(&buffer);
+    scr_jb_puts(&buffer, "The value of \"err\" is out of range. It must be a negative integer. Received ");
+    scr_jb_puts(&buffer, received);
+    ScrStr *message = scr_jb_finish(&buffer);
+    scr_throw_error_msg_code(SCR_ERR_RANGE, message->data, message->len, "ERR_OUT_OF_RANGE");
+    scr_str_release(message);
+    return false;
+  }
+  *number = n;
+  return true;
+}
+
+static ScrStr *scr_system_error_lookup(double number, bool message) {
+  /* Node's name helper looks up the original safe integer. Its message
+   * binding uses V8's saturating Int32 extraction instead. */
+  double lookup = message && number < -2147483648.0 ? -2147483648.0 : number;
+  for (size_t i = 0; i < sizeof scr_system_errors / sizeof scr_system_errors[0]; i++) {
+    if (lookup == scr_system_errors[i].value) {
+      const char *text = message ? scr_system_errors[i].message : scr_system_errors[i].name;
+      return scr_str_new(text, strlen(text));
+    }
+  }
+  ScrJsonBuf buffer;
+  scr_jb_init(&buffer);
+  scr_jb_puts(&buffer, "Unknown system error ");
+  ScrStr *rendered = scr_f64_to_scrstr(lookup);
+  scr_jb_put_str(&buffer, rendered);
+  scr_str_release(rendered);
+  return scr_jb_finish(&buffer);
+}
+
+ScrStr *scr_util_system_error_name(const ScrDyn *error) {
+  double number;
+  return scr_system_error_number(error, &number) ? scr_system_error_lookup(number, false) : NULL;
+}
+
+ScrStr *scr_util_system_error_message(const ScrDyn *error) {
+  double number;
+  return scr_system_error_number(error, &number) ? scr_system_error_lookup(number, true) : NULL;
+}
+
+ScrDyn *scr_util_system_error_entries(void) {
+  ScrDyn *entries = scr_dyn_new_arr();
+  for (size_t i = 0; i < sizeof scr_system_errors / sizeof scr_system_errors[0]; i++) {
+    const ScrSystemError *error = &scr_system_errors[i];
+    ScrDyn *entry = scr_dyn_new_arr(), *pair = scr_dyn_new_arr();
+    ScrStr *name = scr_str_new(error->name, strlen(error->name));
+    ScrStr *message = scr_str_new(error->message, strlen(error->message));
+    scr_dyn_arr_push(pair, scr_dyn_new_str(name));
+    scr_dyn_arr_push(pair, scr_dyn_new_str(message));
+    scr_str_release(name);
+    scr_str_release(message);
+    scr_dyn_arr_push(entry, scr_dyn_new_num(error->value));
+    scr_dyn_arr_push(entry, pair);
+    scr_dyn_arr_push(entries, entry);
+  }
+  return entries;
+}
 
 static SCR_TL ScrDyn *scr_global_known;
 static SCR_TL ScrDyn *scr_global_own;

@@ -57,6 +57,9 @@ export const LIB_FN_SYMS: Record<string, string> = {
 
   "util.parseArgs": "scr_util_parse_args",
   "util.parseEnv": "scr_util_parse_env",
+  "util.getSystemErrorName": "scr_util_system_error_name",
+  "util.getSystemErrorMessage": "scr_util_system_error_message",
+  "util.systemErrorEntries": "scr_util_system_error_entries",
   "math.maxArr": "scr_math_max_arr",
   "math.minArr": "scr_math_min_arr",
   "math.hypotArr": "scr_math_hypot_arr",

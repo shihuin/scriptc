@@ -5914,7 +5914,7 @@ function setFromSeedValue(
     return mapFromSeedValue(lowerer, seed, mapT);
   }
 
-function mapFromSeedValue(lowerer: Lowerer, seed: IrExpr, mapT: IrType & { kind: "map" }): IrExpr | null {
+export function mapFromSeedValue(lowerer: Lowerer, seed: IrExpr, mapT: IrType & { kind: "map" }): IrExpr | null {
     const loc = seed.loc;
     if (isUnitType(seed.type)) {
       return defaultAfterUndefined(seed, { kind: "mapNew", type: mapT, loc });

@@ -1202,18 +1202,18 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 15,
+        "partial": 18,
         "refused": 0,
-        "not-implemented": 90,
+        "not-implemented": 87,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 16,
-        "partial": 73,
+        "partial": 76,
         "refused": 0,
-        "not-implemented": 16,
+        "not-implemented": 13,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -85122,14 +85122,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.",
+        "verification": "test-backed"
       }
     },
     {
@@ -85150,14 +85150,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Returns a fresh Map of platform-specific error codes, names, and messages; entry tuples support updates but retain their fixed size.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Returns a fresh mutable Map of platform-specific error codes, names, and messages.",
+        "verification": "test-backed"
       }
     },
     {
@@ -85178,14 +85178,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.",
+        "verification": "test-backed"
       }
     },
     {

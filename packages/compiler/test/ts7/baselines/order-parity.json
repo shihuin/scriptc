@@ -13510,6 +13510,36 @@
     "<repo>/tests/fixtures/node-types/file-url-conversion.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/node24-system-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-system-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-system-errors.cjs": {
+   "order": [
+    "<repo>/tests/corpus/node24-system-errors.cjs"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-system-error-validation.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-system-error-validation.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-system-errors/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-system-errors/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/system-errors.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/system-errors.ts"
+   ],
+   "diags": []
   }
  }
 }

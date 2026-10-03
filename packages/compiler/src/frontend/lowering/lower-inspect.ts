@@ -43,6 +43,7 @@ import type { ClassInfo } from "./lower-classes.js";
 import { isSafeToRepeat } from "./expressions/evaluation-safety.js";
 import { boolLit, numLit, strLit, varRef } from "../../ir/build.js";
 import { symbolFieldDisplayName } from "./symbol-fields.js";
+import { lowerSystemErrorMap } from "./lower-system-errors.js";
 
 /* ── IR construction shorthand ───────────────────────────────────────── */
 function concatAll(parts: IrExpr[], loc: SrcLoc): IrExpr {
@@ -1382,6 +1383,23 @@ export function lowerUtilModuleCall(
 ): IrExpr | null {
   if (bi.module !== "util") return null;
   switch (bi.member) {
+    case "getSystemErrorMap": {
+      if (expr.arguments.some(ts.isSpreadElement)) lowerer.noLowering("util.getSystemErrorMap with spread arguments", expr);
+      const result = lowerSystemErrorMap(lowerer, loc);
+      const stmts: IrStmt[] = expr.arguments.map((arg) => ({ kind: "exprStmt", expr: lowerer.lowerExpr(arg), loc }));
+      return stmts.length ? { kind: "seqExpr", stmts, result, type: result.type, loc } : result;
+    }
+    case "getSystemErrorName":
+    case "getSystemErrorMessage": {
+      if (expr.arguments.some(ts.isSpreadElement)) lowerer.noLowering(`util.${bi.member} with spread arguments`, expr);
+      const input = expr.arguments[0] ? lowerer.lowerExprExpecting(expr.arguments[0], DYN)
+        : { kind: "dynFrom" as const, value: { kind: "unitLit" as const, unit: "undefined" as const, type: UNDEFINED_T, loc }, type: DYN, loc };
+      if (expr.arguments.length <= 1) return { kind: "libCall", fn: `util.${bi.member}`, args: [input], type: STRING, loc };
+      const saved = lowerer.declareHiddenLocal("%systemError", DYN);
+      return { kind: "seqExpr", stmts: [{ kind: "varDecl", localId: saved.id, init: input, loc },
+        ...expr.arguments.slice(1).map((arg): IrStmt => ({ kind: "exprStmt", expr: lowerer.lowerExpr(arg), loc }))],
+        result: { kind: "libCall", fn: `util.${bi.member}`, args: [varRef(saved.id, DYN, loc)], type: STRING, loc }, type: STRING, loc };
+    }
     case "inspect":
       return lowerInspectCall(lowerer, expr, loc);
     case "format":

@@ -1323,18 +1323,18 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 15,
+        "partial": 18,
         "refused": 0,
-        "not-implemented": 90,
+        "not-implemented": 87,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 16,
-        "partial": 73,
+        "partial": 76,
         "refused": 0,
-        "not-implemented": 16,
+        "not-implemented": 13,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -111268,10 +111268,14 @@
           "tests/corpus/node24-env-parse-errors.ts",
           "tests/corpus/node24-env-parse.ts",
           "tests/corpus/node24-parseargs.js",
+          "tests/corpus/node24-system-error-validation.js",
+          "tests/corpus/node24-system-errors.cjs",
+          "tests/corpus/node24-system-errors.ts",
           "tests/corpus/node24-text-codec-properties.ts",
           "tests/corpus/node24-text-encode-into.ts",
           "tests/corpus/text-codec-values/main.ts",
           "tests/fixtures/node-types/env-files.ts",
+          "tests/fixtures/node-types/system-errors.ts",
           "tests/fixtures/node-types/text-codecs.mts",
           "tests/fixtures/node-types/text-encoding.ts",
           "tests/harness/project-config.test.ts"
@@ -111285,6 +111289,7 @@
           "tests/fixtures/npm/cases/node24-mime-errors/main.ts",
           "tests/fixtures/npm/cases/node24-mime/main.ts",
           "tests/fixtures/npm/cases/node24-parseargs/main.ts",
+          "tests/fixtures/npm/cases/node24-system-errors/main.ts",
           "tests/fixtures/npm/cases/node24-text-encoding/main.ts",
           "tests/fixtures/npm/cases/node24-util-adapters/main.ts",
           "tests/fixtures/npm/cases/util-shims/main.ts"
@@ -112603,12 +112608,21 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.util.getSystemErrorName",
+        "tests": [
+          "tests/corpus/node24-system-errors.ts",
+          "tests/corpus/node24-system-error-validation.js",
+          "tests/corpus/node24-system-errors.cjs",
+          "tests/fixtures/node-types/system-errors.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.util.getSystemErrorName",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-system-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -112630,12 +112644,21 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.util.getSystemErrorMap",
+        "tests": [
+          "tests/corpus/node24-system-errors.ts",
+          "tests/corpus/node24-system-error-validation.js",
+          "tests/corpus/node24-system-errors.cjs",
+          "tests/fixtures/node-types/system-errors.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.util.getSystemErrorMap",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-system-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -112657,12 +112680,21 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.util.getSystemErrorMessage",
+        "tests": [
+          "tests/corpus/node24-system-errors.ts",
+          "tests/corpus/node24-system-error-validation.js",
+          "tests/corpus/node24-system-errors.cjs",
+          "tests/fixtures/node-types/system-errors.ts"
+        ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "partial",
+        "evidence": "island-feature:util.util.getSystemErrorMessage",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-system-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },

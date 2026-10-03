@@ -2574,6 +2574,9 @@ export type IrLibFn =
    * throw Node's coded validation/grammar TypeErrors. */
   | "util.parseArgs"
   | "util.parseEnv"
+  | "util.getSystemErrorName"
+  | "util.getSystemErrorMessage"
+  | "util.systemErrorEntries"
   /** ES Symbol values (scr_symbol.c — link-gated by moduleUsesSymbol).
    * sym.new: `Symbol(desc)` — a fresh runtime-unique identity (+1) whose
    * one arg is the description string (borrowed); sym.newAnon is the
@@ -7777,6 +7780,8 @@ export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
   "date.checkedValue",
   "util.parseArgs",
   "util.parseEnv",
+  "util.getSystemErrorName",
+  "util.getSystemErrorMessage",
   // decodeURIComponent throws the spec's URIError on bad hex/invalid
   // UTF-8 octets (encodeURIComponent never throws — see the IrLibFn doc).
   "str.decodeUriComponent",

@@ -1952,6 +1952,24 @@
       "note": "recognized module (bare and node:-prefixed specifiers)"
     },
     {
+      "id": "node-builtin.util.getSystemErrorMap",
+      "kind": "node-builtin",
+      "name": "util.getSystemErrorMap",
+      "status": "static"
+    },
+    {
+      "id": "node-builtin.util.getSystemErrorMessage",
+      "kind": "node-builtin",
+      "name": "util.getSystemErrorMessage",
+      "status": "static"
+    },
+    {
+      "id": "node-builtin.util.getSystemErrorName",
+      "kind": "node-builtin",
+      "name": "util.getSystemErrorName",
+      "status": "static"
+    },
+    {
       "id": "node-builtin.util.parseArgs",
       "kind": "node-builtin",
       "name": "util.parseArgs",

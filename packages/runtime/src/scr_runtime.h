@@ -912,6 +912,12 @@ void scr_qs_parse_into(ScrMap *out, const ScrStr *qs, const ScrStr *sep,
  * Borrows config; returns +1, or NULL with a Node-coded TypeError pending. */
 struct ScrDyn *scr_util_parse_args(const struct ScrDyn *config);
 
+/* Node/libuv system error utilities. Arguments are checked without coercion;
+ * entries is a fresh array of [number, [name, message]] pairs (+1). */
+ScrStr *scr_util_system_error_name(const struct ScrDyn *error);
+ScrStr *scr_util_system_error_message(const struct ScrDyn *error);
+struct ScrDyn *scr_util_system_error_entries(void);
+
 /* Node 24's dotenv grammar, shared by util.parseEnv and process.loadEnvFile.
  * Arguments are borrowed; parseEnv returns a fresh ordinary object (+1).
  * Validation and file failures leave a coded exception pending. */

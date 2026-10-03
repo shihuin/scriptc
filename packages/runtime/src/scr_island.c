@@ -2903,6 +2903,29 @@ static JSValue isl_host_env_delete(JSContext *ctx, JSValueConst this_val, int ar
   return JS_TRUE;
 }
 
+static JSValue isl_host_system_error_entries(JSContext *ctx, JSValueConst this_val, int argc,
+                                             JSValueConst *argv) {
+  (void)ctx; (void)this_val; (void)argc; (void)argv;
+  ScrDyn *entries = scr_util_system_error_entries();
+  JSValue result = isl_from_dyn(entries);
+  scr_dyn_release(entries);
+  return result;
+}
+
+static JSValue isl_host_system_error_info(JSContext *ctx, JSValueConst this_val, int argc,
+                                          JSValueConst *argv) {
+  (void)this_val;
+  if (argc != 2) return JS_ThrowTypeError(ctx, "invalid system error bridge arity");
+  double number;
+  if (JS_ToFloat64(ctx, &number, argv[0]) < 0) return JS_EXCEPTION;
+  ScrDyn value = {0}; value.kind = SCR_DYN_NUM; value.v.num = number;
+  ScrStr *text = JS_ToBool(ctx, argv[1]) ? scr_util_system_error_message(&value) : scr_util_system_error_name(&value);
+  if (!text) return isl_throw_pending(ctx);
+  JSValue result = JS_NewStringLen(ctx, text->data, text->len);
+  scr_str_release(text);
+  return result;
+}
+
 static JSValue isl_host_parse_env(JSContext *ctx, JSValueConst this_val, int argc,
                                   JSValueConst *argv) {
   (void)this_val; (void)argc;
@@ -8989,6 +9012,15 @@ static const char isl_modules_bootstrap[] =
     "    value: MIMEType.prototype.toString, writable: true, configurable: true,\n"
     "  });\n"
     "  const util = {\n"
+    "    getSystemErrorMap: () => new Map(host.systemErrorEntries()),\n"
+    "    getSystemErrorName: (err) => {\n"
+    "      if (typeof err !== 'number') envArgumentError('err', 'of type number', err);\n"
+    "      return host.systemErrorInfo(err, false);\n"
+    "    },\n"
+    "    getSystemErrorMessage: (err) => {\n"
+    "      if (typeof err !== 'number') envArgumentError('err', 'of type number', err);\n"
+    "      return host.systemErrorInfo(err, true);\n"
+    "    },\n"
     "    format, formatWithOptions, inspect, inherits, promisify, callbackify,\n"
     "    deprecate, debuglog, debug: debuglog, types, isDeepStrictEqual,\n"
     "    stripVTControlCharacters, styleText, parseArgs, toUSVString, _extend, MIMEType, MIMEParams,\n"
@@ -10493,6 +10525,8 @@ static void isl_modules_boot(void) {
   JS_SetPropertyStr(isl_ctx, host, "envSet", JS_NewCFunction(isl_ctx, isl_host_env_set, "envSet", 2));
   JS_SetPropertyStr(isl_ctx, host, "envDelete", JS_NewCFunction(isl_ctx, isl_host_env_delete, "envDelete", 1));
   JS_SetPropertyStr(isl_ctx, host, "parseEnv", JS_NewCFunction(isl_ctx, isl_host_parse_env, "parseEnv", 1));
+  JS_SetPropertyStr(isl_ctx, host, "systemErrorEntries", JS_NewCFunction(isl_ctx, isl_host_system_error_entries, "systemErrorEntries", 0));
+  JS_SetPropertyStr(isl_ctx, host, "systemErrorInfo", JS_NewCFunction(isl_ctx, isl_host_system_error_info, "systemErrorInfo", 2));
   JS_SetPropertyStr(isl_ctx, host, "transcode", JS_NewCFunction(isl_ctx, isl_host_transcode, "transcode", 3));
   JS_SetPropertyStr(isl_ctx, host, "loadEnvFile", JS_NewCFunction(isl_ctx, isl_host_load_env_file, "loadEnvFile", 2));
   JS_SetPropertyStr(isl_ctx, host, "write", JS_NewCFunction(isl_ctx, isl_host_write, "write", 2));
