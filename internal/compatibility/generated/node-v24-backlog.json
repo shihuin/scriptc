@@ -4,7 +4,7 @@
   "nodeCommit": "848430679556aed0bd073f2bc263331ad84fa119",
   "summary": {
     "taskCount": 3368,
-    "tierItemCount": 6663,
+    "tierItemCount": 6647,
     "tiers": {
       "static": {
         "replace-refusal": 43,
@@ -15,13 +15,13 @@
       },
       "dynamic": {
         "audit-partial": 828,
-        "verify-gap": 2210,
+        "verify-gap": 2194,
         "replace-refusal": 112,
         "implement": 218
       }
     },
     "priorities": {
-      "high": 4500,
+      "high": 4484,
       "normal": 1411,
       "low": 752
     }
@@ -93869,14 +93869,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -93901,14 +93893,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -93935,14 +93919,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -93967,14 +93943,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -94001,14 +93969,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -94033,14 +93993,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -94067,14 +94019,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -94099,14 +94043,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -94133,14 +94069,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -94165,14 +94093,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -94199,14 +94119,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -94231,14 +94143,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -94265,14 +94169,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -94297,14 +94193,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }
@@ -94331,14 +94219,6 @@
           "confidence": "low",
           "source": "compiler-unmatched:util",
           "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
-          "tests": []
         }
       }
     },
@@ -94363,14 +94243,6 @@
           "verification": "registry-gap",
           "confidence": "low",
           "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:util",
           "tests": []
         }
       }

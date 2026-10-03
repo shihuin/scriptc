@@ -13438,6 +13438,18 @@
     "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-mime/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-mime/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+   ],
+   "diags": []
   }
  }
 }

@@ -143,7 +143,7 @@ static const struct {
     {"node:util",
      "parseEnv,format,formatWithOptions,inspect,inherits,promisify,callbackify,deprecate,debug"
      "log,debug,types,isDeepStrictEqual,stripVTControlCharacters,styleText,parseArgs,toUSVStri"
-     "ng,_extend,TextEncoder,TextDecoder,isArray"},
+     "ng,_extend,TextEncoder,TextDecoder,MIMEType,MIMEParams,isArray"},
     {"node:util/types",
      "isAnyArrayBuffer,isArrayBufferView,isArgumentsObject,isArrayBuffer,isAsyncFunction,isBig"
      "Int64Array,isBigUint64Array,isBooleanObject,isBoxedPrimitive,isBigIntObject,isCryptoKey,"

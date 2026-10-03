@@ -1331,10 +1331,10 @@
         "not-applicable": 0
       },
       "dynamic": {
-        "supported": 0,
+        "supported": 16,
         "partial": 73,
         "refused": 0,
-        "not-implemented": 32,
+        "not-implemented": 16,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -111124,6 +111124,8 @@
         "evidence": "derived:descendants",
         "tests": [
           "tests/fixtures/npm/cases/node24-env/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts",
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
           "tests/fixtures/npm/cases/node24-parseargs/main.ts",
           "tests/fixtures/npm/cases/node24-text-encoding/main.ts",
           "tests/fixtures/npm/cases/node24-util-adapters/main.ts",
@@ -111241,8 +111243,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.util.MIMEType",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111268,8 +111274,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mime.toString",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111295,8 +111305,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mime.toJSON",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111322,8 +111336,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.type",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111349,8 +111367,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.subtype",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111376,8 +111398,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.essence",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111403,8 +111429,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.params",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -111430,8 +111460,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.util.MIMEParams",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111457,8 +111491,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.delete",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111484,8 +111522,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.entries",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111511,8 +111553,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.get",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111538,8 +111584,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.has",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111565,8 +111615,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.keys",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111592,8 +111646,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.set",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111619,8 +111677,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams.values",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -111646,8 +111708,12 @@
         "evidence": "compiler-unmatched:util"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:util"
+        "status": "supported",
+        "evidence": "island-feature:util.mimeParams",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-mime/main.ts",
+          "tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
