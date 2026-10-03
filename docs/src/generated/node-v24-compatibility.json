@@ -84848,7 +84848,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Adapts callbacks and promises with receiver preservation, custom promisify hooks, function metadata, and Node-compatible argument and rejection handling; scheduling follows the island microtask queue.",
         "verification": "test-backed"
       }
     },
@@ -85520,7 +85520,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Adapts callbacks and promises with receiver preservation, custom promisify hooks, function metadata, and Node-compatible argument and rejection handling; scheduling follows the island microtask queue.",
         "verification": "test-backed"
       }
     },

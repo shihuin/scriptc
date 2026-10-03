@@ -13408,6 +13408,12 @@
     "<repo>/tests/fixtures/npm/cases/node24-parseargs/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts"
+   ],
+   "diags": []
   }
  }
 }

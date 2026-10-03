@@ -94721,9 +94721,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:util.callbackify",
+          "source": "island-feature:util.util.callbackify",
           "tests": [
-            "tests/fixtures/npm/cases/util-shims/main.ts"
+            "tests/fixtures/npm/cases/util-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-util-adapters/main.ts"
           ]
         }
       }
@@ -95561,9 +95562,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:util.promisify",
+          "source": "island-feature:util.util.promisify",
           "tests": [
-            "tests/fixtures/npm/cases/util-shims/main.ts"
+            "tests/fixtures/npm/cases/util-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-util-adapters/main.ts"
           ]
         }
       }

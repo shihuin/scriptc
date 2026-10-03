@@ -111045,6 +111045,7 @@
           "tests/fixtures/npm/cases/node24-env/main.ts",
           "tests/fixtures/npm/cases/node24-parseargs/main.ts",
           "tests/fixtures/npm/cases/node24-text-encoding/main.ts",
+          "tests/fixtures/npm/cases/node24-util-adapters/main.ts",
           "tests/fixtures/npm/cases/util-shims/main.ts"
         ]
       },
@@ -112010,9 +112011,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:util.callbackify",
+        "evidence": "island-feature:util.util.callbackify",
         "tests": [
-          "tests/fixtures/npm/cases/util-shims/main.ts"
+          "tests/fixtures/npm/cases/util-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-util-adapters/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -112833,9 +112835,10 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:util.promisify",
+        "evidence": "island-feature:util.util.promisify",
         "tests": [
-          "tests/fixtures/npm/cases/util-shims/main.ts"
+          "tests/fixtures/npm/cases/util-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-util-adapters/main.ts"
         ]
       },
       "anchorSource": "exact"
