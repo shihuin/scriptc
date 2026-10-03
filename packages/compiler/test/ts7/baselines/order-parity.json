@@ -7873,6 +7873,18 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/4035-js-seq-unit-union-result.js": {
+   "order": [
+    "<repo>/tests/corpus/4035-js-seq-unit-union-result.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/4038-js-narrowed-read-increment.js": {
+   "order": [
+    "<repo>/tests/corpus/4038-js-narrowed-read-increment.js"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/404-rc-stress.ts": {
    "order": [
     "<repo>/tests/corpus/404-rc-stress.ts"
