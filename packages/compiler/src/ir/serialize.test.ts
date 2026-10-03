@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { F64, VOID, type IrModule } from "./ir.js";
+import { F64, VOID, type IrStmt, type IrModule } from "./ir.js";
 import { IR_VERSION, deserializeModule, serializeModule } from "./serialize.js";
 
 function numbers(values: number[]): IrModule {
@@ -58,4 +58,28 @@ test("compact artifacts preserve the full module and special numeric values", ()
 test("the new number format rejects documents bearing an older version", () => {
   const json = serializeModule(numbers([NaN])).replace(`"irVersion": ${IR_VERSION}`, `"irVersion": ${IR_VERSION - 1}`);
   expect(() => deserializeModule(json)).toThrow("IR version mismatch");
+});
+
+
+test("compact artifacts preserve mixed ordinary functions and special numbers in metadata", () => {
+  const ordinary = numbers([1, 2, 3]).functions[0]!;
+  const special = numbers([NaN, -0, Infinity, -Infinity]).functions[0]!;
+  const metadata = { ...ordinary, name: "metadata", loc: { file: "metadata.ts", start: -0, end: Infinity } };
+  const mod = numbers([]);
+  mod.functions = [ordinary, { ...special, name: "special" }, metadata, { ...ordinary, name: "shared" }];
+  const expected = serializeModule(mod);
+  expect(JSON.parse(serializeModule(mod, true))).toEqual(JSON.parse(expected));
+  expect(deserializeModule(serializeModule(mod, true))).toEqual(mod);
+  expect(serializeModule(mod)).toBe(expected);
+  special.body.push({ kind: "exprStmt", expr: { kind: "numLit", value: NaN, type: F64, loc: special.loc }, loc: special.loc });
+  expect(JSON.parse(serializeModule(mod, true))).toEqual(JSON.parse(serializeModule(mod)));
+});
+
+test("compact artifacts keep JSON's circular-data refusal", () => {
+  const mod = numbers([]);
+  const block: IrStmt & { kind: "block" } = { kind: "block", body: [], loc: mod.functions[0]!.loc };
+  block.body.push(block);
+  mod.functions[0]!.body.push(block);
+  expect(() => serializeModule(mod)).toThrow(TypeError);
+  expect(() => serializeModule(mod, true)).toThrow(TypeError);
 });

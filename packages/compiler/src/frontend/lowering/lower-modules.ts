@@ -1,3 +1,4 @@
+import { everyStmtList, everyTypeChild } from "../../ir/traverse.js";
 import { InternalCompilerError } from "../../errors.js";
 /* Module-graph lowering: splitting each source file into its parts, the
  * program-collection pass (signatures, classes, globals — reachability
@@ -761,58 +762,98 @@ export function appendForkModules(
         default: return false;
       }
     };
-    const visit = (node: unknown): void => {
-      if (Array.isArray(node)) {
-        // This walk only reads compiler-owned arrays. A callback traversal
-        // reuses one checked view instead of refreshing it at each step.
-        node.forEach(visit);
-        return;
-      }
-      if (node === null || typeof node !== "object") return;
-      const rec = node as Record<string, unknown>;
-      if (rec["kind"] === "instanceOfValue") {
-        const expression = node as Extract<IrExpr, { kind: "instanceOfValue" }>;
-        for (const type of [expression.value.type, expression.classValue.type]) {
-          if (type.kind !== "object" && type.kind !== "classval") continue;
-          let root = lowerer.classes.get(type.className);
-          if (!root) continue;
-          while (root.base) root = root.base;
-          valueInstanceOfRoots.add(root.def.name);
-        }
-      }
-      if (rec["kind"] === "dynFrom" && boxedChild((rec["value"] as IrExpr).type)) {
-        // A generic child can expose native stdio without importing stream.
-        visit([{ className: "%Readable" }, { className: "%Writable" }]);
-      }
-      if (typeof rec["className"] === "string" && !classNames.has(rec["className"])) {
-        classNames.add(rec["className"]);
-        pendingClasses.push(rec["className"]);
-      }
-      if (typeof rec["shapeId"] === "string" && !shapeIds.has(rec["shapeId"])) {
-        shapeIds.add(rec["shapeId"]);
-        pendingShapes.push(rec["shapeId"]);
-      }
-      if (typeof rec["unionId"] === "string" && !unionIds.has(rec["unionId"])) {
-        unionIds.add(rec["unionId"]);
-        pendingUnions.push(rec["unionId"]);
-      }
-      for (const key of Object.keys(rec)) {
-        if (key !== "loc") visit(rec[key]);
-      }
+    const visitClass = (name: string): void => {
+      if (classNames.has(name)) return;
+      classNames.add(name);
+      pendingClasses.push(name);
     };
-    // Keep function lists and their typed slots in native storage. Reflective
-    // array iteration refreshes a complete view at each step; only executable
-    // nodes and individual types need the general dependency walk.
+    const visitShape = (id: string): void => {
+      if (shapeIds.has(id)) return;
+      shapeIds.add(id);
+      pendingShapes.push(id);
+    };
+    const visitUnion = (id: string): void => {
+      if (unionIds.has(id)) return;
+      unionIds.add(id);
+      pendingUnions.push(id);
+    };
+    const visitType = (type: IrType): boolean => {
+      switch (type.kind) {
+        case "object": case "classval": visitClass(type.className); break;
+        case "record": visitShape(type.shapeId); break;
+        case "union": visitUnion(type.unionId); break;
+      }
+      return everyTypeChild(type, visitType);
+    };
+    const visitor = {
+      expr: (node: IrExpr): boolean => {
+        visitType(node.type);
+        switch (node.kind) {
+          case "fieldIncDec": case "new": case "classRef": case "instanceOf":
+          case "virtualCall": case "fieldGet": case "caughtCheck":
+            visitClass(node.className);
+            break;
+          case "caughtTest":
+            if (node.className !== undefined) visitClass(node.className);
+            break;
+          case "recordGet": case "recordKeyGet": case "recordOvfKeys": case "recordOvfHas":
+            visitShape(node.shapeId);
+            break;
+          case "unionWrap": case "unionFuncEq": case "unionNarrow": case "unionDisc":
+          case "unionKeyGet": case "unionIsTag": case "unionEq":
+            visitUnion(node.unionId);
+            break;
+          case "yieldExpr":
+            if (node.captureCompletion !== undefined) visitType(node.captureCompletion.returnType);
+            break;
+          case "instanceOfValue":
+            for (const type of [node.value.type, node.classValue.type]) {
+              if (type.kind !== "object" && type.kind !== "classval") continue;
+              let root = lowerer.classes.get(type.className);
+              if (!root) continue;
+              while (root.base) root = root.base;
+              valueInstanceOfRoots.add(root.def.name);
+            }
+            break;
+          case "dynFrom":
+            if (boxedChild(node.value.type)) {
+              // A generic child can expose native stdio without importing stream.
+              visitClass("%Readable");
+              visitClass("%Writable");
+            }
+            break;
+          default:
+            // A new node with a named artifact reference must join this switch.
+            node satisfies Exclude<IrExpr, { className: string } | { shapeId: string } | { unionId: string }>;
+        }
+        return true;
+      },
+      stmt: (node: IrStmt): boolean => {
+        switch (node.kind) {
+          case "fieldSet": visitClass(node.className); break;
+          case "recordSet": case "recordKeySet": case "recordKeyDelete": visitShape(node.shapeId); break;
+          default:
+            node satisfies Exclude<IrStmt, { className: string } | { shapeId: string } | { unionId: string }>;
+        }
+        return true;
+      },
+    };
+    // Visit compiler-owned typed storage and executable trees directly, without
+    // creating dynamic snapshots of every node's properties and metadata.
     for (const fn of functions) {
-      for (const param of fn.params) visit(param.type);
-      visit(fn.returnType);
-      for (const local of fn.locals) visit(local.type);
-      for (const capture of fn.captures ?? []) visit(capture.type);
-      for (const capture of fn.classCaptures ?? []) visit(capture.type);
-      visit(fn.generator);
-      for (const stmt of fn.body) visit(stmt);
+      for (const param of fn.params) visitType(param.type);
+      visitType(fn.returnType);
+      for (const local of fn.locals) visitType(local.type);
+      for (const capture of fn.captures ?? []) visitType(capture.type);
+      for (const capture of fn.classCaptures ?? []) visitType(capture.type);
+      if (fn.generator !== undefined) {
+        visitType(fn.generator.yieldT);
+        visitType(fn.generator.nextT);
+        visitType(fn.generator.resultType);
+      }
+      everyStmtList(fn.body, visitor);
     }
-    for (const global of lowerer.globalsList) visit(global.type);
+    for (const global of lowerer.globalsList) visitType(global.type);
     // The builtin error classes ride EVERY module: the runtime's own throws
     // (JSON/dynCheck/regex failures) mint instances of them whether or not
     // user code mentions Error, and the uncaught printer tells Error
@@ -835,10 +876,15 @@ export function appendForkModules(
         // overflow-valued shape (`{ [key: string]: {script?: string} }`)
         // references its value shape through indexValue alone.
         const shape = lowerer.shapes.get(pendingShapes.pop()!);
-        visit(shape?.fields);
-        if (shape?.indexValue) visit(shape.indexValue);
+        if (shape !== undefined) {
+          for (const field of shape.fields) visitType(field.type);
+          if (shape.indexValue !== undefined) visitType(shape.indexValue);
+        }
       }
-      while (pendingUnions.length > 0) visit(lowerer.unions.get(pendingUnions.pop()!)?.arms);
+      while (pendingUnions.length > 0) {
+        const union = lowerer.unions.get(pendingUnions.pop()!);
+        if (union !== undefined) for (const arm of union.arms) visitType(arm);
+      }
       while (pendingClasses.length > 0) {
         const name = pendingClasses.pop()!;
         const info = lowerer.classes.get(name);
@@ -848,13 +894,13 @@ export function appendForkModules(
           lowerer.flushDeferredClass(name);
           continue;
         }
-        visit(info.def.fields);
-        if (info.base) visit([{ className: info.base.def.name }]);
+        for (const field of info.def.fields) visitType(field.type);
+        if (info.base) visitClass(info.base.def.name);
         if (lowerer.inHierarchy(info)) {
           let root = info;
           while (root.base) root = root.base;
           const wholeTree = (c: ClassInfo): void => {
-            if (valueInstanceOfRoots.has(root.def.name) || lowerer.classCanBeConstructed(c)) visit([{ className: c.def.name }]);
+            if (valueInstanceOfRoots.has(root.def.name) || lowerer.classCanBeConstructed(c)) visitClass(c.def.name);
             for (const s of c.subclasses) wholeTree(s);
           };
           wholeTree(root);

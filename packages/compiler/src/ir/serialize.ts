@@ -6,6 +6,22 @@ import type { IrModule } from "./ir.js";
 // as negative infinity, so accepting a newer document would miscompile it.
 export const IR_VERSION = 13 as const;
 
+/** IR artifacts are plain data. Scan each function once before deciding
+ * whether its JSON encoding needs the complete-number-domain replacer. */
+function ordinaryNumbers(root: unknown): boolean {
+  const seen = new Set<unknown>();
+  const visit = (value: unknown): boolean => {
+    if (typeof value === "number") return Number.isFinite(value) && !Object.is(value, -0);
+    if (typeof value === "function") return false;
+    if (value === null || typeof value !== "object") return true;
+    if (seen.has(value)) return true;
+    seen.add(value);
+    if (Array.isArray(value)) return value.every(visit);
+    return Object.values(value as Record<string, unknown>).every(visit);
+  };
+  return visit(root);
+}
+
 /** Compiler artifacts use compact JSON to keep large graphs below the host's
  * string size limit. API consumers can retain the readable default. */
 export function serializeModule(mod: IrModule, compact = false): string {
@@ -30,7 +46,7 @@ export function serializeModule(mod: IrModule, compact = false): string {
   const header = JSON.stringify({ ...mod, functions: [] }, replacer);
   const slot = '"functions":[]';
   const offset = header.indexOf(slot);
-  const functions = mod.functions.map((fn) => JSON.stringify(fn, replacer) ?? "null").join(",");
+  const functions = mod.functions.map((fn) => (ordinaryNumbers(fn) ? JSON.stringify(fn) : JSON.stringify(fn, replacer)) ?? "null").join(",");
   return header.slice(0, offset) + '"functions":[' + functions + "]" + header.slice(offset + slot.length);
 }
 

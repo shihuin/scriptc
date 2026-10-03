@@ -88,9 +88,17 @@ for (const backend of ["llvm"] as const) {
       expect(compact.native.stdout.toString().trimEnd()).not.toContain("\n");
       expect(deserializeModule(compact.native.stdout.toString())).toEqual(numeric);
       expect(deserializeModule(compact.native.stdout.toString())).toEqual(deserializeModule(compact.oracle.stdout.toString()));
+      const finite: IrModule = {
+        ...numeric,
+        functions: [{ ...numeric.functions[0]!, body: [numeric.functions[0]!.body[0]!, { kind: "return", value: null, loc: numeric.functions[0]!.loc }] }],
+      };
+      const finiteCompact = run(serializeModule(finite), ["compact"]);
+      expect(finiteCompact.native.status).toBe(0);
+      expect(deserializeModule(finiteCompact.native.stdout.toString())).toEqual(finite);
+      expect(deserializeModule(finiteCompact.native.stdout.toString())).toEqual(deserializeModule(finiteCompact.oracle.stdout.toString()));
       const manyFunctions: IrModule = {
         ...numeric, sourceFile: 'escaped "functions":[] $&.ts',
-        functions: Array.from({ length: 64 }, (_, index) => ({ ...numeric.functions[0]!, name: `function${index}` })),
+        functions: Array.from({ length: 64 }, (_, index) => ({ ...(index % 8 === 0 ? numeric : finite).functions[0]!, name: `function${index}` })),
       };
       const many = run(serializeModule(manyFunctions), ["compact"]);
       expect(many.native.status).toBe(0);

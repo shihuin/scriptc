@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { F64, UNDEFINED_T, type IrFunction, type IrType } from "../../ir/ir.js";
+import { BOOL, DYN, F64, UNDEFINED_T, type IrExpr, type IrFunction, type IrType } from "../../ir/ir.js";
 import type { Program, SourceFile } from "../ts7/adapter.js";
 import { Lowerer } from "./lowerer.js";
 import { moduleArtifacts } from "./lower-modules.js";
@@ -61,4 +61,53 @@ test("retains a constructible grandchild through an unused intermediate class", 
   expect(names).toContain("Middle");
   expect(names).toContain("Leaf");
   expect(names).not.toContain("Unused");
+});
+
+
+test("retains references carried by executable metadata and generator completion", () => {
+  const loc = { file: "references.ts", start: 0, end: 1 };
+  const lowerer = new Lowerer({ getTypeChecker: () => ({}) } as Program, { fileName: loc.file } as SourceFile, [], false);
+  const shapeId = lowerer.shapes.intern([{ name: "payload", type: F64 }]);
+  const completedId = lowerer.shapes.intern([{ name: "completed", type: F64 }]);
+  const unionId = lowerer.unions.intern([F64, UNDEFINED_T]);
+  const className = "Checked";
+  lowerer.classes.set(className, { def: { name: className, fields: [], loc }, base: null, subclasses: [] } as unknown as ClassInfo);
+  const value: IrExpr = { kind: "varRef", localId: "value", type: DYN, loc };
+  const nodes: IrExpr[] = [
+    { kind: "caughtTest", test: "instanceof", className, value, type: BOOL, loc },
+    { kind: "recordGet", shapeId, obj: value, field: "payload", type: F64, loc },
+    { kind: "unionIsTag", unionId, tag: 0, negated: false, value, type: BOOL, loc },
+    { kind: "yieldExpr", value: null, captureCompletion: { returnType: { kind: "record", shapeId: completedId } }, type: UNDEFINED_T, loc },
+  ];
+  const entry: IrFunction = { name: "entry", params: [], locals: [], returnType: UNDEFINED_T,
+    body: nodes.map((expr) => ({ kind: "exprStmt", expr, loc })), loc };
+  const artifacts = moduleArtifacts(lowerer, [entry]);
+  expect(artifacts.classes.map((cls) => cls.name)).toContain(className);
+  expect(artifacts.records.map((shape) => shape.id)).toEqual([shapeId, completedId]);
+  expect(artifacts.unions.map((union) => union.id)).toEqual([unionId]);
+});
+
+test("closes nested structural types and index-signature values", () => {
+  const loc = { file: "structural.ts", start: 0, end: 1 };
+  const lowerer = new Lowerer({ getTypeChecker: () => ({}) } as Program, { fileName: loc.file } as SourceFile, [], false);
+  const record = (name: string): IrType & { kind: "record" } => ({ kind: "record", shapeId: lowerer.shapes.intern([{ name, type: F64 }]) });
+  const key = record("key"), item = record("item"), yielded = record("yielded"), returned = record("returned"), sent = record("sent"), indexed = record("indexed");
+  const containerId = lowerer.shapes.intern([], false, indexed);
+  const wanted = lowerer.shapes.shapes.map((shape) => shape.id);
+  record("unused");
+  const nested: IrType = { kind: "func", params: [{ kind: "map", key, value: { kind: "set", elem: { kind: "array", elem: item } } }],
+    ret: { kind: "promise", inner: { kind: "generator", yieldT: yielded, retT: returned, nextT: sent } } };
+  const entry: IrFunction = { name: "entry", params: [{ localId: "p", name: "p", type: nested }], locals: [], returnType: { kind: "record", shapeId: containerId }, body: [], loc };
+  expect(moduleArtifacts(lowerer, [entry]).records.map((shape) => shape.id)).toEqual(wanted);
+});
+
+test("boxed child values retain native stdio classes through recursive storage", () => {
+  const loc = { file: "child.ts", start: 0, end: 1 };
+  const lowerer = new Lowerer({ getTypeChecker: () => ({}) } as Program, { fileName: loc.file } as SourceFile, [], false);
+  for (const name of ["%Readable", "%Writable"]) lowerer.classes.set(name, { def: { name, fields: [], loc }, base: null, subclasses: [] } as unknown as ClassInfo);
+  const shapeId = lowerer.shapes.intern([{ name: "children", type: { kind: "array", elem: { kind: "child" } } }]);
+  const value: IrExpr = { kind: "varRef", localId: "value", type: { kind: "record", shapeId }, loc };
+  const entry: IrFunction = { name: "entry", params: [], locals: [], returnType: UNDEFINED_T,
+    body: [{ kind: "exprStmt", expr: { kind: "dynFrom", value, type: DYN, loc }, loc }], loc };
+  expect(moduleArtifacts(lowerer, [entry]).classes.map((cls) => cls.name)).toEqual(expect.arrayContaining(["%Readable", "%Writable"]));
 });
