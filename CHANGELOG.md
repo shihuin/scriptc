@@ -6,6 +6,29 @@ All notable changes to scriptc will be documented in this file.
 
 <!-- release:start -->
 
+## 0.2.2
+
+### Features
+
+- **More Three.js CPU workflows compile natively and to WASI.** Support expands across procedural geometry, curves, animation blending, mesh deformation, material and texture data, in-memory model loading, and CPU node graphs. Compiled libraries can send geometry, material state, and resource lifecycle notifications to an external rendering host.
+- **Stored Map and Set iterators compile statically.** Native cursors support `next()`, function arguments, `for...of`, spreads, and mapper-less `Array.from` while preserving live collection behavior and reference identity.
+- **Native filesystem and crypto support expands.** Descriptor I/O and FileHandle vector and control operations compile statically, alongside scrypt, HKDF, and additional SHA-2 algorithms. Embedded packages gain the corresponding Node 24 behavior.
+- **Node 24 URL, environment, and text utilities gain native support.** `URL.canParse`, `URL.parse`, URL JSON serialization, `util.parseEnv`, `process.loadEnvFile`, `TextEncoder.encodeInto`, and buffer validation and transcoding compile without an embedded JavaScript engine.
+- **Embedded packages support more asynchronous event and timer flows.** `events.on` adds buffered iteration, cancellation, close events, backpressure, and listener cleanup; `events.once` accepts EventTarget inputs and cancellation, and abort listeners support disposal. Promise timers and scheduler operations add cancellation and reference controls, with buffered interval iteration and native timer-handle lifecycle behavior.
+
+### Performance
+
+- **Compilation avoids repeated queries, scans, and allocations.** Frontend type queries and JavaScript binding analysis, native IR traversal, union transformations, artifact dependency collection, and serialization do less repeated work.
+- **Native build preparation overlaps independent work.** Compiler fingerprinting and native-driver discovery run concurrently, with more bounded parallel fingerprint reads while preserving cache identity and invalidation behavior.
+
+### Fixes
+
+- **Static JavaScript workflows preserve more class and callable behavior.** Inferred class fields, inherited members, method dispatch, callable identity, collections, and async values retain their supported state across compiled package boundaries.
+- **Integer-boundary inference accounts for both zero signs.** Division and powers involving zero no longer produce unsafe integer proofs for negative-zero inputs; safely clamped results retain their supported proofs.
+- **Embedded Node utilities preserve more input and lifecycle behavior.** Argument parsing and callback/promise adapters handle more Node 24 validation, metadata, and error cases. EventEmitter preserves once-listener reentrancy, symbol names, and error-monitor ordering, while StringDecoder handles more input views and split encoding boundaries.
+
+<!-- release:end -->
+
 ## 0.2.1
 
 ### Features
@@ -19,8 +42,6 @@ All notable changes to scriptc will be documented in this file.
 - **Native installs are smaller and more portable.** GNU/Linux compiler distributions support glibc 2.34 or newer and use statically linked LLVM helpers. The compiler bundles its host runtime; cross-target runtime packs are optional project dependencies pinned to the compiler version.
 - **Native values retain identity across more typed and untyped boundaries.** Collections, class instances, inferred arrays, and mixed JavaScript return values preserve their supported storage and dispatch behavior.
 - **Effect platform callbacks and native streams preserve their state.** Expanded lowering retains callback behavior, and promise storage keeps the layout required by cycle collection.
-
-<!-- release:end -->
 
 ## 0.2.0
 
