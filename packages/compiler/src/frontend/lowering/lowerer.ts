@@ -1067,6 +1067,9 @@ export class Lowerer {
   /** Per-symbol result of the never-reassigned file scan
    * (bindingNeverReassigned — object-literal generic-method receivers). */
   readonly neverReassignedCache = new Map<ts.Symbol, boolean>();
+  /** Syntactic writes indexed once per JS scope. Symbol and RHS type
+   * checks remain contextual to each binding probe. */
+  readonly jsBindingWritesByOwner = new Map<ts.Node, Map<string, ts.BinaryExpression[]>>();
   /** TRAP bindings: declarations whose initializer provably throws before
    * producing a value (its chain roots at an ambient-undefined name —
    * ambientUndefVarRootOf). Module init unwinds at the declaration, so no

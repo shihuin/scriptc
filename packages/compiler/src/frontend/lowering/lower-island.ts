@@ -32,6 +32,9 @@ import {
    * declared types: a package promise held as a handle keeps its existing
    * checker-driven dispatch (the await/.catch bridge lowerings own it). */
   export function isIslandExpr(lowerer: Lowerer, node: ts.Expression): boolean {
+    // Static builds cannot contain island handles. Avoid mapping entire
+    // receiver/callee types (and their checker RPCs) just to prove that.
+    if (!lowerer.dynamic) return false;
     const mapped = lowerer.mapTypeOf(lowerer.typeOf(node));
     if (mapped?.kind === "jsval") return true;
     if (mapped?.kind !== "promise" && ts.isIdentifier(node)) {

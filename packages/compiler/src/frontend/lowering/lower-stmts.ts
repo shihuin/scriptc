@@ -4318,18 +4318,22 @@ export function jsBindingHasOpenWrites(lowerer: Lowerer, decl: ts.VariableDeclar
   if (!symbol) return false;
   let owner: ts.Node = decl;
   while (owner.parent && !ts.isFunctionLike(owner) && !ts.isSourceFile(owner)) owner = owner.parent;
-  let open = false;
-  ts.walkPreorder(owner, (node) => {
-    if (ts.isBinaryExpression(node) && node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
-        node.operatorToken.kind <= ts.SyntaxKind.LastAssignment && ts.isIdentifier(node.left) &&
-        lowerer.resolveValueSymbol(node.left) === symbol &&
-        (lowerer.typeOf(node.right).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0) {
-      open = true;
-      return "stop";
-    }
-    return undefined;
-  });
-  return open;
+  let writes = lowerer.jsBindingWritesByOwner.get(owner);
+  if (!writes) {
+    const indexed = new Map<string, ts.BinaryExpression[]>();
+    ts.walkPreorder(owner, (node) => {
+      if (!ts.isBinaryExpression(node) || node.operatorToken.kind < ts.SyntaxKind.FirstAssignment ||
+          node.operatorToken.kind > ts.SyntaxKind.LastAssignment || !ts.isIdentifier(node.left)) return;
+      const entries = indexed.get(node.left.text);
+      if (entries) entries.push(node);
+      else indexed.set(node.left.text, [node]);
+    });
+    writes = indexed;
+    lowerer.jsBindingWritesByOwner.set(owner, writes);
+  }
+  return (writes.get(decl.name.text) ?? []).some((node) =>
+    lowerer.resolveValueSymbol(node.left as ts.Identifier) === symbol &&
+    (lowerer.typeOf(node.right).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0);
 }
 
   function immediatelyGuardedAbsenceProbe(lowerer: Lowerer, decl: ts.VariableDeclaration): boolean {

@@ -13378,6 +13378,12 @@
     "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/js-open-binding-writes.js": {
+   "order": [
+    "<repo>/tests/corpus/js-open-binding-writes.js"
+   ],
+   "diags": []
   }
  }
 }
