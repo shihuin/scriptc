@@ -678,6 +678,9 @@ function publicDetail(tier) {
     return "No dynamic-island implementation exists for this Node API family yet.";
   }
   if (source.startsWith("island-feature:")) {
+    if (/^island-feature:util\.(?:util\.)?parseArgs$/.test(source)) {
+      return "Parses command-line options, positionals, defaults, and tokens with Node-compatible configuration validation.";
+    }
     if (/^island-feature:buffer\.buffer\.(?:isAscii|isUtf8)$/.test(source)) {
       return "Validates bytes in ArrayBuffer and typed-array views with Node-compatible argument errors.";
     }

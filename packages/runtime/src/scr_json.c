@@ -2357,19 +2357,30 @@ const char *scr_dyn_specific_type(const ScrDyn *cb, char *detail, size_t cap) {
     break;
   }
   case SCR_DYN_STR: {
-    const ScrStr *sv = cb->v.str;
-    char insp[32];
-    size_t n = 0;
-    insp[n++] = '\'';
-    for (size_t i = 0; i < sv->len && n < 28; i++) insp[n++] = sv->data[i];
-    if (sv->len + 2 > 28) {
-      n = 25;
-      memcpy(insp + n, "...", 3);
-      n += 3;
-    } else {
-      insp[n++] = '\'';
+    ScrStr *value = scr_str_retain(cb->v.str);
+    if (scr_str_utf16_len(value) > 28) {
+      ScrStr *prefix = scr_str_slice(value, 0, 25);
+      ScrStr *dots = scr_str_new("...", 3);
+      scr_str_release(value);
+      value = scr_str_concat(prefix, dots);
+      scr_str_release(prefix);
+      scr_str_release(dots);
     }
-    snprintf(detail, cap, "type string (%.*s)", (int)n, insp);
+    ScrJsonBuf shown;
+    scr_jb_init(&shown);
+    scr_jb_puts(&shown, "type string (");
+    if (memchr(value->data, '\'', value->len)) {
+      scr_jb_put_json_str(&shown, value);
+    } else {
+      scr_jb_putc(&shown, '\'');
+      scr_jb_put_str(&shown, value);
+      scr_jb_putc(&shown, '\'');
+    }
+    scr_jb_putc(&shown, ')');
+    ScrStr *text = scr_jb_finish(&shown);
+    snprintf(detail, cap, "%.*s", (int)text->len, text->data);
+    scr_str_release(text);
+    scr_str_release(value);
     break;
   }
   default: d = "an instance of Object"; break;
@@ -2391,7 +2402,7 @@ void scr_throw_arg_type(const ScrStr *argname, const ScrStr *expected, const Scr
 }
 
 void scr_dyn_arg_type_fail(const char *argname, const char *expected, const ScrDyn *got) {
-  char detail[64];
+  char detail[256];
   const char *d = scr_dyn_specific_type(got, detail, sizeof detail);
   ScrJsonBuf b;
   scr_jb_init(&b);
@@ -2412,7 +2423,7 @@ void scr_dyn_arg_type_fail(const char *argname, const char *expected, const ScrD
  * wording on the name, but every property-path caller here knows it is
  * one). Same runtime-rendered Received tail; always throws catchably. */
 void scr_dyn_prop_type_fail(const char *name, const char *expected, const ScrDyn *got) {
-  char detail[64];
+  char detail[256];
   const char *d = scr_dyn_specific_type(got, detail, sizeof detail);
   ScrJsonBuf b;
   scr_jb_init(&b);

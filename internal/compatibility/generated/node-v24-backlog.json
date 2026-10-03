@@ -95432,8 +95432,8 @@
           "confidence": "high",
           "source": "surface-manifest:node-builtin.util.parseArgs",
           "tests": [
-            "tests/corpus/2440-console-inspect-args.ts",
-            "tests/corpus/2912-promisify-fs-readfile.ts"
+            "tests/corpus/2678-util-parseargs.ts",
+            "tests/corpus/node24-parseargs.js"
           ]
         },
         "dynamic": {
@@ -95441,9 +95441,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:util.parseArgs",
+          "source": "island-feature:util.util.parseArgs",
           "tests": [
-            "tests/fixtures/npm/cases/util-shims/main.ts"
+            "tests/fixtures/npm/cases/util-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-parseargs/main.ts"
           ]
         }
       }
@@ -95470,8 +95471,8 @@
           "confidence": "high",
           "source": "surface-manifest:node-builtin.util.parseArgs",
           "tests": [
-            "tests/corpus/2440-console-inspect-args.ts",
-            "tests/corpus/2912-promisify-fs-readfile.ts"
+            "tests/corpus/2678-util-parseargs.ts",
+            "tests/corpus/node24-parseargs.js"
           ]
         },
         "dynamic": {
@@ -95479,9 +95480,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:util.parseArgs",
+          "source": "island-feature:util.parseArgs",
           "tests": [
-            "tests/fixtures/npm/cases/util-shims/main.ts"
+            "tests/fixtures/npm/cases/util-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-parseargs/main.ts"
           ]
         }
       }

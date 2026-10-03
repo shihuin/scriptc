@@ -85436,7 +85436,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Parses command-line options, positionals, defaults, and tokens with Node-compatible configuration validation.",
         "verification": "test-backed"
       }
     },
@@ -85464,7 +85464,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Parses command-line options, positionals, defaults, and tokens with Node-compatible configuration validation.",
         "verification": "test-backed"
       }
     },

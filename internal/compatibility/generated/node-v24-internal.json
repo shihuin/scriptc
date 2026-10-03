@@ -111022,11 +111022,13 @@
           "tests/corpus/1473-promisify-execfile.ts",
           "tests/corpus/1573-promisify-execfile-env-spread.ts",
           "tests/corpus/2440-console-inspect-args.ts",
+          "tests/corpus/2678-util-parseargs.ts",
           "tests/corpus/2912-promisify-fs-readfile.ts",
           "tests/corpus/3133-text-decoder-streaming.ts",
           "tests/corpus/node24-env-imports.cjs",
           "tests/corpus/node24-env-parse-errors.ts",
           "tests/corpus/node24-env-parse.ts",
+          "tests/corpus/node24-parseargs.js",
           "tests/corpus/node24-text-codec-properties.ts",
           "tests/corpus/node24-text-encode-into.ts",
           "tests/corpus/text-codec-values/main.ts",
@@ -111041,6 +111043,7 @@
         "evidence": "derived:descendants",
         "tests": [
           "tests/fixtures/npm/cases/node24-env/main.ts",
+          "tests/fixtures/npm/cases/node24-parseargs/main.ts",
           "tests/fixtures/npm/cases/node24-text-encoding/main.ts",
           "tests/fixtures/npm/cases/util-shims/main.ts"
         ]
@@ -112716,15 +112719,16 @@
         "status": "partial",
         "evidence": "surface-manifest:node-builtin.util.parseArgs",
         "tests": [
-          "tests/corpus/2440-console-inspect-args.ts",
-          "tests/corpus/2912-promisify-fs-readfile.ts"
+          "tests/corpus/2678-util-parseargs.ts",
+          "tests/corpus/node24-parseargs.js"
         ]
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:util.parseArgs",
+        "evidence": "island-feature:util.util.parseArgs",
         "tests": [
-          "tests/fixtures/npm/cases/util-shims/main.ts"
+          "tests/fixtures/npm/cases/util-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-parseargs/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -112750,15 +112754,16 @@
         "status": "partial",
         "evidence": "surface-manifest:node-builtin.util.parseArgs",
         "tests": [
-          "tests/corpus/2440-console-inspect-args.ts",
-          "tests/corpus/2912-promisify-fs-readfile.ts"
+          "tests/corpus/2678-util-parseargs.ts",
+          "tests/corpus/node24-parseargs.js"
         ]
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-export:node:util.parseArgs",
+        "evidence": "island-feature:util.parseArgs",
         "tests": [
-          "tests/fixtures/npm/cases/util-shims/main.ts"
+          "tests/fixtures/npm/cases/util-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-parseargs/main.ts"
         ]
       },
       "anchorSource": "exact"
