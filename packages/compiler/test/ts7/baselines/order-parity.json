@@ -7873,6 +7873,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/4039-js-callable-error-strict/main.js": {
+   "order": [
+    "<repo>/tests/corpus/4039-js-callable-error-strict/main.js"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/404-rc-stress.ts": {
    "order": [
     "<repo>/tests/corpus/404-rc-stress.ts"
