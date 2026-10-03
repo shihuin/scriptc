@@ -119,12 +119,12 @@ describe(`island web globals (scriptc-only${sanitize ? ", sanitized" : ""})`, ()
     // Event and buffer.Blob at LOAD); structuredClone joined with the
     // globals lane (the HTML StructuredSerialize subset, cycles
     // included); WritableStream/FormData/WebSocket stay fenced by
-    // absence. URL, Buffer, and the immediate-timer globals are installed
-    // only when the embedded npm module bootstrap runs.
+    // absence. URL and Buffer are installed only when the embedded npm
+    // module bootstrap runs; immediate timers use the native check queue.
     expect(out).toBe(
       "function function function function function function function function function " +
         "object object function function function function function function " +
-        "undefined function undefined undefined undefined undefined undefined undefined",
+        "undefined function undefined undefined undefined undefined function function",
     );
   });
 

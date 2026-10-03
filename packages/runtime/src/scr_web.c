@@ -62,43 +62,77 @@ static const char web_prelude[] =
     "   * (host.setTimer/host.clearTimer) — REF'd like Node's (an armed\n"
     "   * timer keeps the process alive), FIFO-ordered against static\n"
     "   * timers on one heap, Node's <1ms clamp. Returns a Timeout-shaped\n"
-    "   * object (ref/unref/refresh/close, numeric via toPrimitive) that\n"
-    "   * clearTimeout/clearInterval accept alongside plain ids; unref is\n"
-    "   * accepted but not honored (the entry stays ref'd — a documented\n"
-    "   * approximation). */\n"
+    "   * object with real ref/unref/refresh/close operations. Immediates\n"
+    "   * use the native check queue, independently of timer ids. */\n"
+    "  const timers = new Map();\n"
     "  class Timeout {\n"
-    "    constructor(fn, delay, repeat) {\n"
+    "    constructor(fn, delay, args, repeat) {\n"
     "      this._fn = fn;\n"
     "      this._delay = delay;\n"
+    "      this._args = args;\n"
     "      this._repeat = repeat;\n"
-    "      this._id = host.setTimer(fn, delay, repeat);\n"
+    "      this._reffed = true;\n"
+    "      this._closed = false;\n"
+    "      this._callback = () => {\n"
+    "        if (!this._repeat) { this._destroyed = true; timers.delete(this._id); }\n"
+    "        this._fn.apply(this, this._args);\n"
+    "      };\n"
+    "      this._arm();\n"
     "    }\n"
-    "    ref() { return this; }\n"
-    "    unref() { return this; }\n"
-    "    hasRef() { return true; }\n"
+    "    _arm() {\n"
+    "      this._destroyed = false;\n"
+    "      this._id = host.setTimer(this._callback, this._delay, this._repeat, false);\n"
+    "      timers.set(this._id, this);\n"
+    "      if (!this._reffed) host.refTimer(this._id, false, false);\n"
+    "    }\n"
+    "    ref() { this._reffed = true; host.refTimer(this._id, true, false); return this; }\n"
+    "    unref() { this._reffed = false; host.refTimer(this._id, false, false); return this; }\n"
+    "    hasRef() { return this._reffed; }\n"
     "    refresh() {\n"
-    "      host.clearTimer(this._id);\n"
-    "      this._id = host.setTimer(this._fn, this._delay, this._repeat);\n"
+    "      if (this._closed) return this;\n"
+    "      if (this._destroyed) this._arm();\n"
+    "      else host.refreshTimer(this._id);\n"
     "      return this;\n"
     "    }\n"
-    "    close() { host.clearTimer(this._id); return this; }\n"
+    "    close() { this._closed = true; this._destroyed = true; timers.delete(this._id); host.clearTimer(this._id, false); return this; }\n"
+    "    [Symbol.dispose]() { this.close(); }\n"
     "    [Symbol.toPrimitive]() { return this._id; }\n"
     "  }\n"
     "  const mkTimer = (fn, ms, args, repeat) => {\n"
     "    if (typeof fn !== 'function') {\n"
     "      throw new TypeError('The \"callback\" argument must be of type function. Received type ' + typeof fn);\n"
     "    }\n"
-    "    const cb = args.length === 0 ? fn : () => fn(...args);\n"
-    "    return new Timeout(cb, Number(ms), repeat);\n"
+    "    return new Timeout(fn, Number(ms), args, repeat);\n"
     "  };\n"
     "  g.setTimeout = (fn, ms, ...args) => mkTimer(fn, ms, args, false);\n"
     "  g.setInterval = (fn, ms, ...args) => mkTimer(fn, ms, args, true);\n"
     "  g.clearTimeout = (t) => {\n"
     "    if (t === undefined || t === null) return;\n"
     "    const id = typeof t === 'number' ? t : Number(t);\n"
-    "    if (Number.isFinite(id)) host.clearTimer(id);\n"
+    "    if (Number.isFinite(id)) {\n"
+    "      const timer = timers.get(id);\n"
+    "      if (timer) timer.close(); else host.clearTimer(id, false);\n"
+    "    }\n"
     "  };\n"
     "  g.clearInterval = g.clearTimeout;\n"
+    "  class Immediate {\n"
+    "    constructor(fn, args) {\n"
+    "      this._reffed = true; this._destroyed = false;\n"
+    "      this._id = host.setTimer(() => {\n"
+    "        this._destroyed = true; this._reffed = false; fn.apply(this, args);\n"
+    "      }, 0, false, true);\n"
+    "    }\n"
+    "    ref() { if (!this._destroyed) { this._reffed = true; host.refTimer(this._id, true, true); } return this; }\n"
+    "    unref() { if (!this._destroyed) { this._reffed = false; host.refTimer(this._id, false, true); } return this; }\n"
+    "    hasRef() { return this._reffed; }\n"
+    "    _close() { this._destroyed = true; this._reffed = false; host.clearTimer(this._id, true); }\n"
+    "    [Symbol.dispose]() { this._close(); }\n"
+    "  }\n"
+    "  g.setImmediate = (fn, ...args) => {\n"
+    "    if (typeof fn !== 'function') throw new TypeError('The \"callback\" argument must be of type function. Received type ' + typeof fn);\n"
+    "    return new Immediate(fn, args);\n"
+    "  };\n"
+    "  g.clearImmediate = (immediate) => { if (immediate instanceof Immediate) immediate._close(); };\n"
     "\n"
     "  class ReadableStream {\n"
     "    constructor(source, _strategy) {\n"
@@ -1673,7 +1707,6 @@ static void web_timer_fire_cb(ScrClosure *env) {
 static JSValue web_host_set_timer(JSContext *ctx, JSValueConst this_val,
                                   int argc, JSValueConst *argv) {
   (void)this_val;
-  (void)argc;
   double ms = 0;
   if (JS_ToFloat64(ctx, &ms, argv[1])) return JS_EXCEPTION;
   bool repeat = JS_ToBool(ctx, argv[2]) > 0;
@@ -1689,17 +1722,45 @@ static JSValue web_host_set_timer(JSContext *ctx, JSValueConst this_val,
   scr_box_set_ref(box, h); /* the box owns the +1 */
   ScrClosure *cb = scr_closure_new((void *)web_timer_fire_cb, 1);
   cb->caps[0] = box;
-  double id = repeat ? scr_set_interval(cb, ms) : scr_set_timeout_handle(cb, ms);
+  bool immediate = argc > 3 && JS_ToBool(ctx, argv[3]) > 0;
+  double id = immediate ? scr_set_immediate(cb)
+                        : repeat ? scr_set_interval(cb, ms) : scr_set_timeout_handle(cb, ms);
   return JS_NewFloat64(ctx, id);
 }
 
 static JSValue web_host_clear_timer(JSContext *ctx, JSValueConst this_val,
                                     int argc, JSValueConst *argv) {
   (void)this_val;
+  double id = 0;
+  if (JS_ToFloat64(ctx, &id, argv[0])) return JS_EXCEPTION;
+  if (argc > 1 && JS_ToBool(ctx, argv[1]) > 0) scr_clear_immediate(id);
+  else scr_clear_interval(id);
+  return JS_UNDEFINED;
+}
+
+static JSValue web_host_ref_timer(JSContext *ctx, JSValueConst this_val,
+                                int argc, JSValueConst *argv) {
+  (void)this_val;
   (void)argc;
   double id = 0;
   if (JS_ToFloat64(ctx, &id, argv[0])) return JS_EXCEPTION;
-  scr_clear_interval(id);
+  bool reffed = JS_ToBool(ctx, argv[1]) > 0;
+  bool immediate = JS_ToBool(ctx, argv[2]) > 0;
+  if (immediate) {
+    if (reffed) scr_immediate_ref(id); else scr_immediate_unref(id);
+  } else {
+    if (reffed) scr_timer_ref(id); else scr_timer_unref(id);
+  }
+  return JS_UNDEFINED;
+}
+
+static JSValue web_host_refresh_timer(JSContext *ctx, JSValueConst this_val,
+                                    int argc, JSValueConst *argv) {
+  (void)this_val;
+  (void)argc;
+  double id = 0;
+  if (JS_ToFloat64(ctx, &id, argv[0])) return JS_EXCEPTION;
+  scr_timer_refresh(id);
   return JS_UNDEFINED;
 }
 
@@ -1877,8 +1938,10 @@ void scr_island_web_boot(void *jsctx) {
   JS_SetPropertyStr(ctx, host, "write", JS_NewCFunction(ctx, web_host_write, "write", 2));
   JS_SetPropertyStr(ctx, host, "tzname", JS_NewCFunction(ctx, web_host_tzname, "tzname", 1));
   JS_SetPropertyStr(ctx, host, "timer", JS_NewCFunction(ctx, web_host_timer, "timer", 2));
-  JS_SetPropertyStr(ctx, host, "setTimer", JS_NewCFunction(ctx, web_host_set_timer, "setTimer", 3));
-  JS_SetPropertyStr(ctx, host, "clearTimer", JS_NewCFunction(ctx, web_host_clear_timer, "clearTimer", 1));
+  JS_SetPropertyStr(ctx, host, "setTimer", JS_NewCFunction(ctx, web_host_set_timer, "setTimer", 4));
+  JS_SetPropertyStr(ctx, host, "clearTimer", JS_NewCFunction(ctx, web_host_clear_timer, "clearTimer", 2));
+  JS_SetPropertyStr(ctx, host, "refTimer", JS_NewCFunction(ctx, web_host_ref_timer, "refTimer", 3));
+  JS_SetPropertyStr(ctx, host, "refreshTimer", JS_NewCFunction(ctx, web_host_refresh_timer, "refreshTimer", 1));
   JSValue r = JS_Call(ctx, fn, JS_UNDEFINED, 1, (JSValueConst *)&host);
   JS_FreeValue(ctx, host);
   JS_FreeValue(ctx, fn);

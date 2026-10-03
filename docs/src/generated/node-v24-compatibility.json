@@ -1067,9 +1067,9 @@
       },
       "dynamic": {
         "supported": 0,
-        "partial": 10,
+        "partial": 22,
         "refused": 0,
-        "not-implemented": 15,
+        "not-implemented": 3,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -44567,7 +44567,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Provided when the embedded npm module bootstrap runs; absent from standalone dynamic islands.",
+        "detail": "Provided by the embedded engine's web/global compatibility layer.",
         "verification": "test-backed"
       }
     },
@@ -44707,7 +44707,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Provided when the embedded npm module bootstrap runs; absent from standalone dynamic islands.",
+        "detail": "Provided by the embedded engine's web/global compatibility layer.",
         "verification": "test-backed"
       }
     },
@@ -78240,7 +78240,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -78268,7 +78268,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -78296,7 +78296,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "detail": "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.",
         "verification": "test-backed"
       }
     },
@@ -78323,9 +78323,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78351,9 +78351,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78407,9 +78407,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78435,9 +78435,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78463,9 +78463,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78491,9 +78491,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78547,9 +78547,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78575,9 +78575,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78603,9 +78603,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78631,9 +78631,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78659,9 +78659,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {
@@ -78715,9 +78715,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.",
+        "verification": "test-backed"
       }
     },
     {

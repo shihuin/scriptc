@@ -14,8 +14,8 @@
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 816,
-        "verify-gap": 2222,
+        "audit-partial": 828,
+        "verify-gap": 2210,
         "replace-refusal": 112,
         "implement": 218
       }
@@ -45956,7 +45956,7 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-npm-global:clearImmediate",
+          "source": "island-global:clearImmediate",
           "tests": [
             "tests/harness/web-globals.test.ts"
           ]
@@ -46144,7 +46144,7 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-npm-global:setImmediate",
+          "source": "island-global:setImmediate",
           "tests": [
             "tests/harness/web-globals.test.ts"
           ]
@@ -86829,9 +86829,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:timers/promises.setTimeout",
+          "source": "island-feature:timers.timersPromises.setTimeout",
           "tests": [
-            "tests/fixtures/npm/cases/misc-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
           ]
         }
       }
@@ -86869,9 +86870,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:timers/promises.setImmediate",
+          "source": "island-feature:timers.timersPromises.setImmediate",
           "tests": [
-            "tests/fixtures/npm/cases/misc-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
           ]
         }
       }
@@ -86909,9 +86911,10 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:timers/promises.setInterval",
+          "source": "island-feature:timers.timersPromises.setInterval",
           "tests": [
-            "tests/fixtures/npm/cases/misc-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
           ]
         }
       }
@@ -86940,12 +86943,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timersPromises.scheduler.wait",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -86973,12 +86979,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timersPromises.scheduler.yield",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87044,12 +87053,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.immediate.hasRef",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87082,12 +87095,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.immediate.ref",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87120,12 +87137,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.immediate.unref",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87155,12 +87176,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.immediate",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87221,12 +87246,16 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timeout.close",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87259,12 +87288,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timeout.hasRef",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87297,12 +87330,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timeout.ref",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87335,12 +87372,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timeout.refresh",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87373,12 +87414,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timeout.unref",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },
@@ -87445,12 +87490,16 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:timers",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:timers.timeout",
+          "tests": [
+            "tests/fixtures/npm/cases/island-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-promise-timers/main.ts",
+            "tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+          ]
         }
       }
     },

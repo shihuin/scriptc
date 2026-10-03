@@ -13426,6 +13426,18 @@
     "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-promise-timers/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-promise-timers/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+   ],
+   "diags": []
   }
  }
 }
