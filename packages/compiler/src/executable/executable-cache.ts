@@ -104,13 +104,17 @@ export interface EarlyExecutableCacheOptions {
 
 export type EarlyExecutableRouteOptions = Omit<
   EarlyExecutableCacheOptions,
-  "implementation" | "implementationDependencies"
->;
+  "implementation" | "implementationDependencies" | "nativeEnvironment"
+> & {
+  /** Discovery waits until a complete payload and its frontend proof match. */
+  nativeEnvironment: string | (() => Promise<string>);
+};
 
 interface EarlyExecutableRouteStamp {
-  version: 1;
+  version: 2;
   key: string;
   implementation: string;
+  nativeEnvironment: string;
   integrity: string;
 }
 
@@ -206,9 +210,9 @@ function cacheKey(options: EarlyExecutableCacheOptions): string {
   ]);
 }
 
-function routeKey(options: EarlyExecutableRouteOptions): string {
+function routeKey(options: Omit<EarlyExecutableRouteOptions, "nativeEnvironment">): string {
   const hash = createHash("sha256")
-    .update("early-executable-route-v1\0")
+    .update("early-executable-route-v2\0")
     .update(compilerReleaseVersion()).update("\0")
     .update(compilerImplementationRoot()).update("\0")
     .update(resolve(options.entryPath)).update("\0")
@@ -229,7 +233,6 @@ function routeKey(options: EarlyExecutableRouteOptions): string {
         : JSON.stringify(options.npmStatic)).update("\0")
     .update(options.target).update("\0")
     .update(options.compiler.join("\x1f")).update("\0")
-    .update(options.nativeEnvironment).update("\0")
     .update(options.nodeVersion).update("\0");
   if (options.ffiProfile === null) {
     hash.update("<ffi-off>");
@@ -241,13 +244,13 @@ function routeKey(options: EarlyExecutableRouteOptions): string {
   return hash.digest("hex");
 }
 
-function routePath(root: string, options: EarlyExecutableRouteOptions): string {
+function routePath(root: string, options: Omit<EarlyExecutableRouteOptions, "nativeEnvironment">): string {
   return join(root, "early-exe-route", routeKey(options));
 }
 
 function routeIntegrity(stamp: Omit<EarlyExecutableRouteStamp, "integrity">): string {
   return createHash("sha256")
-    .update("early-executable-route-stamp-v1\0")
+    .update("early-executable-route-stamp-v2\0")
     .update(JSON.stringify(stamp))
     .digest("hex");
 }
@@ -294,6 +297,18 @@ function executableFrontendOutputExclusions(
   return frontendOutputExclusions(options, backend, "", [options.outPath, `${options.outPath}.dSYM`]);
 }
 
+/** Ordinary source/configuration edits are cheap misses before driver
+ * discovery. Replay declaration-file bytes and resolution metadata in the
+ * final complete proof instead of twice. */
+function routedFrontendCandidate(frontend: FrontendInputSnapshot): FrontendInputSnapshot {
+  return {
+    ...frontend,
+    probes: frontend.probes.filter((probe) =>
+      probe.op === "file" && !/\.d\.(?:ts|mts|cts)$/.test(probe.path),
+    ),
+  };
+}
+
 async function fileMatches(
   destination: string,
   expectedDigest: string,
@@ -329,6 +344,14 @@ export async function readEarlyExecutableCache(
   root: string | null,
   options: EarlyExecutableCacheOptions,
 ): Promise<EarlyExecutableCacheHit | null> {
+  return readExecutableCache(root, options);
+}
+
+async function readExecutableCache(
+  root: string | null,
+  options: EarlyExecutableCacheOptions,
+  validateRoute?: () => Promise<boolean>,
+): Promise<EarlyExecutableCacheHit | null> {
   if (root === null) return null;
   const path = stampPath(root, options);
   try {
@@ -359,11 +382,15 @@ export async function readEarlyExecutableCache(
       (stamp.files.ir !== null) !== options.emitIr ||
       stampIntegrity(unsigned) !== integrity ||
       !frontendInputsStillMatch(
-        stamp.frontend,
+        validateRoute === undefined ? stamp.frontend : routedFrontendCandidate(stamp.frontend),
         executableFrontendOutputExclusions(options, stamp.native.backend),
       )
     ) return null;
 
+    // Startup may defer driver discovery until the source/configuration proof
+    // matches. A frontend-only entry cannot serve that route, so it should
+    // fall through without probing a driver the full compiler will probe too.
+    if (validateRoute !== undefined && stamp.files.executable === null) return null;
     const directory = dirname(path);
     const [translationUnit, ir, executable, debugSymbols] = await Promise.all([
       readCachedFile(
@@ -390,6 +417,15 @@ export async function readEarlyExecutableCache(
       stamp.files.debugSymbols !== undefined && debugSymbols === null
     ) return null;
 
+    if (validateRoute !== undefined) {
+      if (!(await validateRoute())) return null;
+      // The compiler proof is checked AFTER deferred discovery by the routed
+      // reader. Recheck source/configuration bytes here too before restoring.
+      if (!frontendInputsStillMatch(
+        stamp.frontend,
+        executableFrontendOutputExclusions(options, stamp.native.backend),
+      )) return null;
+    }
     // Validate the native proof before restoring frontend artifacts: replacing
     // a TU can update its output directory metadata, which is itself part of
     // compileC's same-output dependency snapshot.
@@ -399,6 +435,7 @@ export async function readEarlyExecutableCache(
       // Recheck after hashing every dependency: a concurrent tool/runtime
       // update must not win the window immediately before installation.
       await nativeArtifactDependenciesStillMatch(stamp.nativeDependencies);
+    if (validateRoute !== undefined && !executableRestored) return null;
     const paths = outputPaths(options, stamp.native.backend);
     if (!(await fileMatches(paths.llvmPath, stamp.files.translationUnit.digest))) {
       await installBytes(translationUnit, paths.llvmPath);
@@ -442,8 +479,9 @@ export async function readEarlyExecutableCache(
 }
 
 /** Follow the exact-invocation route without hashing/importing the complete
- * compiler package. The full compiler publishes a content digest plus a
- * metadata replay proof; any implementation change turns this into a miss. */
+ * compiler package. Source/configuration misses skip deferred driver discovery;
+ * a hit still proves the current native environment before restoring output.
+ * The route is only an index: the full payload key retains that environment. */
 export async function readRoutedExecutableCache(
   root: string | null,
   options: EarlyExecutableRouteOptions,
@@ -456,9 +494,11 @@ export async function readRoutedExecutableCache(
     ) as EarlyExecutableRouteStamp;
     const { integrity, ...unsigned } = route;
     if (
-      route.version !== 1 ||
+      route.version !== 2 ||
       !/^[0-9a-f]{64}$/.test(route.key) ||
       !/^[0-9a-f]{64}$/.test(route.implementation) ||
+      typeof route.nativeEnvironment !== "string" ||
+      (typeof options.nativeEnvironment === "string" && options.nativeEnvironment !== route.nativeEnvironment) ||
       routeIntegrity(unsigned) !== integrity
     ) return null;
     const proofFile = implementationProofPath(root, route.implementation);
@@ -467,16 +507,26 @@ export async function readRoutedExecutableCache(
     if (
       proof.version !== 1 || proof.implementation !== route.implementation ||
       !Array.isArray(proof.dependencies) ||
-      implementationProofIntegrity(proofUnsigned) !== proofIntegrity ||
-      !(await compilerImplementationDependenciesStillMatch(proof.dependencies))
+      implementationProofIntegrity(proofUnsigned) !== proofIntegrity
     ) return null;
     const complete: EarlyExecutableCacheOptions = {
       ...options,
+      nativeEnvironment: route.nativeEnvironment,
       implementation: route.implementation,
       implementationDependencies: proof.dependencies,
     };
     if (cacheKey(complete) !== route.key) return null;
-    const hit = await readEarlyExecutableCache(root, complete);
+    const hit = await readExecutableCache(
+      root,
+      complete,
+      async () => {
+        const environment = typeof options.nativeEnvironment === "function"
+          ? await options.nativeEnvironment()
+          : options.nativeEnvironment;
+        return environment === route.nativeEnvironment &&
+          await compilerImplementationDependenciesStillMatch(proof.dependencies);
+      },
+    );
     if (hit?.executableRestored !== true) return null;
     const now = new Date();
     await Promise.all([
@@ -520,9 +570,10 @@ export async function publishEarlyExecutableRoute(
   const routeOptions: EarlyExecutableRouteOptions = options;
   const routeDestination = routePath(root, routeOptions);
   const routeUnsigned: Omit<EarlyExecutableRouteStamp, "integrity"> = {
-    version: 1,
+    version: 2,
     key: cacheKey(options),
     implementation: options.implementation,
+    nativeEnvironment: options.nativeEnvironment,
   };
   const route: EarlyExecutableRouteStamp = {
     ...routeUnsigned,

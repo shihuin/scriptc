@@ -142,3 +142,52 @@ test.skipIf(!runtimePackHost)(
   },
   120_000,
 );
+
+test.skipIf(!runtimePackHost)(
+  "bootstrap probes the native driver once for cold builds, repeats, and source edits",
+  async () => {
+    const dir = await mkdtemp(join(tmpdir(), "scriptc-bootstrap-driver-probes-"));
+    const entry = join(dir, "main.ts");
+    const outPath = join(dir, "program");
+    const probes = join(dir, "probes.log");
+    const preload = join(dir, "count-probes.mjs");
+    const env = { ...process.env, SCRIPTC_CACHE_DIR: join(dir, "cache") };
+    delete env.SCRIPTC_NO_CACHE;
+    const build = () => execFileAsync(process.execPath, ["--import", preload, bootstrap, "build", entry, "-o", outPath], { env });
+    try {
+      await Promise.all([
+        writeFile(entry, 'console.log("one");\n'),
+        writeFile(preload, [
+          'import childProcess from "node:child_process";',
+          'import { appendFileSync } from "node:fs";',
+          'import { syncBuiltinESMExports } from "node:module";',
+          'import { promisify } from "node:util";',
+          'const original = childProcess.execFile;',
+          `const record = (args) => { if (args?.includes("-print-prog-name=clang")) appendFileSync(${JSON.stringify(probes)}, "probe\\n"); };`,
+          'childProcess.execFile = function (file, args, ...rest) {',
+          '  record(args);',
+          '  return original.call(this, file, args, ...rest);',
+          '};',
+          'childProcess.execFile[promisify.custom] = function (file, args, ...rest) {',
+          '  record(args);',
+          '  return promisify(original).call(this, file, args, ...rest);',
+          '};',
+          'syncBuiltinESMExports();',
+          '',
+        ].join("\n")),
+      ]);
+      await build();
+      expect(await readFile(probes, "utf8")).toBe("probe\n");
+      expect((await execFileAsync(outPath)).stdout).toBe("one\n");
+      await build();
+      expect(await readFile(probes, "utf8")).toBe("probe\nprobe\n");
+      await writeFile(entry, 'console.log("two");\n');
+      await build();
+      expect(await readFile(probes, "utf8")).toBe("probe\nprobe\nprobe\n");
+      expect((await execFileAsync(outPath)).stdout).toBe("two\n");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  },
+  120_000,
+);

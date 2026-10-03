@@ -106,18 +106,6 @@ async function tryFastPath(): Promise<number | null> {
     ? startup.precompiledRuntimePackTarget()
     : null;
   const helperObjectRoute = helperRuntimePackTarget !== null;
-  let nativeEnvironment: string | null;
-  try {
-    nativeEnvironment = helperObjectRoute
-      ? await startup.executableLinkerEnvironmentFingerprint(
-        process.env,
-        helperRuntimePackTarget.defaultLinker,
-      )
-      : await startup.executableNativeEnvironmentFingerprint();
-  } catch {
-    nativeEnvironment = null;
-  }
-  if (nativeEnvironment === null) return null;
   const hit = await startup.readRoutedExecutableCache(root, {
     entryPath: input,
     outDir,
@@ -136,7 +124,12 @@ async function tryFastPath(): Promise<number | null> {
     compiler: [helperObjectRoute
       ? startup.resolvePlatformLinker(process.env, helperRuntimePackTarget.defaultLinker)
       : (process.env["SCRIPTC_CC"] ?? "clang")],
-    nativeEnvironment,
+    nativeEnvironment: () => helperObjectRoute
+      ? startup.executableLinkerEnvironmentFingerprint(
+        process.env,
+        helperRuntimePackTarget.defaultLinker,
+      )
+      : startup.executableNativeEnvironmentFingerprint(),
     nodeVersion: process.version,
   });
   if (hit === null) return null;

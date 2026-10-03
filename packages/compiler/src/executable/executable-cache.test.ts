@@ -1,9 +1,9 @@
 import { chmod, mkdtemp, readFile, readdir, rm, stat, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { FrontendInputTracker, trackedFileExists, trackedReadFile } from "../frontend/input-tracker.js";
-import { nativeArtifactDependenciesStillMatch } from "../backend/native-toolchain.js";
+import { nativeArtifactDependenciesStillMatch, snapshotNativeArtifactDependencies } from "../backend/native-toolchain.js";
 import { installDarwinDebugSymbols, readDarwinDebugSymbols } from "../backend/debug-symbols.js";
 import {
   publishEarlyExecutableCache,
@@ -349,4 +349,118 @@ test("native dependency validation rejects malformed cache data", async () => {
   expect(await nativeArtifactDependenciesStillMatch([
     { path: "/tmp/not-enough-fields", kind: "file" },
   ] as never)).toBe(false);
+});
+
+async function routedFixture(executableRestored = true) {
+  const f = await fixture();
+  const implementation = join(f.options.outDir, "compiler-file.js");
+  const nativeDependency = join(f.options.outDir, "native-tool");
+  const declarations = join(f.options.outDir, "dependency.d.ts");
+  await Promise.all([
+    writeFile(implementation, "compiler-v1\n"),
+    writeFile(nativeDependency, "native-v1\n"),
+    writeFile(declarations, "export const value: number;\n"),
+    writeFile(f.options.outPath, "cached executable\n"),
+  ]);
+  const info = await stat(implementation);
+  f.options.implementationDependencies = [{
+    path: implementation, kind: "file", dev: info.dev, ino: info.ino,
+    size: info.size, mtimeMs: info.mtimeMs, ctimeMs: info.ctimeMs,
+  }];
+  const tracker = new FrontendInputTracker();
+  tracker.run(() => {
+    trackedReadFile(f.source);
+    trackedReadFile(declarations);
+    trackedFileExists(f.missing);
+  });
+  await publishEarlyExecutableCache(f.root, f.options, {
+    llvmPath: f.llvmPath, irPath: f.irPath, native, executableRestored,
+    ...(executableRestored ? { nativeDependencies: await snapshotNativeArtifactDependencies([nativeDependency]) } : {}),
+    frontend: tracker.snapshot(),
+  });
+  await Promise.all([
+    writeFile(f.options.outPath, "current executable\n"),
+    writeFile(f.llvmPath, "; current LLVM\n"),
+    writeFile(f.irPath, "current IR\n"),
+  ]);
+  return { ...f, implementation, nativeDependency, declarations };
+}
+
+test("missing and disabled routes skip deferred native driver discovery", async () => {
+  const f = await fixture();
+  const discover = vi.fn(async () => f.options.nativeEnvironment);
+  expect(await readRoutedExecutableCache(null, { ...f.options, nativeEnvironment: discover })).toBeNull();
+  expect(await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: discover })).toBeNull();
+  expect(discover).not.toHaveBeenCalled();
+});
+
+test.each(["source", "payload", "frontend-only"])(
+  "%s misses skip deferred driver discovery and preserve caller outputs",
+  async (miss) => {
+    const f = await routedFixture(miss !== "frontend-only");
+    if (miss === "source") await writeFile(f.source, 'console.log("edited");\n');
+    if (miss === "payload") {
+      const [key] = await readdir(join(f.root, "early-exe"));
+      await writeFile(join(f.root, "early-exe", key!, "program.bin"), "corrupt executable\n");
+    }
+    const discover = vi.fn(async () => f.options.nativeEnvironment);
+    expect(await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: discover })).toBeNull();
+    expect(discover).not.toHaveBeenCalled();
+    expect(await readFile(f.options.outPath, "utf8")).toBe("current executable\n");
+    expect(await readFile(f.llvmPath, "utf8")).toBe("; current LLVM\n");
+    expect(await readFile(f.irPath, "utf8")).toBe("current IR\n");
+  },
+);
+
+test("a deferred driver fingerprint is checked once before restoring a routed hit", async () => {
+  const f = await routedFixture();
+  const discover = vi.fn(async () => f.options.nativeEnvironment);
+  expect((await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: discover }))?.executableRestored).toBe(true);
+  expect(discover).toHaveBeenCalledTimes(1);
+  expect(await readFile(f.options.outPath, "utf8")).toBe("cached executable\n");
+  expect(await readFile(f.llvmPath, "utf8")).toBe("; generated llvm\n");
+  expect(await readFile(f.irPath, "utf8")).toContain("irVersion");
+});
+
+test.each(["environment", "failure", "source", "declarations", "implementation", "native"])(
+  "%s changes during deferred discovery refuse restoration",
+  async (change) => {
+    const f = await routedFixture();
+    const discover = vi.fn(async () => {
+      if (change === "failure") throw new Error("driver discovery failed");
+      if (change === "source") await writeFile(f.source, 'console.log("edited");\n');
+      if (change === "declarations") await writeFile(f.declarations, "export const value: string;\n");
+      if (change === "implementation") await writeFile(f.implementation, "compiler-v2\n");
+      if (change === "native") await writeFile(f.nativeDependency, "native-v2\n");
+      return change === "environment" ? "another driver" : f.options.nativeEnvironment;
+    });
+    expect(await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: discover })).toBeNull();
+    expect(discover).toHaveBeenCalledTimes(1);
+    expect(await readFile(f.options.outPath, "utf8")).toBe("current executable\n");
+    expect(await readFile(f.llvmPath, "utf8")).toBe("; current LLVM\n");
+    expect(await readFile(f.irPath, "utf8")).toBe("current IR\n");
+  },
+);
+
+test.each(["implementation", "native", "declarations", "resolution"])("a stale %s proof refuses a deferred routed hit", async (change) => {
+  const f = await routedFixture();
+  const path = { implementation: f.implementation, native: f.nativeDependency, declarations: f.declarations, resolution: f.missing }[change]!;
+  await writeFile(path, "changed before discovery\n");
+  expect(await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: async () => f.options.nativeEnvironment })).toBeNull();
+  expect(await readFile(f.options.outPath, "utf8")).toBe("current executable\n");
+  expect(await readFile(f.llvmPath, "utf8")).toBe("; current LLVM\n");
+  expect(await readFile(f.irPath, "utf8")).toBe("current IR\n");
+});
+
+test("the route index still isolates eager and deferred native environments", async () => {
+  const f = await routedFixture();
+  expect(await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: "another driver" })).toBeNull();
+  await publishEarlyExecutableCache(f.root, { ...f.options, nativeEnvironment: "another driver" }, {
+    llvmPath: f.llvmPath, irPath: f.irPath, native, executableRestored: true,
+    nativeDependencies: await snapshotNativeArtifactDependencies([f.nativeDependency]),
+    frontend: (await readEarlyExecutableCache(f.root, f.options))!.frontend,
+  });
+  expect(await readRoutedExecutableCache(f.root, f.options)).toBeNull();
+  expect(await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: async () => f.options.nativeEnvironment })).toBeNull();
+  expect((await readRoutedExecutableCache(f.root, { ...f.options, nativeEnvironment: async () => "another driver" }))?.executableRestored).toBe(true);
 });
