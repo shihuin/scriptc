@@ -14,10 +14,10 @@
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 828,
+        "audit-partial": 832,
         "verify-gap": 2194,
         "replace-refusal": 112,
-        "implement": 218
+        "implement": 214
       }
     },
     "priorities": {
@@ -60231,7 +60231,8 @@
           "source": "island-feature:modules.require",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60274,7 +60275,8 @@
           "source": "island-feature:modules.__dirname",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60317,7 +60319,8 @@
           "source": "island-feature:modules.__filename",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60360,7 +60363,8 @@
           "source": "island-feature:modules.exports",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60396,7 +60400,8 @@
           "source": "island-feature:modules.module",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60439,7 +60444,8 @@
           "source": "island-feature:modules.require",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60553,7 +60559,8 @@
           "source": "island-feature:modules.cache",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60662,7 +60669,8 @@
           "source": "island-feature:modules.module",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60698,12 +60706,14 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "implement",
-          "verification": "declared-gap",
-          "confidence": "medium",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
           "source": "island-feature:modules.module.require",
-          "tests": []
+          "tests": [
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+          ]
         }
       }
     },
@@ -60733,12 +60743,14 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "implement",
-          "verification": "declared-gap",
-          "confidence": "medium",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
           "source": "island-feature:modules.children",
-          "tests": []
+          "tests": [
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+          ]
         }
       }
     },
@@ -60780,7 +60792,8 @@
           "source": "island-feature:modules.exports",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60823,7 +60836,8 @@
           "source": "island-feature:modules.exports",
           "tests": [
             "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/dynamic-import/main.ts",
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60865,8 +60879,7 @@
           "confidence": "high",
           "source": "island-feature:modules.filename",
           "tests": [
-            "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60903,8 +60916,7 @@
           "confidence": "high",
           "source": "island-feature:modules.id",
           "tests": [
-            "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -60935,12 +60947,14 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "implement",
-          "verification": "declared-gap",
-          "confidence": "medium",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
           "source": "island-feature:modules.isPreloading",
-          "tests": []
+          "tests": [
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+          ]
         }
       }
     },
@@ -60976,8 +60990,7 @@
           "confidence": "high",
           "source": "island-feature:modules.loaded",
           "tests": [
-            "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -61014,8 +61027,7 @@
           "confidence": "high",
           "source": "island-feature:modules.parent",
           "tests": [
-            "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -61052,8 +61064,7 @@
           "confidence": "high",
           "source": "island-feature:modules.path",
           "tests": [
-            "tests/fixtures/npm/cases/create-require/main.ts",
-            "tests/fixtures/npm/cases/dynamic-import/main.ts"
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
           ]
         }
       }
@@ -61084,12 +61095,14 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "implement",
-          "verification": "declared-gap",
-          "confidence": "medium",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
           "source": "island-feature:modules.paths",
-          "tests": []
+          "tests": [
+            "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+          ]
         }
       }
     },

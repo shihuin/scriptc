@@ -684,9 +684,9 @@
       },
       "dynamic": {
         "supported": 0,
-        "partial": 20,
+        "partial": 24,
         "refused": 0,
-        "not-implemented": 7,
+        "not-implemented": 3,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -75039,7 +75039,8 @@
         "tests": [
           "tests/fixtures/npm/cases/builtin-shims/main.ts",
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -75078,7 +75079,8 @@
         "evidence": "island-feature:modules.require",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75144,7 +75146,8 @@
         "evidence": "island-feature:modules.__dirname",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75183,7 +75186,8 @@
         "evidence": "island-feature:modules.__filename",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75222,7 +75226,8 @@
         "evidence": "island-feature:modules.exports",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75252,7 +75257,8 @@
         "evidence": "island-feature:modules.module",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75291,7 +75297,8 @@
         "evidence": "island-feature:modules.require",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75393,7 +75400,8 @@
         "evidence": "island-feature:modules.cache",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75485,7 +75493,8 @@
         "evidence": "island-feature:modules.module",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75520,8 +75529,11 @@
         ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-feature:modules.module.require"
+        "status": "partial",
+        "evidence": "island-feature:modules.module.require",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -75550,8 +75562,11 @@
         ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-feature:modules.children"
+        "status": "partial",
+        "evidence": "island-feature:modules.children",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -75589,7 +75604,8 @@
         "evidence": "island-feature:modules.exports",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75628,7 +75644,8 @@
         "evidence": "island-feature:modules.exports",
         "tests": [
           "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/dynamic-import/main.ts",
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -75666,8 +75683,7 @@
         "status": "partial",
         "evidence": "island-feature:modules.filename",
         "tests": [
-          "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75700,8 +75716,7 @@
         "status": "partial",
         "evidence": "island-feature:modules.id",
         "tests": [
-          "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75731,8 +75746,11 @@
         ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-feature:modules.isPreloading"
+        "status": "partial",
+        "evidence": "island-feature:modules.isPreloading",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },
@@ -75764,8 +75782,7 @@
         "status": "partial",
         "evidence": "island-feature:modules.loaded",
         "tests": [
-          "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75798,8 +75815,7 @@
         "status": "partial",
         "evidence": "island-feature:modules.parent",
         "tests": [
-          "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75832,8 +75848,7 @@
         "status": "partial",
         "evidence": "island-feature:modules.path",
         "tests": [
-          "tests/fixtures/npm/cases/create-require/main.ts",
-          "tests/fixtures/npm/cases/dynamic-import/main.ts"
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -75863,8 +75878,11 @@
         ]
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-feature:modules.paths"
+        "status": "partial",
+        "evidence": "island-feature:modules.paths",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+        ]
       },
       "anchorSource": "ancestor"
     },

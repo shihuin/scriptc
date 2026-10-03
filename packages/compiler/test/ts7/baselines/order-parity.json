@@ -13450,6 +13450,12 @@
     "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+   ],
+   "diags": []
   }
  }
 }

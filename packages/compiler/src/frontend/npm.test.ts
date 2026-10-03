@@ -53,6 +53,21 @@ test("emits an import-condition edge for an embedded bare import.meta.resolve", 
   });
 });
 
+test("embeds dependencies reached only through CommonJS module.require", () => {
+  const entry = fixture("cases", "node24-commonjs-metadata", "main.ts");
+  const builder = new NpmGraphBuilder();
+  builder.addImport(entry, "node24-commonjs-fixture");
+  const graph = builder.finish();
+  expect(graph.errors).toEqual([]);
+  expect(graph.modules.some((module) => portable(module.key).endsWith("/node24-commonjs-fixture/method-only.cjs"))).toBe(true);
+  expect(graph.edges.map((edge) => ({ ...edge, from: portable(edge.from), to: portable(edge.to) }))).toContainEqual({
+    from: expect.stringMatching(/\/node24-commonjs-fixture\/index\.cjs$/),
+    specifier: "./method-only.cjs",
+    to: expect.stringMatching(/\/node24-commonjs-fixture\/method-only\.cjs$/),
+    kind: "any",
+  });
+});
+
 test("runtime introspection keeps import and require export conditions separate", () => {
   const entry = fixture("cases", "dual-entry", "main.ts");
   const builder = new NpmGraphBuilder();

@@ -51,7 +51,7 @@ export interface ModuleSpecifiers {
  * declarations (INCLUDING `export * as ns from "x"`, which
  * ts.preProcessFile silently drops — zod v4 re-exports its util namespace
  * that way), dynamic import("literal"), and require("literal") /
- * __require("literal") (esbuild's external-require helper — collecting its
+ * module.require("literal") / __require("literal") (esbuild's external-require helper — collecting its
  * literal call sites gives bundled dists an honest build-time inventory).
  * A real parse, never a regex. */
 export function moduleSpecifiersOfFile(sf: ts.SourceFile): ModuleSpecifiers {
@@ -121,6 +121,14 @@ export function moduleSpecifiersOfFile(sf: ts.SourceFile): ModuleSpecifiers {
         n.arguments.length >= 1 && arg !== undefined && ts.isStringLiteralLike(arg)
       ) {
         push(arg.text, null).importMetaResolve = true;
+      } else if (
+        ((ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === "require") ||
+          (ts.isElementAccessExpression(n.expression) && n.expression.argumentExpression !== undefined &&
+            ts.isStringLiteralLike(n.expression.argumentExpression) && n.expression.argumentExpression.text === "require")) &&
+        ts.isIdentifier(n.expression.expression) && n.expression.expression.text === "module" &&
+        n.arguments.length === 1 && arg !== undefined && ts.isStringLiteralLike(arg)
+      ) {
+        push(arg.text, "requireLocal");
       } else if (
         ts.isIdentifier(n.expression) &&
         (n.expression.text === "require" || n.expression.text === "__require") &&

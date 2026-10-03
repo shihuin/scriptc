@@ -44,6 +44,17 @@ test("helper calls attribute to imported bindings even when the import follows t
   expect(scan('import { __require as renamed } from "./helper.js"; __require("local");').requireHelperImport).toBeNull();
 });
 
+test("CommonJS module.require literals are local lazy edges", () => {
+  expect(scan(`module.require("./method-only.cjs");
+    module["require"](\`./computed.cjs\`);
+    module.require(variable); module.require("ignored", extra);
+    object.require("ignored"); module[variable]("ignored");
+    require("./method-only.cjs");`).uses).toEqual([
+    edge("./method-only.cjs", { require: true, requireLocal: true }),
+    edge("./computed.cjs", { require: true, requireLocal: true }),
+  ]);
+});
+
 test("comments, strings, regexes and substituted template literals cannot invent edges", () => {
   const source = `
     // require("comment")
