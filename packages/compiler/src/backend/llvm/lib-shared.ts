@@ -429,6 +429,10 @@ export const LIB_FN_SYMS: Record<string, string> = {
   // pathToFileURL flavor, and sp.fromPairs throw catchably (may-throw).
   "url.new": "scr_url_new",
   "url.newBase": "scr_url_new_base",
+  "url.canParse": "scr_url_can_parse",
+  "url.canParseBase": "scr_url_can_parse_base",
+  "url.parse": "scr_url_parse",
+  "url.parseBase": "scr_url_parse_base",
   "url.protocol": "scr_url_protocol",
   "url.origin": "scr_url_origin",
   "url.username": "scr_url_username",

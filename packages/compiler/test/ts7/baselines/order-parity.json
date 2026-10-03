@@ -13276,6 +13276,30 @@
     "<repo>/tests/fixtures/node-types/url-getters.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/node24-url-factories.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-url-factories.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-url-factory-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-url-factory-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-url-factories/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-url-factories/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/url-factories.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/url-factories.ts"
+   ],
+   "diags": []
   }
  }
 }

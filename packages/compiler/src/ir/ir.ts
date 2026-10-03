@@ -2473,6 +2473,13 @@ export type IrLibFn =
    * path (getcwd) and never throws. */
   | "url.new"
   | "url.newBase"
+  /** Factories consume already-converted input/base strings. canParse
+   * answers a boolean; parse returns a checked native URL or null (+1).
+   * Parser failures are suppressed; conversion occurs before these calls. */
+  | "url.canParse"
+  | "url.canParseBase"
+  | "url.parse"
+  | "url.parseBase"
   | "url.protocol"
   | "url.origin"
   | "url.username"

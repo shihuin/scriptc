@@ -527,13 +527,9 @@ console.log(\`\${h[0]}\`, b[0]);
   });
 
   test("the island URL reads every component off the static parser; the base form resolves", async () => {
-    // The marshal installs the island URL class (no engine URL exists):
-    // ALL components read off the SAME WHATWG parser's normalized answers
-    // (host/port/search/hash/username/password/origin derived from the
-    // parse — the shim burn-down widened the once-minimal class); writes
-    // stay refused. The (input, base) form RESOLVES relative inputs (dot
-    // segments removed, an own-scheme input ignores the base — Node's
-    // answers exactly); protocol-relative inputs keep a narrow fence.
+    // The marshal installs the island URL class because the engine has no URL.
+    // Components and relative references use the same native parser, including
+    // dot segments, protocol-relative references, and file bases.
     const r = await compileAndRun(
       "island-url-fences",
       `const box: any = { u: new URL("https://x.dev/a/b?q=1#f") };
@@ -550,12 +546,8 @@ const abs: any = new ctor("https://other.dev/q", "https://y.dev/base/");
 console.log(\`\${abs.href}\`);
 const filey: any = new ctor("openh264.wasm", "file:///tmp/pkg/openh264.mjs");
 console.log(\`\${filey.href}\`);
-try {
-  const pr: any = new ctor("//host/p", "https://y.dev/base/");
-  console.log(\`\${pr.href}\`);
-} catch (e) {
-  console.log("protocol-relative fenced");
-}
+const pr: any = new ctor("//host/p", "https://y.dev/base/");
+console.log(\`\${pr.href}\`);
 try {
   const bad: any = new ctor("not a url at all");
   console.log(\`\${bad.href}\`);
@@ -573,7 +565,7 @@ try {
     expect(lines[4]).toBe("https://y.dev/a/up.wasm");
     expect(lines[5]).toBe("https://other.dev/q");
     expect(lines[6]).toBe("file:///tmp/pkg/openh264.wasm");
-    expect(lines[7]).toBe("protocol-relative fenced");
+    expect(lines[7]).toBe("https://host/p");
     expect(lines[8]).toBe("invalid input throws");
   });
 

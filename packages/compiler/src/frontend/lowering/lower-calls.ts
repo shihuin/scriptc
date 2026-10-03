@@ -50,6 +50,7 @@ import { classStaticDataFor } from "./class-static-data.js";
 import { jsBindingHasOpenWrites } from "./lower-stmts.js";
 import { functionCanReturnUndefined } from "../function-completion.js";
 import { checkedIterableSpread } from "./checked-iterable-spread.js";
+import { lowerUrlFactory } from "./lower-url.js";
 
 export { bodyReadsArguments };
 
@@ -5037,6 +5038,7 @@ export function lowerCall(lowerer: Lowerer, expr: ts.CallExpression): IrExpr {
         // Before the island path: regex-argument replace/replaceAll/split
         // lower STATICALLY; only the string-pattern overloads are island.
         lowerRegexMethodCallWithOptionalArg(lowerer, expr, expr.expression) ??
+        lowerUrlStaticCall(lowerer, expr, expr.expression) ??
         lowerer.lowerUrlMethodCall(expr, expr.expression) ??
         lowerer.lowerSearchParamsMethodCall(expr, expr.expression) ??
         lowerer.lowerStatsMethodCall(expr, expr.expression) ??
@@ -5087,9 +5089,6 @@ export function lowerCall(lowerer: Lowerer, expr: ts.CallExpression): IrExpr {
         lowerer.lowerBytesMethodCall(expr, expr.expression) ??
         lowerBytesStaticCall(lowerer, expr, expr.expression) ??
         lowerBufferStaticCallWithNarrowedArg(lowerer, expr, expr.expression) ??
-        // URL.revokeObjectURL's zero-argument contract (the one-argument
-        // form keeps the fence — createObjectURL does too).
-        lowerUrlStaticCall(lowerer, expr, expr.expression) ??
         // Readable.from — the stream classes' one static (before the
         // stdlib chokepoint claims the member).
         lowerStreamStaticCall(lowerer, expr, expr.expression) ??
@@ -11228,17 +11227,21 @@ export function lowerFunction(lowerer: Lowerer, decl: ts.FunctionDeclaration): I
    * direct `call` of the instance with the receiver unevaluated. Claims
    * every call whose member is generic-callable — lowering it or fencing
    * with a named message. */
-  /** URL.revokeObjectURL() with NO argument: Node's ERR_MISSING_ARGS
+  /** The URL factories use the constructor's conversion order and parser.
+   * URL.revokeObjectURL() with NO argument: Node's ERR_MISSING_ARGS
    * throws before the registry lookup, so the zero-argument contract is
    * exact without any blob machinery. The one-argument form (Node's
    * silent no-op for unregistered ids) and createObjectURL keep their
    * fences — a compiled program has no blob registry to consult. */
   function lowerUrlStaticCall(lowerer: Lowerer, call: ts.CallExpression, callee: ts.Expression): IrExpr | null {
     if (!ts.isPropertyAccessExpression(callee) || callee.questionDotToken !== undefined) return null;
-    if (!ts.isIdentifier(callee.expression) || callee.expression.text !== "URL") return null;
-    if (callee.name.text !== "revokeObjectURL" || call.arguments.length !== 0) return null;
+    if (!ts.isIdentifier(callee.expression)) return null;
     const sym = lowerer.resolveValueSymbol(callee.expression);
-    if (!sym || !lowerer.isStdlibSymbol(sym)) return null;
+    if (!sym || !lowerer.isStdlibSymbol(sym) || sym.name !== "URL") return null;
+    if (callee.name.text === "canParse" || callee.name.text === "parse") {
+      return lowerUrlFactory(lowerer, call, callee.name.text);
+    }
+    if (callee.name.text !== "revokeObjectURL" || call.arguments.length !== 0) return null;
     return nodeThrowExpr(1, "ERR_MISSING_ARGS", 'The "url" argument must be specified', VOID, locOf(call));
   }
 

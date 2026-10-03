@@ -39,12 +39,12 @@ import { win32 } from "path";
 watchFile("x", () => {});
 console.log(cpus().length);
 console.log(win32.sep);
-/* URL getters including port/hash/password lower under @types/node, but
- * unimplemented members still fence by member name with the
- * supported list; searchParams and its method surface lower under
+/* URL getters and serialization lower under @types/node, but object-URL
+ * registry operations still fence by member name with the supported
+ * list; searchParams and its method surface lower under
  * @types/node's declarations (provenance-mapped like URL itself). */
 const u = new URL("https://example.com/x?a=1");
-console.log(u.toJSON());
+console.log(URL.createObjectURL(new Blob(["data"])));
 u.searchParams.get("a");
 /* The one-shot zlib/raw/gzip codecs also accept literal compression levels;
  * other options remain fenced, while Brotli remains a member-qualified

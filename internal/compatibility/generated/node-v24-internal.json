@@ -1299,9 +1299,9 @@
       "apiEntries": 62,
       "static": {
         "supported": 0,
-        "partial": 6,
+        "partial": 10,
         "refused": 0,
-        "not-implemented": 56,
+        "not-implemented": 52,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -108884,8 +108884,12 @@
         "tests": [
           "tests/corpus/2946-url-port-hash.ts",
           "tests/corpus/file-url-percent-decoding.ts",
+          "tests/corpus/node24-url-factories.ts",
+          "tests/corpus/node24-url-factory-errors.ts",
           "tests/corpus/path-to-file-url-options.ts",
-          "tests/corpus/url-runtime-base.ts"
+          "tests/corpus/url-runtime-base.ts",
+          "tests/fixtures/node-types/url-factories.ts",
+          "tests/harness/project-config.test.ts"
         ]
       },
       "dynamic": {
@@ -108893,7 +108897,8 @@
         "evidence": "derived:descendants",
         "tests": [
           "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
-          "tests/fixtures/npm/cases/misc-shims/main.ts"
+          "tests/fixtures/npm/cases/misc-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -109008,7 +109013,8 @@
         "evidence": "island-export:node:url.URL",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109031,15 +109037,22 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:url"
+        "status": "partial",
+        "evidence": "compiler-feature:url.url.toString",
+        "tests": [
+          "tests/corpus/node24-url-factories.ts",
+          "tests/corpus/node24-url-factory-errors.ts",
+          "tests/fixtures/node-types/url-factories.ts",
+          "tests/harness/project-config.test.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-member:node:url.url.toString",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109062,15 +109075,22 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:url"
+        "status": "partial",
+        "evidence": "compiler-feature:url.url.toJSON",
+        "tests": [
+          "tests/corpus/node24-url-factories.ts",
+          "tests/corpus/node24-url-factory-errors.ts",
+          "tests/fixtures/node-types/url-factories.ts",
+          "tests/harness/project-config.test.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-member:node:url.url.toJSON",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109147,15 +109167,22 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:url"
+        "status": "partial",
+        "evidence": "compiler-feature:url.URL.canParse",
+        "tests": [
+          "tests/corpus/node24-url-factories.ts",
+          "tests/corpus/node24-url-factory-errors.ts",
+          "tests/fixtures/node-types/url-factories.ts",
+          "tests/harness/project-config.test.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-member:node:url.URL.canParse",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109178,15 +109205,22 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:url"
+        "status": "partial",
+        "evidence": "compiler-feature:url.URL.parse",
+        "tests": [
+          "tests/corpus/node24-url-factories.ts",
+          "tests/corpus/node24-url-factory-errors.ts",
+          "tests/fixtures/node-types/url-factories.ts",
+          "tests/harness/project-config.test.ts"
+        ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-member:node:url.URL.parse",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109655,7 +109689,8 @@
         "evidence": "island-export:node:url.URLSearchParams",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109686,7 +109721,8 @@
         "evidence": "island-member:node:url.urlSearchParams.append",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109717,7 +109753,8 @@
         "evidence": "island-member:node:url.urlSearchParams.delete",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109748,7 +109785,8 @@
         "evidence": "island-member:node:url.urlSearchParams.entries",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109779,7 +109817,8 @@
         "evidence": "island-member:node:url.urlSearchParams.forEach",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109810,7 +109849,8 @@
         "evidence": "island-member:node:url.urlSearchParams.get",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109841,7 +109881,8 @@
         "evidence": "island-member:node:url.urlSearchParams.getAll",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109872,7 +109913,8 @@
         "evidence": "island-member:node:url.urlSearchParams.has",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109903,7 +109945,8 @@
         "evidence": "island-member:node:url.urlSearchParams.keys",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109934,7 +109977,8 @@
         "evidence": "island-member:node:url.urlSearchParams.set",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109965,7 +110009,8 @@
         "evidence": "island-member:node:url.urlSearchParams.sort",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -109996,7 +110041,8 @@
         "evidence": "island-member:node:url.urlSearchParams.toString",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110027,7 +110073,8 @@
         "evidence": "island-member:node:url.urlSearchParams.values",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110085,7 +110132,8 @@
         "evidence": "island-member:node:url.urlSearchParams.size",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110116,7 +110164,8 @@
         "evidence": "island-export:node:url.domainToASCII",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110147,7 +110196,8 @@
         "evidence": "island-export:node:url.domainToUnicode",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110181,7 +110231,8 @@
         "evidence": "island-export:node:url.fileURLToPath",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110239,7 +110290,8 @@
         "evidence": "island-export:node:url.format",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110273,7 +110325,8 @@
         "evidence": "island-export:node:url.pathToFileURL",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110304,7 +110357,8 @@
         "evidence": "island-export:node:url.urlToHttpOptions",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110713,7 +110767,8 @@
         "evidence": "island-export:node:url.format",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110744,7 +110799,8 @@
         "evidence": "island-export:node:url.format",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110775,7 +110831,8 @@
         "evidence": "island-export:node:url.parse",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -110806,7 +110863,8 @@
         "evidence": "island-export:node:url.resolve",
         "tests": [
           "tests/fixtures/npm/cases/misc-shims/main.ts",
-          "tests/fixtures/npm/cases/island-web-plumbing/main.ts"
+          "tests/fixtures/npm/cases/island-web-plumbing/main.ts",
+          "tests/fixtures/npm/cases/node24-url-factories/main.ts"
         ]
       },
       "anchorSource": "exact"

@@ -10204,20 +10204,34 @@ static JSValue isl_url_parse_host(JSContext *ctx, JSValueConst this_val,
                                   int argc, JSValueConst *argv) {
   (void)this_val;
   if (argc < 1) return JS_ThrowTypeError(ctx, "Invalid URL");
-  size_t len;
-  const char *s = JS_ToCStringLen(ctx, &len, argv[0]);
-  if (!s) return JS_EXCEPTION;
-  ScrStr *in = scr_str_new(s, len);
-  JS_FreeCString(ctx, s);
-  ScrUrl *u = scr_url_new(in);
+  ScrStr *in = isl_arg_str(ctx, argv[0]);
+  if (!in) return JS_EXCEPTION;
+  ScrStr *base = argc > 1 && !JS_IsUndefined(argv[1]) ? isl_arg_str(ctx, argv[1]) : NULL;
+  if (argc > 1 && !JS_IsUndefined(argv[1]) && !base) {
+    scr_str_release(in);
+    return JS_EXCEPTION;
+  }
+  ScrUrl *u = base ? scr_url_new_base(in, base) : scr_url_new(in);
   scr_str_release(in);
-  if (!u) return isl_throw_pending(ctx); /* the parser's catchable TypeError */
+  scr_str_release(base);
+  if (!u) {
+    if (argc > 2 && JS_ToBool(ctx, argv[2])) {
+      scr_exc_clear();
+      return JS_NULL;
+    }
+    return isl_throw_pending(ctx);
+  }
   ScrStr *href = scr_url_href(u);
   ScrStr *protocol = scr_url_protocol(u);
   ScrStr *pathname = scr_url_pathname(u);
   ScrStr *host = scr_url_host(u);
   ScrStr *hostname = scr_url_hostname(u);
   ScrStr *search = scr_url_search(u);
+  ScrStr *origin = scr_url_origin(u);
+  ScrStr *username = scr_url_username(u);
+  ScrStr *password = scr_url_password(u);
+  ScrStr *hash = scr_url_hash(u);
+  ScrStr *port = scr_url_port(u);
   scr_url_release(u);
   JSValue arr = JS_NewArray(ctx);
   JS_SetPropertyUint32(ctx, arr, 0, JS_NewStringLen(ctx, href->data, href->len));
@@ -10226,12 +10240,22 @@ static JSValue isl_url_parse_host(JSContext *ctx, JSValueConst this_val,
   JS_SetPropertyUint32(ctx, arr, 3, JS_NewStringLen(ctx, host->data, host->len));
   JS_SetPropertyUint32(ctx, arr, 4, JS_NewStringLen(ctx, hostname->data, hostname->len));
   JS_SetPropertyUint32(ctx, arr, 5, JS_NewStringLen(ctx, search->data, search->len));
+  JS_SetPropertyUint32(ctx, arr, 6, JS_NewStringLen(ctx, origin->data, origin->len));
+  JS_SetPropertyUint32(ctx, arr, 7, JS_NewStringLen(ctx, username->data, username->len));
+  JS_SetPropertyUint32(ctx, arr, 8, JS_NewStringLen(ctx, password->data, password->len));
+  JS_SetPropertyUint32(ctx, arr, 9, JS_NewStringLen(ctx, hash->data, hash->len));
+  JS_SetPropertyUint32(ctx, arr, 10, JS_NewStringLen(ctx, port->data, port->len));
   scr_str_release(href);
   scr_str_release(protocol);
   scr_str_release(pathname);
   scr_str_release(host);
   scr_str_release(hostname);
   scr_str_release(search);
+  scr_str_release(origin);
+  scr_str_release(username);
+  scr_str_release(password);
+  scr_str_release(hash);
+  scr_str_release(port);
   return arr;
 }
 
@@ -10239,32 +10263,23 @@ static const char isl_url_src[] =
     "(function (parse) {\n"
     "  'use strict';\n"
     "  const def = (o, n, v) => Object.defineProperty(o, n, { value: v, enumerable: true });\n"
+    "  const text = (v) => {\n"
+    "    if (typeof v === 'symbol') throw new TypeError('Cannot convert a Symbol value to a string');\n"
+    "    return `${v}`;\n"
+    "  };\n"
     "  class URL {\n"
-    /* The (input, base) form supports RELATIVE resolution — the Emscripten
-     * loader's `new URL("x.wasm", import.meta.url)` — with RFC 3986
-     * dot-segment removal over the base's path. Inputs that carry their
-     * own scheme ignore the base (per spec); protocol-relative inputs
-     * keep a narrow fence. */
     "    constructor(input, base) {\n"
-    "      let s = String(input);\n"
-    "      const hasScheme = /^[A-Za-z][A-Za-z0-9+.-]*:/;\n"
-    "      if (base !== undefined && !hasScheme.test(s)) {\n"
-    "        const b = String(base !== null && typeof base === 'object' && 'href' in base ? base.href : base);\n"
-    "        const m = hasScheme.test(b) && b.match(/^([A-Za-z][A-Za-z0-9+.-]*:)(\\/\\/[^\\/?#]*)?([^?#]*)/);\n"
-    "        if (!m) throw new TypeError('Invalid base URL');\n"
-    "        if (s.startsWith('//')) {\n"
-    "          throw new TypeError('protocol-relative URLs are not supported in the scriptc island yet');\n"
-    "        }\n"
-    "        let path = s.startsWith('/') ? s : (m[3] || '/').replace(/[^\\/]*$/, '') + s;\n"
-    "        const out = [];\n"
-    "        for (const seg of path.split('/')) {\n"
-    "          if (seg === '.') continue;\n"
-    "          if (seg === '..') { if (out.length > 1) out.pop(); continue; }\n"
-    "          out.push(seg);\n"
-    "        }\n"
-    "        s = m[1] + (m[2] || '') + out.join('/');\n"
-    "      }\n"
-    "      const c = parse(s);\n"
+    "      if (arguments.length === 0) throw URL._missing();\n"
+    "      const s = text(input);\n"
+    "      const b = base === undefined ? undefined : text(base);\n"
+    "      this._init(parse(s, b));\n"
+    "    }\n"
+    "    static _missing() {\n"
+    "      const error = new TypeError('The \"url\" argument must be specified');\n"
+    "      error.code = 'ERR_MISSING_ARGS';\n"
+    "      return error;\n"
+    "    }\n"
+    "    _init(c) {\n"
     /* href and search are LIVE-COUPLED (the one WHATWG mutation loop the
      * a real CLI's API client drives: url.searchParams.set('teamId', …)
      * then fetch(url)): both live in writable slots, the search setter
@@ -10290,18 +10305,11 @@ static const char isl_url_src[] =
     "      def(this, 'pathname', c[2]);\n"
     "      def(this, 'host', c[3]);\n"
     "      def(this, 'hostname', c[4]);\n"
-    "      def(this, 'port', c[3].length > c[4].length ? c[3].slice(c[4].length + 1) : '');\n"
-    "      const hashAt = c[0].indexOf('#');\n"
-    "      def(this, 'hash', hashAt < 0 ? '' : c[0].slice(hashAt));\n"
-    "      const cred = c[3] !== '' && c[0].startsWith(c[1] + '//')\n"
-    "        ? c[0].slice(c[1].length + 2, c[0].indexOf(c[3], c[1].length + 2)) : '';\n"
-    "      const at = cred.lastIndexOf('@');\n"
-    "      const userinfo = at < 0 ? '' : cred.slice(0, at);\n"
-    "      const colon = userinfo.indexOf(':');\n"
-    "      def(this, 'username', colon < 0 ? userinfo : userinfo.slice(0, colon));\n"
-    "      def(this, 'password', colon < 0 ? '' : userinfo.slice(colon + 1));\n"
-    "      def(this, 'origin', (c[1] === 'http:' || c[1] === 'https:' || c[1] === 'ws:' || c[1] === 'wss:' || c[1] === 'ftp:')\n"
-    "        ? c[1] + '//' + c[3] : 'null');\n"
+    "      def(this, 'origin', c[6]);\n"
+    "      def(this, 'username', c[7]);\n"
+    "      def(this, 'password', c[8]);\n"
+    "      def(this, 'hash', c[9]);\n"
+    "      def(this, 'port', c[10]);\n"
     "    }\n"
     /* The search half of the live coupling: normalize the assigned
      * query, splice it into href between the pre-query part and the
@@ -10339,10 +10347,20 @@ static const char isl_url_src[] =
     "    toString() { return this.href; }\n"
     "    toJSON() { return this.href; }\n"
     "    static canParse(input, base) {\n"
-    "      try { new URL(input, base); return true; } catch (e) { return false; }\n"
+    "      if (arguments.length === 0) throw URL._missing();\n"
+    "      const s = text(input);\n"
+    "      const b = base === undefined ? undefined : text(base);\n"
+    "      return parse(s, b, true) !== null;\n"
     "    }\n"
     "    static parse(input, base) {\n"
-    "      try { return new URL(input, base); } catch (e) { return null; }\n"
+    "      if (arguments.length === 0) throw URL._missing();\n"
+    "      const s = text(input);\n"
+    "      const b = base === undefined ? undefined : text(base);\n"
+    "      const c = parse(s, b, true);\n"
+    "      if (c === null) return null;\n"
+    "      const result = Object.create(URL.prototype);\n"
+    "      result._init(c);\n"
+    "      return result;\n"
     "    }\n"
     "  }\n"
     "  globalThis.URL = URL;\n"
@@ -10361,7 +10379,7 @@ static void isl_install_url_class(void) {
       fprintf(stderr, "scriptc: island URL prelude failed to evaluate\n");
       abort(); /* fixed source; failing to parse is a build defect */
     }
-    JSValue parse = JS_NewCFunction(isl_ctx, isl_url_parse_host, "__scr_url_parse", 1);
+    JSValue parse = JS_NewCFunction(isl_ctx, isl_url_parse_host, "__scr_url_parse", 3);
     JSValue r = JS_Call(isl_ctx, installer, JS_UNDEFINED, 1, &parse);
     JS_FreeValue(isl_ctx, parse);
     JS_FreeValue(isl_ctx, installer);

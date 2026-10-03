@@ -1,6 +1,6 @@
 import * as ts from "../ts7/adapter.js";
-import type { Lowerer } from "./lowerer.js";
-import { BOOL, STRING, UNDEFINED_T, URL_T, isUnitType, type IrExpr, type IrStmt } from "../../ir/ir.js";
+import { nodeThrowExpr, type Lowerer } from "./lowerer.js";
+import { BOOL, DYN, STRING, UNDEFINED_T, URL_T, isUnitType, type IrExpr, type IrLibFn, type IrStmt } from "../../ir/ir.js";
 import { strLit, varRef } from "../../ir/build.js";
 import { locOf } from "../program.js";
 import { staticForkString } from "../fork-target.js";
@@ -9,12 +9,30 @@ import { lowerStaticallyUndefinedArgument } from "./optional-arguments.js";
 /** Both argument expressions run before the constructor converts input,
  * then base. Keep that ordering even when a conversion invokes user code. */
 export function lowerUrlNew(lowerer: Lowerer, expr: ts.NewExpression): IrExpr {
+  return lowerUrlOperation(lowerer, expr, "new");
+}
+
+export function lowerUrlFactory(lowerer: Lowerer, expr: ts.CallExpression, operation: "canParse" | "parse"): IrExpr {
+  return lowerUrlOperation(lowerer, expr, operation);
+}
+
+function lowerUrlOperation(lowerer: Lowerer, expr: ts.NewExpression | ts.CallExpression, operation: "new" | "canParse" | "parse"): IrExpr {
   const args = expr.arguments ?? [];
   const loc = locOf(expr);
-  if (args.length < 1 || args.length > 2 || args.some(ts.isSpreadElement)) {
-    lowerer.noLowering("URL construction with spread, missing, or extra arguments", expr);
+  const resultType = operation === "new" ? URL_T : operation === "canParse" ? BOOL : DYN;
+  const checkedResult = (value: IrExpr): IrExpr => {
+    if (operation !== "parse") return value;
+    const type = lowerer.mapTypeOf(lowerer.typeOf(expr));
+    if (!type) lowerer.noLowering("URL.parse result type", expr);
+    return { kind: "dynCheck", value, type, loc };
+  };
+  if (args.length === 0 && operation !== "new") {
+    return checkedResult(nodeThrowExpr(1, "ERR_MISSING_ARGS", 'The "url" argument must be specified', resultType, loc));
   }
-  if (args.length === 2) {
+  if (args.length < 1 || args.length > 2 || args.some(ts.isSpreadElement)) {
+    lowerer.noLowering(`URL.${operation} with spread, missing, or extra arguments`, expr);
+  }
+  if (operation === "new" && args.length === 2 && ts.isNewExpression(expr)) {
     const folded = staticForkString(lowerer.program, expr);
     if (folded !== null) return { kind: "libCall", fn: "url.new", args: [strLit(folded, loc)], type: URL_T, loc };
   }
@@ -27,7 +45,7 @@ export function lowerUrlNew(lowerer: Lowerer, expr: ts.NewExpression): IrExpr {
     }
     const value = lowerer.lowerExpr(node);
     if (isUnitType(value.type)) {
-      stmts.push({ kind: "exprStmt", expr: value, loc: value.loc });
+      if (value.kind !== "unitLit") stmts.push({ kind: "exprStmt", expr: value, loc: value.loc });
       return { kind: "unitLit", unit: value.type.kind === "nullT" ? "null" : "undefined", type: value.type, loc: value.loc };
     }
     const local = lowerer.declareHiddenLocal("%urlArgument", value.type);
@@ -51,7 +69,7 @@ export function lowerUrlNew(lowerer: Lowerer, expr: ts.NewExpression): IrExpr {
       }
       return result;
     }
-    if (value.type.kind === "dyn" || value.type.kind === "record") {
+    if (value.type.kind === "dyn" || value.type.kind === "record" || value.type.kind === "symbol") {
       const boxed = lowerer.coerceInto(node, value, { kind: "dyn" });
       return { kind: "libCall", fn: "dyn.toStringCoerce", args: [boxed], type: STRING, loc };
     }
@@ -60,16 +78,19 @@ export function lowerUrlNew(lowerer: Lowerer, expr: ts.NewExpression): IrExpr {
   const input = lowerer.declareHiddenLocal("%urlInput", STRING);
   stmts.push({ kind: "varDecl", localId: input.id, init: stringify(values[0]!, args[0]!), loc });
   const inputRef = varRef(input.id, STRING, loc);
-  const absolute: IrExpr = { kind: "libCall", fn: "url.new", args: [inputRef], type: URL_T, loc };
+  const fn: IrLibFn = operation === "new" ? "url.new" : operation === "canParse" ? "url.canParse" : "url.parse";
+  const baseFn: IrLibFn = operation === "new" ? "url.newBase" : operation === "canParse" ? "url.canParseBase" : "url.parseBase";
+  const absolute: IrExpr = { kind: "libCall", fn, args: [inputRef], type: resultType, loc };
   const base = values[1];
   let result: IrExpr = absolute;
   if (base && base.type.kind !== "undefinedT") {
-    const resolved: IrExpr = { kind: "libCall", fn: "url.newBase", args: [inputRef, stringify(base, args[1]!)], type: URL_T, loc };
+    const resolved: IrExpr = { kind: "libCall", fn: baseFn, args: [inputRef, stringify(base, args[1]!)], type: resultType, loc };
     const tag = base.type.kind === "union" ? lowerer.armTag(base.type.unionId, UNDEFINED_T) : -1;
     const absent: IrExpr | null = tag >= 0 && base.type.kind === "union"
       ? { kind: "unionIsTag", unionId: base.type.unionId, tag, value: base, negated: false, type: BOOL, loc }
       : base.type.kind === "dyn" ? { kind: "dynTest", test: "undefined", value: base, type: BOOL, loc } : null;
-    result = absent ? { kind: "ternary", cond: absent, then: absolute, else_: resolved, type: URL_T, loc } : resolved;
+    result = absent ? { kind: "ternary", cond: absent, then: absolute, else_: resolved, type: resultType, loc } : resolved;
   }
-  return { kind: "seqExpr", stmts, result, type: URL_T, loc };
+  result = checkedResult(result);
+  return { kind: "seqExpr", stmts, result, type: result.type, loc };
 }

@@ -3212,6 +3212,10 @@ typedef struct ScrUrl ScrUrl;
 
 ScrUrl *scr_url_new(ScrStr *input); /* +1, or throws */
 ScrUrl *scr_url_new_base(ScrStr *input, ScrStr *base); /* +1, or throws */
+bool scr_url_can_parse(ScrStr *input);
+bool scr_url_can_parse_base(ScrStr *input, ScrStr *base);
+ScrDyn *scr_url_parse(ScrStr *input); /* +1 native URL or null; invalid URLs do not throw */
+ScrDyn *scr_url_parse_base(ScrStr *input, ScrStr *base);
 ScrUrl *scr_url_retain(ScrUrl *u);
 void scr_url_release(ScrUrl *u);
 void *scr_url_retain_v(void *p);

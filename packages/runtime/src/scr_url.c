@@ -763,6 +763,33 @@ ScrStr *scr_url_protocol(ScrUrl *u) {
   return ub_take(&b);
 }
 
+/* Input conversion is the caller's responsibility. Only parser errors are
+ * suppressed: user toString errors must still escape the public factories. */
+static ScrUrl *url_try_parse(ScrStr *input, ScrStr *base) {
+  ScrUrl *u = base ? scr_url_new_base(input, base) : scr_url_new(input);
+  if (!u) scr_exc_clear();
+  return u;
+}
+
+bool scr_url_can_parse_base(ScrStr *input, ScrStr *base) {
+  ScrUrl *u = url_try_parse(input, base);
+  bool valid = u != NULL;
+  scr_url_release(u);
+  return valid;
+}
+
+bool scr_url_can_parse(ScrStr *input) { return scr_url_can_parse_base(input, NULL); }
+
+ScrDyn *scr_url_parse_base(ScrStr *input, ScrStr *base) {
+  ScrUrl *u = url_try_parse(input, base);
+  if (!u) return scr_dyn_new_null();
+  ScrDyn *value = scr_dyn_native_url(u);
+  scr_url_release(u);
+  return value;
+}
+
+ScrDyn *scr_url_parse(ScrStr *input) { return scr_url_parse_base(input, NULL); }
+
 ScrStr *scr_url_pathname(ScrUrl *u) { return scr_str_retain(u->path); }
 
 /* WHATWG host getter: host[:port] — the port only when non-default (the

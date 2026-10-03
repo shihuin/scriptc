@@ -75,18 +75,18 @@ fenced.ts:41:13 - error SC2020: 'PlatformPath.sep' is typed by @types/node but h
   40 | console.log(cpus().length);
   41 | console.log(win32.sep);
      |             ^~~~~~~~~
-  42 | /* URL getters including port/hash/password lower under @types/node, but
+  42 | /* URL getters and serialization lower under @types/node, but object-URL
 
   hint: the type checker sees everything @types/node declares, but only the supported surface compiles (https://scriptc.dev/limitations)
 
-fenced.ts:47:13 - error SC2020: 'URL.toJSON' is typed by @types/node but has no scriptc lowering yet
+fenced.ts:47:13 - error SC2020: 'URL.createObjectURL' is typed by @types/node but has no scriptc lowering yet
 
   46 | const u = new URL("https://example.com/x?a=1");
-  47 | console.log(u.toJSON());
-     |             ^~~~~~~~~~
+  47 | console.log(URL.createObjectURL(new Blob(["data"])));
+     |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   48 | u.searchParams.get("a");
 
-  hint: protocol, origin, username, password, pathname, href, host, hostname, port, search, hash, searchParams, and toString() are the supported URL members
+  hint: protocol, origin, username, password, pathname, href, host, hostname, port, search, hash, searchParams, toString(), and toJSON() are the supported URL members
 
 fenced.ts:53:21 - error SC2020: 'deflateSync with these options' is part of the standard library types but has no scriptc lowering yet
 

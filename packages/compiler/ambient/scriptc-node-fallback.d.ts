@@ -1465,12 +1465,13 @@ declare module "node:os" {
 }
 
 /* The WHATWG URL class (a Node global; the es2023 lib doesn't declare it),
- * typed as exactly the supported surface: construction from ONE absolute-
- * URL string (invalid input throws a catchable TypeError, like Node), the
+ * typed as exactly the supported surface: construction from an input and
+ * optional base (invalid input throws a catchable TypeError, like Node), the
  * protocol/origin/username/pathname/href/host/hostname/port/search/hash getters, searchParams (the
  * LIVE query view — mutations through it re-serialize into the URL, so
  * href reflects immediately; every read answers the same object, Node's
- * caching), and toString() (the href serialization).
+ * caching), toString()/toJSON() (href serialization), and the non-throwing
+ * canParse()/parse() factories (conversion errors still propagate).
  * URL values have no SETTERS — the component fields are read-only (the
  * one supported mutation path is searchParams) — and participate in
  * unions (URL | undefined). The parser covers the common CLI schemes
@@ -1491,9 +1492,12 @@ interface URL {
   readonly hash: string;
   readonly searchParams: URLSearchParams;
   toString(): string;
+  toJSON(): string;
 }
 declare var URL: {
   new (input: string | { toString: () => string }, base?: string | URL): URL;
+  canParse(input: string | URL, base?: string | URL): boolean;
+  parse(input: string | URL, base?: string | URL): URL | null;
 };
 
 /* URLSearchParams — the WHATWG application/x-www-form-urlencoded list.
@@ -1526,6 +1530,10 @@ declare var URLSearchParams: {
  * slashes, non-empty host); pathToFileURL resolves the path and percent-
  * encodes it into a file: URL. */
 declare module "url" {
+  export type URL = globalThis.URL;
+  export type URLSearchParams = globalThis.URLSearchParams;
+  export const URL: typeof globalThis.URL;
+  export const URLSearchParams: typeof globalThis.URLSearchParams;
   export function fileURLToPath(url: string | URL): string;
   export function pathToFileURL(path: string, options?: { windows?: boolean }): URL;
 }

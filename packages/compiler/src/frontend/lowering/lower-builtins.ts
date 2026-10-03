@@ -4989,11 +4989,11 @@ export function lowerForkCall(lowerer: Lowerer, expr: ts.CallExpression, loc: Sr
       }
       const optionalString = lowerOptionalStringifyRoot(lowerer, value, indent, loc);
       if (optionalString) return optionalString;
-      if (value.type.kind === "dyn" || isJsonStringifyDynamicType(value.type, (id) => lowerer.shapes.get(id), (id) => lowerer.unions.get(id))) {
+      if (value.type.kind === "url" || value.type.kind === "dyn" || isJsonStringifyDynamicType(value.type, (id) => lowerer.shapes.get(id), (id) => lowerer.unions.get(id))) {
         // Keep the original containers live while the runtime visits them:
         // a toJSON callback can mutate a later field, and shared/cyclic
         // references must retain their identities throughout traversal.
-        const boxed: IrExpr = value.type.kind === "dyn" ? value : { kind: "dynFrom", value, liveRef: true, type: DYN, loc };
+        const boxed: IrExpr = value.type.kind === "dyn" ? value : { kind: "dynFrom", value, ...(value.type.kind === "url" ? {} : { liveRef: true }), type: DYN, loc };
         const raw: IrExpr = {
           kind: "libCall", fn: "json.stringifyReplacer",
           args: [boxed, dynUndefinedExpr(loc), { kind: "strLit", value: indent, type: STRING, loc }],
@@ -5580,7 +5580,7 @@ function errorFirstBytesCallback(lowerer: Lowerer, node: ts.Expression, api: str
     };
   }
 
-/** Method calls on URL-typed receivers: `u.toString()` is Node's href
+/** Method calls on URL-typed receivers: `u.toString()` and `u.toJSON()` are Node's href
    * serialization (the href getter's libCall). Everything else the lib
    * declares fences member-qualified. Null for non-URL receivers. */
   export function lowerUrlMethodCall(lowerer: Lowerer, call: ts.CallExpression,
@@ -5589,14 +5589,14 @@ function errorFirstBytesCallback(lowerer: Lowerer, node: ts.Expression, api: str
     if (lowerer.mapTypeOf(lowerer.typeOf(access.expression))?.kind !== "url") return null;
     if (!lowerer.isStdlibMember(access)) return null;
     const name = access.name.text;
-    if (name === "toString" && call.arguments.length === 0) {
+    if ((name === "toString" || name === "toJSON") && call.arguments.length === 0) {
       const receiver = lowerer.lowerExpr(access.expression);
       return { kind: "libCall", fn: "url.href", args: [receiver], type: STRING, loc: locOf(call) };
     }
     lowerer.noLowering(
       `URL.${name}`,
       call,
-      "protocol, origin, username, password, pathname, href, host, hostname, port, search, hash, searchParams, and toString() are the supported URL members",
+      "protocol, origin, username, password, pathname, href, host, hostname, port, search, hash, searchParams, toString(), and toJSON() are the supported URL members",
       lowerer.checker.getSymbolAtLocation(access.name),
     );
   }
