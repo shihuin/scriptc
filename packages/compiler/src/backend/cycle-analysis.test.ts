@@ -136,3 +136,59 @@ test("checked values seed tracing through records and collections", () => {
   mod.records = [shape("value", [DYN]), shape("list", [arrayOf(DYN)]), shape("set", [setOf(DYN)]), shape("map", [mapOf(DYN, F64)])];
   check(mod, ["record:value", "record:list", "record:set", "record:map"]);
 });
+
+test("removes a long alternating shape/union chain regardless of definition order", () => {
+  const mod = module();
+  const size = 6000;
+  mod.records = Array.from({ length: size }, (_, i) => shape(`r${i}`, [
+    arrayOf({ kind: "union", unionId: `u${i}` }),
+    mapOf({ kind: "union", unionId: `u${i}` }, { kind: "union", unionId: `u${i}` }),
+  ]));
+  mod.unions = Array.from({ length: size }, (_, i) => ({ id: `u${i}`, arms: [i === size - 1 ? F64 : ref(`r${i + 1}`), STRING] }));
+  check(mod, []);
+  mod.records.reverse();
+  mod.unions.reverse();
+  check(mod, []);
+});
+
+test("removing one dependency keeps other branches, cycles, and intrinsic references", () => {
+  const mod = module();
+  mod.records = [
+    shape("outer", [mapOf(ref("leaf"), ref("cycle"))]),
+    shape("cycle", [ref("cycle"), ref("leaf")]),
+    shape("leaf", [F64]),
+    shape("intrinsic", [ref("leaf"), { kind: "caught" }]),
+    shape("pruned", [mapOf(ref("leaf"), arrayOf(ref("leaf")))]),
+  ];
+  check(mod, ["record:outer", "record:cycle", "record:intrinsic"]);
+});
+
+test("hierarchies and unions participate in the same dependency graph", () => {
+  const mod = module();
+  mod.classes = [
+    { name: "Child", base: "Base", fields: [{ name: "next", type: { kind: "union", unionId: "link" } }], loc },
+    { name: "Sibling", base: "Base", fields: [], loc },
+    { name: "Base", fields: [], loc },
+  ];
+  mod.unions = [{ id: "link", arms: [{ kind: "object", className: "Sibling" }, F64] }];
+  check(mod, ["object:Child", "object:Sibling", "object:Base"], ["link"]);
+  mod.unions[0]!.arms = [F64, STRING];
+  check(mod, []);
+});
+
+test("local class captures retain tracing even when the class has no fields", () => {
+  const mod = module();
+  mod.classes = [{ name: "Local", localCaptures: [], fields: [], loc }];
+  check(mod, ["object:Local"]);
+});
+
+test("resolves a deep class hierarchy without recursive root traversal", () => {
+  const mod = module();
+  const size = 6000;
+  mod.classes = Array.from({ length: size }, (_, i) => ({
+    name: `C${i}`, ...(i === size - 1 ? {} : { base: `C${i + 1}` }), fields: [], loc,
+  }));
+  check(mod, []);
+  mod.classes[0]!.fields = [{ name: "callback", type: funcOf([], VOID) }];
+  check(mod, mod.classes.map((c) => `object:${c.name}`));
+});

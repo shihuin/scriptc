@@ -81,6 +81,25 @@ export function backendAnalysisCases(): BackendAnalysisCase[] {
   ];
   cases.push({ name: "hierarchy uniform tracing", module: hierarchy, shapes: ["object:Child", "object:Sibling", "object:Base"] });
 
+  const length = 128;
+  const chain = module(Array.from({ length }, (_, i) => fn(`f${i}`, i === length - 1
+    ? [{ kind: "throw", value: num(1), loc }] : [stmt(call(`f${i + 1}`)), stmt(call(`f${i + 1}`))])));
+  cases.push({ name: "caller-first chain with repeated edges", module: chain, mayThrow: chain.functions.map((f) => f.name).reverse(), indirect: false });
+  const alternating = module();
+  alternating.records = Array.from({ length }, (_, i) => ({ id: `r${i}`, fields: [
+    { name: "next", type: arrayOf({ kind: "union" as const, unionId: `u${i}` }) },
+    { name: "again", type: { kind: "union" as const, unionId: `u${i}` } },
+  ] }));
+  alternating.unions = Array.from({ length }, (_, i) => ({ id: `u${i}`, arms: [i === length - 1 ? F64 : record(`r${i + 1}`), STRING] }));
+  cases.push({ name: "alternating acyclic chain with repeated edges", module: alternating, shapes: [], unions: [] });
+  const branch = module();
+  branch.records = [
+    { id: "leaf", fields: [{ name: "value", type: F64 }] },
+    { id: "cycle", fields: [{ name: "next", type: record("cycle") }] },
+    { id: "outer", fields: [{ name: "dead", type: record("leaf") }, { name: "live", type: record("cycle") }] },
+  ];
+  cases.push({ name: "removing a leaf preserves another cyclic branch", module: branch, shapes: ["record:cycle", "record:outer"] });
+
   const tableId = "%g.table";
   const tableType = arrayOf(F64);
   const tableRead: IrExpr = { kind: "arrIntrinsic", method: "getNumber", receiver: ref(tableId, tableType), args: [num(0)], type: F64, loc };

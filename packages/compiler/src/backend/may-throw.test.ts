@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { F64, VOID, funcOf, type IrExpr, type IrFunction, type IrLocal, type IrModule, type IrStmt } from "../ir/ir.js";
+import { DYN, F64, VOID, funcOf, type IrExpr, type IrFunction, type IrLocal, type IrModule, type IrStmt } from "../ir/ir.js";
 import { computeMayThrow } from "./may-throw.js";
 
 const loc = { file: "tdz.ts", start: 0, end: 1 };
@@ -61,4 +61,72 @@ test("initializers still propagate exceptions from their right-hand side", () =>
   };
   const failure = fn("failure", [{ kind: "throw", value, loc }], []);
   expect([...computeMayThrow(moduleWith(fn("caller", [initialize]), failure)).fns].sort()).toEqual(["caller", "failure"]);
+});
+
+const call = (callee: string): IrStmt => exprStmt({ kind: "call", callee, args: [], type: VOID, loc });
+const closureOf = (fnName: string): IrExpr => ({ kind: "closure", fnName, captures: [], type: funcOf([], VOID), loc });
+const callClosure = (fnName: string): IrStmt => exprStmt({ kind: "callValue", callee: closureOf(fnName), args: [], type: VOID, loc });
+const failure: IrStmt = { kind: "throw", value, loc };
+
+test("propagates through a long caller-first chain without recursive graph traversal", () => {
+  const size = 6000;
+  const functions = Array.from({ length: size }, (_, i) => fn(`fn${i}`, [i === size - 1 ? failure : call(`fn${i + 1}`)], []));
+  for (const order of [functions, [...functions].reverse()]) {
+    const answer = computeMayThrow(moduleWith(...order));
+    expect(answer.indirect).toBe(false);
+    expect(answer.fns).toEqual(new Set(functions.map((f) => f.name)));
+  }
+});
+
+test("recursive components only throw when they reach a throwing seed", () => {
+  const mod = moduleWith(
+    fn("caller", [call("left"), call("left")], []),
+    fn("left", [call("right")], []),
+    fn("right", [call("left")], []),
+    fn("pure", [call("pure")], []),
+  );
+  expect(computeMayThrow(mod).fns.size).toBe(0);
+  mod.functions[2]!.body.push(failure);
+  expect(computeMayThrow(mod).fns).toEqual(new Set(["caller", "left", "right"]));
+});
+
+test("a transitively throwing closure activates indirect callers and their callers", () => {
+  const mod = moduleWith(
+    fn("outer", [call("indirect")], []),
+    fn("indirect", [callClosure("wrapper")], []),
+    fn("wrapper", [call("target")], []),
+    fn("target", [failure], []),
+    fn("otherIndirect", [callClosure("pure")], []),
+    fn("pure", [], []),
+  );
+  const before = structuredClone(mod);
+  const answer = computeMayThrow(mod);
+  expect(answer.indirect).toBe(true);
+  expect(answer.fns).toEqual(new Set(["outer", "indirect", "wrapper", "target", "otherIndirect"]));
+  expect(mod).toEqual(before);
+  mod.functions[3]!.body = [];
+  expect(computeMayThrow(mod)).toEqual({ fns: new Set(), indirect: false });
+  expect(answer.fns.size).toBe(5);
+});
+
+test.each(["async", "generator", "async generator"])("a throwing %s body does not unwind direct or indirect callers", (kind) => {
+  const target = fn("target", [failure], []);
+  if (kind.includes("async")) target.async = true;
+  if (kind.includes("generator")) target.generator = { yieldT: F64, nextT: VOID, resultType: { kind: "record", shapeId: "result" } };
+  const mod = moduleWith(fn("caller", [call("target"), callClosure("target")], []), target);
+  expect(computeMayThrow(mod)).toEqual({ fns: new Set(["target"]), indirect: false });
+});
+
+test("dynamic function adapters activate indirect calls without an IR closure target", () => {
+  const adapter: IrExpr = {
+    kind: "dynCheck", value: { kind: "varRef", localId: "unknown", type: DYN, loc },
+    type: funcOf([], VOID), loc,
+  };
+  const callee: IrExpr = { kind: "varRef", localId: "callback", type: funcOf([], VOID), loc };
+  const mod = moduleWith(
+    fn("caller", [call("indirect")], []),
+    fn("indirect", [exprStmt({ kind: "callValue", callee, args: [], type: VOID, loc })], []),
+    fn("adapter", [exprStmt(adapter)], []),
+  );
+  expect(computeMayThrow(mod)).toEqual({ fns: new Set(["caller", "indirect", "adapter"]), indirect: true });
 });
