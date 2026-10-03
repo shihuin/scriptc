@@ -10608,6 +10608,30 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/node24-crypto-kdf-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-crypto-kdf-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-crypto-kdf-options.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-crypto-kdf-options.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-crypto-kdf.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-crypto-kdf.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-crypto-sha2.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-crypto-sha2.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/nullable-object-extension.mjs": {
    "order": [
     "<repo>/tests/corpus/nullable-object-extension.mjs"
@@ -12983,6 +13007,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/fixtures/npm/cases/node24-crypto-kdf/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/fixtures/npm/cases/node24-fs-descriptors/main.ts": {
    "order": [
     "<repo>/tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
@@ -13190,6 +13220,12 @@
   "<repo>/tests/fixtures/node-types/child-stdin.ts": {
    "order": [
     "<repo>/tests/fixtures/node-types/child-stdin.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/crypto-kdf.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/crypto-kdf.ts"
    ],
    "diags": []
   },

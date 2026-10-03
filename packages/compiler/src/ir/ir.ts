@@ -3470,7 +3470,7 @@ export type IrLibFn =
   | "crypto.hashDigestStr"
   | "crypto.hashDigestBytes"
   /** First-class static Hash/Hmac handles. Constructors validate the
-   * runtime algorithm string (md5/sha1/sha256); update returns the same
+   * runtime algorithm string (MD5, SHA-1, or SHA-2); update returns the same
    * handle by retained identity, copy snapshots Hash state, and digest
    * finalizes the handle and returns either a Buffer or encoded string. */
   | "crypto.native"
@@ -3493,6 +3493,10 @@ export type IrLibFn =
   | "crypto.pbkdf2"
   | "crypto.randomBytesCb"
   | "crypto.pbkdf2Cb"
+  | "crypto.hkdf"
+  | "crypto.hkdfCb"
+  | "crypto.scrypt"
+  | "crypto.scryptCb"
   /** crypto.randomBytes(n) → a real u8 Buffer (+1). THROWS Node's
    * RangeError on out-of-range sizes, exactly like the composed
    * randomBytesToString (which keeps its one-libCall lowering — the two
@@ -7886,6 +7890,10 @@ export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
   "crypto.pbkdf2",
   "crypto.randomBytesCb",
   "crypto.pbkdf2Cb",
+  "crypto.hkdf",
+  "crypto.hkdfCb",
+  "crypto.scrypt",
+  "crypto.scryptCb",
   "buffer.concat",
   "buffer.concatLen",
   "buffer.fromDyn",

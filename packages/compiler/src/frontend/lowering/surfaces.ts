@@ -824,6 +824,10 @@ export const BUILTIN_MODULE_FNS: Record<string, Record<string, BuiltinModuleFn |
     randomInt: { fn: "crypto.randomInt", params: [F64, F64], result: F64 },
     pbkdf2Sync: { fn: "crypto.pbkdf2", params: [BYTES_U8, BYTES_U8, F64, F64, STRING], result: BYTES_U8 },
     pbkdf2: { fn: "crypto.pbkdf2Cb", params: [], result: VOID },
+    hkdfSync: { fn: "crypto.hkdf", params: [STRING, BYTES_U8, BYTES_U8, BYTES_U8, F64], result: DYN },
+    hkdf: { fn: "crypto.hkdfCb", params: [], result: VOID },
+    scryptSync: { fn: "crypto.scrypt", params: [BYTES_U8, BYTES_U8, F64, DYN], result: BYTES_U8 },
+    scrypt: { fn: "crypto.scryptCb", params: [], result: VOID },
   },
   zlib: {
     // The default-options convenience family is special-cased in
@@ -1515,13 +1519,6 @@ export const BUILTIN_MODULE_FENCE_HINTS: Record<string, Record<string, string | 
         m,
         "symmetric ciphers need a cipher stack the static runtime does not vendor — " +
           "the lowered crypto surface is hashing, randomness, and the introspection statics",
-      ]),
-    ),
-    ...Object.fromEntries(
-      ["scrypt", "scryptSync", "hkdf", "hkdfSync"].map((m) => [
-        m,
-        "key-derivation functions have no lowering yet — the lowered crypto surface is " +
-          "hashing, randomness, and the introspection statics",
       ]),
     ),
     setFips:

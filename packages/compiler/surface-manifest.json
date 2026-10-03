@@ -677,17 +677,13 @@
       "id": "node-builtin.crypto.hkdf",
       "kind": "node-builtin",
       "name": "crypto.hkdf",
-      "status": "unsupported",
-      "code": "SC2020",
-      "note": "key-derivation functions have no lowering yet — the lowered crypto surface is hashing, randomness, and the introspection statics"
+      "status": "static"
     },
     {
       "id": "node-builtin.crypto.hkdfSync",
       "kind": "node-builtin",
       "name": "crypto.hkdfSync",
-      "status": "unsupported",
-      "code": "SC2020",
-      "note": "key-derivation functions have no lowering yet — the lowered crypto surface is hashing, randomness, and the introspection statics"
+      "status": "static"
     },
     {
       "id": "node-builtin.crypto.pbkdf2",
@@ -761,17 +757,13 @@
       "id": "node-builtin.crypto.scrypt",
       "kind": "node-builtin",
       "name": "crypto.scrypt",
-      "status": "unsupported",
-      "code": "SC2020",
-      "note": "key-derivation functions have no lowering yet — the lowered crypto surface is hashing, randomness, and the introspection statics"
+      "status": "static"
     },
     {
       "id": "node-builtin.crypto.scryptSync",
       "kind": "node-builtin",
       "name": "crypto.scryptSync",
-      "status": "unsupported",
-      "code": "SC2020",
-      "note": "key-derivation functions have no lowering yet — the lowered crypto surface is hashing, randomness, and the introspection statics"
+      "status": "static"
     },
     {
       "id": "node-builtin.crypto.setFips",

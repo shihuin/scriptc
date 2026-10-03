@@ -138,17 +138,23 @@ export function emitGenericLibCall(host: LlvmEmitterContext, e: LibCallExpr): Ll
       B.line(`${result} = load i1, ptr ${slot}`);
       return { name: result, type: e.type };
     }
-    if (e.fn === "crypto.randomBytesCb" || e.fn === "crypto.pbkdf2Cb") {
+    if (e.fn === "crypto.randomBytesCb" || e.fn === "crypto.pbkdf2Cb" || e.fn === "crypto.hkdfCb" || e.fn === "crypto.scryptCb") {
       host.usesTimers = true;
       const args = e.args.map((arg) => host.emitExpr(arg));
-      const cbIndex = e.fn === "crypto.randomBytesCb" ? 1 : 5;
+      const cbIndex = e.fn === "crypto.randomBytesCb" ? 1 : e.fn === "crypto.scryptCb" ? 4 : 5;
       const cbT = e.args[cbIndex]!.type;
       if (cbT.kind !== "func") throw new InternalCompilerError("llvm emitter bug: crypto callback not a func");
       host.moveTemp(args[cbIndex]!);
-      const adapter = host.cryptoBytesThunkFor(cbT);
+      const adapter = host.cryptoBytesThunkFor(cbT, e.fn === "crypto.hkdfCb");
       if (e.fn === "crypto.randomBytesCb") {
         host.declare(`declare void @scr_crypto_random_bytes_async(double, ptr, ptr)`);
         B.line(`call void @scr_crypto_random_bytes_async(double ${args[0]!.name}, ptr ${args[1]!.name}, ptr @${adapter})`);
+      } else if (e.fn === "crypto.hkdfCb") {
+        host.declare(`declare void @scr_crypto_hkdf_async(ptr, ptr, ptr, ptr, double, ptr, ptr)`);
+        B.line(`call void @scr_crypto_hkdf_async(ptr ${args[0]!.name}, ptr ${args[1]!.name}, ptr ${args[2]!.name}, ptr ${args[3]!.name}, double ${args[4]!.name}, ptr ${args[5]!.name}, ptr @${adapter})`);
+      } else if (e.fn === "crypto.scryptCb") {
+        host.declare(`declare void @scr_crypto_scrypt_async(ptr, ptr, double, ptr, ptr, ptr)`);
+        B.line(`call void @scr_crypto_scrypt_async(ptr ${args[0]!.name}, ptr ${args[1]!.name}, double ${args[2]!.name}, ptr ${args[3]!.name}, ptr ${args[4]!.name}, ptr @${adapter})`);
       } else {
         host.declare(`declare void @scr_crypto_pbkdf2_async(ptr, ptr, double, double, ptr, ptr, ptr)`);
         B.line(`call void @scr_crypto_pbkdf2_async(ptr ${args[0]!.name}, ptr ${args[1]!.name}, double ${args[2]!.name}, double ${args[3]!.name}, ptr ${args[4]!.name}, ptr ${args[5]!.name}, ptr @${adapter})`);

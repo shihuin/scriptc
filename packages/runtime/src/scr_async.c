@@ -2148,6 +2148,7 @@ void scr_fs_rename_thunk0(ScrClosure *cb, ScrError *err) {
  * the emitted callback adapter. */
 typedef struct ScrCryptoBytesOp {
   ScrBytes *value;
+  ScrError *error;
   ScrClosure *cb;
   ScrCryptoBytesFn fn;
   struct ScrCryptoBytesOp *next;
@@ -2163,6 +2164,7 @@ static void scr_crypto_bytes_shutdown(void) {
     ScrCryptoBytesOp *op = scr_crypto_bytes_head;
     scr_crypto_bytes_head = op->next;
     scr_bytes_release(op->value);
+    scr_error_release(op->error);
     scr_closure_release(op->cb);
     free(op);
   }
@@ -2180,16 +2182,18 @@ static bool scr_crypto_bytes_dispatch(void) {
   scr_crypto_bytes_head = op->next;
   if (scr_crypto_bytes_head == NULL) scr_crypto_bytes_tail = &scr_crypto_bytes_head;
   scr_crypto_bytes_pending_count--;
-  op->fn(op->cb, op->value); /* adapter consumes value */
+  op->fn(op->cb, op->error, op->value); /* adapter consumes value */
+  scr_error_release(op->error);
   scr_closure_release(op->cb);
   free(op);
   return true;
 }
 
-void scr_crypto_defer_bytes(ScrBytes *value, ScrClosure *cb, ScrCryptoBytesFn fn) {
+void scr_crypto_defer_bytes(ScrBytes *value, ScrError *error, ScrClosure *cb, ScrCryptoBytesFn fn) {
   if (!scr_crypto_bytes_cleanup_registered) {
     if (atexit(scr_crypto_bytes_shutdown) != 0) {
       scr_bytes_release(value);
+      scr_error_release(error);
       scr_closure_release(cb);
       scr_trap("scriptc: could not register crypto callback cleanup\n");
     }
@@ -2198,10 +2202,12 @@ void scr_crypto_defer_bytes(ScrBytes *value, ScrClosure *cb, ScrCryptoBytesFn fn
   ScrCryptoBytesOp *op = malloc(sizeof *op);
   if (!op) {
     scr_bytes_release(value);
+    scr_error_release(error);
     scr_closure_release(cb);
     scr_trap("scriptc: out of memory\n");
   }
   op->value = value;
+  op->error = error;
   op->cb = cb;
   op->fn = fn;
   op->next = NULL;

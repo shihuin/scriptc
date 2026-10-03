@@ -4373,7 +4373,7 @@ ScrStr *scr_crypto_random_string(double n, ScrStr *enc) {
   return out;
 }
 
-/* ── incremental MD5/SHA-1/SHA-256 and HMAC ──────────────────────────
+/* ── incremental MD5/SHA-1/SHA-2 and HMAC ──────────────────────────
  * The first-class Hash/Hmac handles, fused one-shot paths, island bridge,
  * and PBKDF2 all share these contexts. Hash.copy() is a context snapshot;
  * update never buffers the full input. Differential tests pin every
@@ -4579,7 +4579,7 @@ static size_t scr_sha1_digest(const unsigned char *data, size_t len, unsigned ch
 static ScrStr *scr_digest_encode(const unsigned char *d, size_t n, const ScrStr *enc) {
   if (enc->len == 3 && memcmp(enc->data, "hex", 3) == 0) {
     static const char hex[] = "0123456789abcdef";
-    char buf[64];
+    char buf[128];
     for (size_t i = 0; i < n; i++) {
       buf[i * 2] = hex[d[i] >> 4];
       buf[i * 2 + 1] = hex[d[i] & 0x0f];
@@ -4588,7 +4588,7 @@ static ScrStr *scr_digest_encode(const unsigned char *d, size_t n, const ScrStr 
   }
   /* base64, standard alphabet, '=' padded — Buffer.toString("base64"). */
   static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  char buf[48];
+  char buf[88];
   size_t o = 0;
   for (size_t i = 0; i < n; i += 3) {
     unsigned v = (unsigned)d[i] << 16;
@@ -4703,10 +4703,140 @@ static size_t scr_md5_final(const ScrMd5Ctx *source, unsigned char out[32]) {
   return 16;
 }
 
+/* SHA-384/SHA-512, FIPS 180-4. The 128-byte blocks and HMAC pads differ
+ * from SHA-256; the digest dispatcher keeps that distinction explicit. */
+typedef struct ScrSha512Ctx {
+  uint64_t h[8];
+  uint64_t bytes;
+  unsigned char tail[128];
+  size_t tail_len;
+} ScrSha512Ctx;
+
+static const uint64_t scr_sha512_k[80] = {
+  UINT64_C(0x428a2f98d728ae22), UINT64_C(0x7137449123ef65cd), UINT64_C(0xb5c0fbcfec4d3b2f),
+  UINT64_C(0xe9b5dba58189dbbc), UINT64_C(0x3956c25bf348b538), UINT64_C(0x59f111f1b605d019),
+  UINT64_C(0x923f82a4af194f9b), UINT64_C(0xab1c5ed5da6d8118), UINT64_C(0xd807aa98a3030242),
+  UINT64_C(0x12835b0145706fbe), UINT64_C(0x243185be4ee4b28c), UINT64_C(0x550c7dc3d5ffb4e2),
+  UINT64_C(0x72be5d74f27b896f), UINT64_C(0x80deb1fe3b1696b1), UINT64_C(0x9bdc06a725c71235),
+  UINT64_C(0xc19bf174cf692694), UINT64_C(0xe49b69c19ef14ad2), UINT64_C(0xefbe4786384f25e3),
+  UINT64_C(0x0fc19dc68b8cd5b5), UINT64_C(0x240ca1cc77ac9c65), UINT64_C(0x2de92c6f592b0275),
+  UINT64_C(0x4a7484aa6ea6e483), UINT64_C(0x5cb0a9dcbd41fbd4), UINT64_C(0x76f988da831153b5),
+  UINT64_C(0x983e5152ee66dfab), UINT64_C(0xa831c66d2db43210), UINT64_C(0xb00327c898fb213f),
+  UINT64_C(0xbf597fc7beef0ee4), UINT64_C(0xc6e00bf33da88fc2), UINT64_C(0xd5a79147930aa725),
+  UINT64_C(0x06ca6351e003826f), UINT64_C(0x142929670a0e6e70), UINT64_C(0x27b70a8546d22ffc),
+  UINT64_C(0x2e1b21385c26c926), UINT64_C(0x4d2c6dfc5ac42aed), UINT64_C(0x53380d139d95b3df),
+  UINT64_C(0x650a73548baf63de), UINT64_C(0x766a0abb3c77b2a8), UINT64_C(0x81c2c92e47edaee6),
+  UINT64_C(0x92722c851482353b), UINT64_C(0xa2bfe8a14cf10364), UINT64_C(0xa81a664bbc423001),
+  UINT64_C(0xc24b8b70d0f89791), UINT64_C(0xc76c51a30654be30), UINT64_C(0xd192e819d6ef5218),
+  UINT64_C(0xd69906245565a910), UINT64_C(0xf40e35855771202a), UINT64_C(0x106aa07032bbd1b8),
+  UINT64_C(0x19a4c116b8d2d0c8), UINT64_C(0x1e376c085141ab53), UINT64_C(0x2748774cdf8eeb99),
+  UINT64_C(0x34b0bcb5e19b48a8), UINT64_C(0x391c0cb3c5c95a63), UINT64_C(0x4ed8aa4ae3418acb),
+  UINT64_C(0x5b9cca4f7763e373), UINT64_C(0x682e6ff3d6b2b8a3), UINT64_C(0x748f82ee5defb2fc),
+  UINT64_C(0x78a5636f43172f60), UINT64_C(0x84c87814a1f0ab72), UINT64_C(0x8cc702081a6439ec),
+  UINT64_C(0x90befffa23631e28), UINT64_C(0xa4506cebde82bde9), UINT64_C(0xbef9a3f7b2c67915),
+  UINT64_C(0xc67178f2e372532b), UINT64_C(0xca273eceea26619c), UINT64_C(0xd186b8c721c0c207),
+  UINT64_C(0xeada7dd6cde0eb1e), UINT64_C(0xf57d4f7fee6ed178), UINT64_C(0x06f067aa72176fba),
+  UINT64_C(0x0a637dc5a2c898a6), UINT64_C(0x113f9804bef90dae), UINT64_C(0x1b710b35131c471b),
+  UINT64_C(0x28db77f523047d84), UINT64_C(0x32caab7b40c72493), UINT64_C(0x3c9ebe0a15c9bebc),
+  UINT64_C(0x431d67c49c100d4c), UINT64_C(0x4cc5d4becb3e42b6), UINT64_C(0x597f299cfc657e2a),
+  UINT64_C(0x5fcb6fab3ad6faec), UINT64_C(0x6c44198c4a475817),
+};
+
+static uint64_t scr_sha512_rotr(uint64_t x, unsigned n) {
+  return (x >> n) | (x << (64 - n));
+}
+
+static void scr_sha512_block(uint64_t h[8], const unsigned char *data) {
+  uint64_t w[80];
+  for (size_t i = 0; i < 16; i++) {
+    w[i] = 0;
+    for (size_t b = 0; b < 8; b++) w[i] = (w[i] << 8) | data[i * 8 + b];
+  }
+  for (size_t i = 16; i < 80; i++) {
+    uint64_t s0 = scr_sha512_rotr(w[i - 15], 1) ^ scr_sha512_rotr(w[i - 15], 8) ^ (w[i - 15] >> 7);
+    uint64_t s1 = scr_sha512_rotr(w[i - 2], 19) ^ scr_sha512_rotr(w[i - 2], 61) ^ (w[i - 2] >> 6);
+    w[i] = w[i - 16] + s0 + w[i - 7] + s1;
+  }
+  uint64_t a = h[0], b = h[1], c = h[2], d = h[3];
+  uint64_t e = h[4], f = h[5], g = h[6], v = h[7];
+  for (size_t i = 0; i < 80; i++) {
+    uint64_t s1 = scr_sha512_rotr(e, 14) ^ scr_sha512_rotr(e, 18) ^ scr_sha512_rotr(e, 41);
+    uint64_t t1 = v + s1 + ((e & f) ^ (~e & g)) + scr_sha512_k[i] + w[i];
+    uint64_t s0 = scr_sha512_rotr(a, 28) ^ scr_sha512_rotr(a, 34) ^ scr_sha512_rotr(a, 39);
+    uint64_t t2 = s0 + ((a & b) ^ (a & c) ^ (b & c));
+    v = g; g = f; f = e; e = d + t1;
+    d = c; c = b; b = a; a = t1 + t2;
+  }
+  h[0] += a; h[1] += b; h[2] += c; h[3] += d;
+  h[4] += e; h[5] += f; h[6] += g; h[7] += v;
+}
+
+static void scr_sha512_init(ScrSha512Ctx *ctx, bool sha384) {
+  static const uint64_t initial512[8] = {
+    UINT64_C(0x6a09e667f3bcc908), UINT64_C(0xbb67ae8584caa73b),
+    UINT64_C(0x3c6ef372fe94f82b), UINT64_C(0xa54ff53a5f1d36f1),
+    UINT64_C(0x510e527fade682d1), UINT64_C(0x9b05688c2b3e6c1f),
+    UINT64_C(0x1f83d9abfb41bd6b), UINT64_C(0x5be0cd19137e2179)};
+  static const uint64_t initial384[8] = {
+    UINT64_C(0xcbbb9d5dc1059ed8), UINT64_C(0x629a292a367cd507),
+    UINT64_C(0x9159015a3070dd17), UINT64_C(0x152fecd8f70e5939),
+    UINT64_C(0x67332667ffc00b31), UINT64_C(0x8eb44a8768581511),
+    UINT64_C(0xdb0c2e0d64f98fa7), UINT64_C(0x47b5481dbefa4fa4)};
+  memcpy(ctx->h, sha384 ? initial384 : initial512, sizeof ctx->h);
+  ctx->bytes = 0;
+  ctx->tail_len = 0;
+}
+
+static void scr_sha512_update(ScrSha512Ctx *ctx, const unsigned char *data, size_t len) {
+  ctx->bytes += len;
+  if (ctx->tail_len != 0) {
+    size_t take = 128 - ctx->tail_len;
+    if (take > len) take = len;
+    memcpy(ctx->tail + ctx->tail_len, data, take);
+    ctx->tail_len += take;
+    data += take;
+    len -= take;
+    if (ctx->tail_len == 128) {
+      scr_sha512_block(ctx->h, ctx->tail);
+      ctx->tail_len = 0;
+    }
+  }
+  while (len >= 128) {
+    scr_sha512_block(ctx->h, data);
+    data += 128;
+    len -= 128;
+  }
+  if (len != 0) {
+    memcpy(ctx->tail, data, len);
+    ctx->tail_len = len;
+  }
+}
+
+static size_t scr_sha512_final(const ScrSha512Ctx *source, unsigned char out[64], bool sha384) {
+  ScrSha512Ctx ctx = *source;
+  unsigned char tail[256] = {0};
+  memcpy(tail, ctx.tail, ctx.tail_len);
+  tail[ctx.tail_len] = 0x80;
+  size_t pad = ctx.tail_len < 112 ? 128 : 256;
+  uint64_t low = ctx.bytes << 3, high = ctx.bytes >> 61;
+  for (size_t b = 0; b < 8; b++) {
+    tail[pad - 1 - b] = (unsigned char)(low >> (8 * b));
+    tail[pad - 9 - b] = (unsigned char)(high >> (8 * b));
+  }
+  scr_sha512_block(ctx.h, tail);
+  if (pad == 256) scr_sha512_block(ctx.h, tail + 128);
+  size_t len = sha384 ? 48 : 64;
+  for (size_t i = 0; i < len; i++) out[i] = (unsigned char)(ctx.h[i / 8] >> (56 - 8 * (i % 8)));
+  return len;
+}
+
 typedef enum ScrDigestAlg {
   SCR_DIGEST_MD5,
   SCR_DIGEST_SHA1,
+  SCR_DIGEST_SHA224,
   SCR_DIGEST_SHA256,
+  SCR_DIGEST_SHA384,
+  SCR_DIGEST_SHA512,
 } ScrDigestAlg;
 
 typedef struct ScrDigestCtx {
@@ -4715,6 +4845,7 @@ typedef struct ScrDigestCtx {
     ScrMd5Ctx md5;
     ScrSha1Ctx sha1;
     ScrSha256Ctx sha256;
+    ScrSha512Ctx sha512;
   } state;
 } ScrDigestCtx;
 
@@ -4734,7 +4865,10 @@ static bool scr_digest_name_is(const char *name, size_t len, const char *literal
 static bool scr_digest_alg(const char *name, size_t len, ScrDigestAlg *out) {
   if (scr_digest_name_is(name, len, "md5")) *out = SCR_DIGEST_MD5;
   else if (scr_digest_name_is(name, len, "sha1")) *out = SCR_DIGEST_SHA1;
+  else if (scr_digest_name_is(name, len, "sha224")) *out = SCR_DIGEST_SHA224;
   else if (scr_digest_name_is(name, len, "sha256")) *out = SCR_DIGEST_SHA256;
+  else if (scr_digest_name_is(name, len, "sha384")) *out = SCR_DIGEST_SHA384;
+  else if (scr_digest_name_is(name, len, "sha512")) *out = SCR_DIGEST_SHA512;
   else return false;
   return true;
 }
@@ -4744,7 +4878,17 @@ static void scr_digest_init(ScrDigestCtx *ctx, ScrDigestAlg alg) {
   switch (alg) {
     case SCR_DIGEST_MD5: scr_md5_init(&ctx->state.md5); break;
     case SCR_DIGEST_SHA1: scr_sha1_init(&ctx->state.sha1); break;
+    case SCR_DIGEST_SHA224: {
+      static const uint32_t initial[8] = {
+        0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
+        0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4};
+      scr_sha256_init(&ctx->state.sha256);
+      memcpy(ctx->state.sha256.h, initial, sizeof initial);
+      break;
+    }
     case SCR_DIGEST_SHA256: scr_sha256_init(&ctx->state.sha256); break;
+    case SCR_DIGEST_SHA384: scr_sha512_init(&ctx->state.sha512, true); break;
+    case SCR_DIGEST_SHA512: scr_sha512_init(&ctx->state.sha512, false); break;
   }
 }
 
@@ -4752,15 +4896,21 @@ static void scr_digest_update(ScrDigestCtx *ctx, const unsigned char *data, size
   switch (ctx->alg) {
     case SCR_DIGEST_MD5: scr_md5_update(&ctx->state.md5, data, len); break;
     case SCR_DIGEST_SHA1: scr_sha1_update(&ctx->state.sha1, data, len); break;
+    case SCR_DIGEST_SHA224:
     case SCR_DIGEST_SHA256: scr_sha256_update(&ctx->state.sha256, data, len); break;
+    case SCR_DIGEST_SHA384:
+    case SCR_DIGEST_SHA512: scr_sha512_update(&ctx->state.sha512, data, len); break;
   }
 }
 
-static size_t scr_digest_final(const ScrDigestCtx *ctx, unsigned char out[32]) {
+static size_t scr_digest_final(const ScrDigestCtx *ctx, unsigned char out[64]) {
   switch (ctx->alg) {
     case SCR_DIGEST_MD5: return scr_md5_final(&ctx->state.md5, out);
     case SCR_DIGEST_SHA1: return scr_sha1_final(&ctx->state.sha1, out);
+    case SCR_DIGEST_SHA224: scr_sha256_final(&ctx->state.sha256, out); return 28;
     case SCR_DIGEST_SHA256: return scr_sha256_final(&ctx->state.sha256, out);
+    case SCR_DIGEST_SHA384: return scr_sha512_final(&ctx->state.sha512, out, true);
+    case SCR_DIGEST_SHA512: return scr_sha512_final(&ctx->state.sha512, out, false);
   }
   return 0;
 }
@@ -4772,9 +4922,10 @@ static void scr_crypto_zero(void *ptr, size_t len) {
 
 static void scr_hmac_init(ScrDigestCtx *inner, ScrDigestCtx *outer, ScrDigestAlg alg,
                           const unsigned char *key, size_t keylen) {
-  unsigned char kblock[64] = {0};
-  unsigned char kd[32];
-  if (keylen > sizeof kblock) {
+  unsigned char kblock[128] = {0};
+  size_t block_len = alg == SCR_DIGEST_SHA384 || alg == SCR_DIGEST_SHA512 ? 128 : 64;
+  unsigned char kd[64];
+  if (keylen > block_len) {
     ScrDigestCtx key_hash;
     scr_digest_init(&key_hash, alg);
     scr_digest_update(&key_hash, key, keylen);
@@ -4785,24 +4936,24 @@ static void scr_hmac_init(ScrDigestCtx *inner, ScrDigestCtx *outer, ScrDigestAlg
   } else if (keylen != 0) {
     memcpy(kblock, key, keylen);
   }
-  unsigned char ipad[64];
-  unsigned char opad[64];
-  for (size_t i = 0; i < 64; i++) {
+  unsigned char ipad[128];
+  unsigned char opad[128];
+  for (size_t i = 0; i < block_len; i++) {
     ipad[i] = (unsigned char)(kblock[i] ^ 0x36);
     opad[i] = (unsigned char)(kblock[i] ^ 0x5c);
   }
   scr_digest_init(inner, alg);
-  scr_digest_update(inner, ipad, sizeof ipad);
+  scr_digest_update(inner, ipad, block_len);
   scr_digest_init(outer, alg);
-  scr_digest_update(outer, opad, sizeof opad);
+  scr_digest_update(outer, opad, block_len);
   scr_crypto_zero(kblock, sizeof kblock);
-  scr_crypto_zero(ipad, sizeof ipad);
-  scr_crypto_zero(opad, sizeof opad);
+  scr_crypto_zero(ipad, block_len);
+  scr_crypto_zero(opad, block_len);
 }
 
 static size_t scr_hmac_final(const ScrDigestCtx *inner, const ScrDigestCtx *outer,
-                             unsigned char out[32]) {
-  unsigned char inner_digest[32];
+                             unsigned char out[64]) {
+  unsigned char inner_digest[64];
   size_t inner_len = scr_digest_final(inner, inner_digest);
   ScrDigestCtx final_outer = *outer;
   scr_digest_update(&final_outer, inner_digest, inner_len);
@@ -4816,7 +4967,7 @@ static size_t scr_hmac_final(const ScrDigestCtx *inner, const ScrDigestCtx *oute
  * helpers both use the incremental core. Returns zero for an unknown
  * algorithm, preserving the island's unsupported-digest probe. */
 size_t scr_crypto_digest_raw(const char *alg, const unsigned char *data, size_t len,
-                             unsigned char out[32]) {
+                             unsigned char out[64]) {
   ScrDigestAlg kind;
   if (!scr_digest_alg(alg, strlen(alg), &kind)) return 0;
   ScrDigestCtx ctx;
@@ -4826,7 +4977,7 @@ size_t scr_crypto_digest_raw(const char *alg, const unsigned char *data, size_t 
 }
 
 size_t scr_crypto_hmac_raw(const char *alg, const unsigned char *key, size_t keylen,
-                           const unsigned char *data, size_t len, unsigned char out[32]) {
+                           const unsigned char *data, size_t len, unsigned char out[64]) {
   ScrDigestAlg kind;
   if (!scr_digest_alg(alg, strlen(alg), &kind)) return 0;
   ScrDigestCtx inner, outer;
@@ -4976,7 +5127,7 @@ ScrCryptoHash *scr_crypto_hash_copy(ScrCryptoHash *hash) {
   return copy;
 }
 
-static size_t scr_crypto_hash_finish(ScrCryptoHash *hash, unsigned char out[32]) {
+static size_t scr_crypto_hash_finish(ScrCryptoHash *hash, unsigned char out[64]) {
   if (hash->finalized) {
     if (hash->hmac) return 0; /* Node's repeated Hmac.digest() is empty. */
     scr_crypto_hash_finalized();
@@ -4989,7 +5140,7 @@ static size_t scr_crypto_hash_finish(ScrCryptoHash *hash, unsigned char out[32])
 }
 
 ScrStr *scr_crypto_hash_digest_string(ScrCryptoHash *hash, ScrStr *enc) {
-  unsigned char digest[32];
+  unsigned char digest[64];
   size_t n = scr_crypto_hash_finish(hash, digest);
   if (n == 0) return scr_exc_pending() ? NULL : scr_str_new("", 0);
   ScrStr *result = scr_digest_encode(digest, n, enc);
@@ -4998,7 +5149,7 @@ ScrStr *scr_crypto_hash_digest_string(ScrCryptoHash *hash, ScrStr *enc) {
 }
 
 ScrBytes *scr_crypto_hash_digest_buffer(ScrCryptoHash *hash) {
-  unsigned char digest[32];
+  unsigned char digest[64];
   size_t n = scr_crypto_hash_finish(hash, digest);
   if (n == 0) return scr_exc_pending() ? NULL : scr_bytes_new(SCR_BYTES_U8, 0);
   ScrBytes *result = scr_bytes_new(SCR_BYTES_U8, (double)n);
@@ -5014,7 +5165,7 @@ static ScrStr *scr_hash_digest_raw(const ScrStr *alg, const unsigned char *data,
     scr_crypto_hash_digest_unsupported(alg);
     return NULL;
   }
-  unsigned char d[32];
+  unsigned char d[64];
   ScrDigestCtx ctx;
   scr_digest_init(&ctx, kind);
   scr_digest_update(&ctx, data, len);
@@ -5051,7 +5202,7 @@ bool scr_crypto_timing_safe_equal(ScrBytes *left, ScrBytes *right) {
 ScrBytes *scr_crypto_random_fill(ScrBytes *bytes, double offset, double size) {
   double length = (double)(bytes->len * scr_bytes_elem_size(bytes->elem));
   if (!isfinite(offset) || floor(offset) != offset || offset < 0 || offset > length) {
-    char value[32], msg[160];
+    char value[64], msg[160];
     size_t value_len = scr_f64_to_str(offset, value);
     int n = snprintf(msg, sizeof msg,
                      "The value of \"offset\" is out of range. It must be >= 0 && <= %.0f. Received %.*s",
@@ -5061,7 +5212,7 @@ ScrBytes *scr_crypto_random_fill(ScrBytes *bytes, double offset, double size) {
   }
   double available = length - offset;
   if (!isfinite(size) || floor(size) != size || size < 0 || size > 2147483647.0) {
-    char value[32], msg[160];
+    char value[64], msg[160];
     size_t value_len = scr_f64_to_str(size, value);
     int n = snprintf(msg, sizeof msg,
                      "The value of \"size\" is out of range. It must be >= 0 && <= 2147483647. Received %.*s",
@@ -5070,7 +5221,7 @@ ScrBytes *scr_crypto_random_fill(ScrBytes *bytes, double offset, double size) {
     return NULL;
   }
   if (size > available) {
-    char value[32], msg[160];
+    char value[64], msg[160];
     double total = size + offset;
     size_t value_len = scr_f64_to_str(total, value);
     int n = snprintf(msg, sizeof msg,
@@ -5100,7 +5251,7 @@ double scr_crypto_random_int(double min, double max) {
     return 0;
   }
   if (max <= min) {
-    char min_text[32], max_text[32], msg[192];
+    char min_text[64], max_text[64], msg[192];
     size_t min_len = scr_f64_to_str(min, min_text);
     size_t max_len = scr_f64_to_str(max, max_text);
     int n = snprintf(msg, sizeof msg,
@@ -5132,7 +5283,7 @@ static ScrBytes *scr_crypto_pbkdf2_raw(const unsigned char *password, size_t pas
                                       uint32_t iterations, size_t keylen,
                                       ScrDigestAlg alg) {
   ScrDigestCtx empty;
-  unsigned char empty_digest[32];
+  unsigned char empty_digest[64];
   scr_digest_init(&empty, alg);
   size_t digest_len = scr_digest_final(&empty, empty_digest);
   scr_crypto_zero(empty_digest, sizeof empty_digest);
@@ -5147,7 +5298,7 @@ static ScrBytes *scr_crypto_pbkdf2_raw(const unsigned char *password, size_t pas
     block[salt_len + 2] = (unsigned char)(index >> 8);
     block[salt_len + 3] = (unsigned char)index;
     ScrDigestCtx inner, outer;
-    unsigned char u[32], accum[32];
+    unsigned char u[64], accum[64];
     scr_hmac_init(&inner, &outer, alg, password, password_len);
     scr_digest_update(&inner, block, salt_len + 4);
     scr_hmac_final(&inner, &outer, u);
@@ -5175,7 +5326,7 @@ ScrBytes *scr_crypto_pbkdf2(ScrBytes *password, ScrBytes *salt,
                             double iterations, double keylen, ScrStr *digest) {
   if (!isfinite(iterations) || floor(iterations) != iterations ||
       iterations < 1 || iterations > 2147483647.0) {
-    char value[32], msg[176];
+    char value[64], msg[176];
     size_t value_len = scr_f64_to_str(iterations, value);
     int n = snprintf(msg, sizeof msg,
                      "The value of \"iterations\" is out of range. It must be >= 1 && <= 2147483647. Received %.*s",
@@ -5184,7 +5335,7 @@ ScrBytes *scr_crypto_pbkdf2(ScrBytes *password, ScrBytes *salt,
     return NULL;
   }
   if (!isfinite(keylen) || floor(keylen) != keylen || keylen < 0 || keylen > 2147483647.0) {
-    char value[32], msg[176];
+    char value[64], msg[176];
     size_t value_len = scr_f64_to_str(keylen, value);
     int n = snprintf(msg, sizeof msg,
                      "The value of \"keylen\" is out of range. It must be >= 0 && <= 2147483647. Received %.*s",
@@ -5201,6 +5352,279 @@ ScrBytes *scr_crypto_pbkdf2(ScrBytes *password, ScrBytes *salt,
       password->len * scr_bytes_elem_size(password->elem), salt->data,
       salt->len * scr_bytes_elem_size(salt->elem), (uint32_t)iterations,
       (size_t)keylen, alg);
+}
+
+/* RFC 5869 HKDF and RFC 7914 scrypt share the digest core in both
+ * execution tiers. Sensitive scratch storage is cleared before release. */
+static bool scr_crypto_integer(double value, const char *name, double max) {
+  if (isfinite(value) && floor(value) == value && value >= 0 && value <= max) return true;
+  char received[64], requirement[80], message[256];
+  size_t n = scr_f64_to_str(value, received);
+  received[n] = '\0';
+  if (!isfinite(value) || floor(value) != value) {
+    snprintf(requirement, sizeof requirement, "an integer");
+  } else {
+    snprintf(requirement, sizeof requirement, ">= 0 && <= %.0f", max);
+    if (fabs(value) > 4294967296.0) {
+      char digits[40];
+      snprintf(digits, sizeof digits, "%.0f", value);
+      size_t len = strlen(digits), out = 0, start = digits[0] == '-' ? 1 : 0;
+      for (size_t i = 0; i < len; i++) {
+        if (i > start && (len - i) % 3 == 0) received[out++] = '_';
+        received[out++] = digits[i];
+      }
+      received[out] = '\0';
+    }
+  }
+  int len = snprintf(message, sizeof message,
+      "The value of \"%s\" is out of range. It must be %s. Received %s", name, requirement, received);
+  scr_throw_error_msg_code(SCR_ERR_RANGE, message, (size_t)len, "ERR_OUT_OF_RANGE");
+  return false;
+}
+
+ScrBytes *scr_crypto_hkdf_bytes(ScrStr *digest, ScrBytes *ikm, ScrBytes *salt,
+                                ScrBytes *info, double keylen) {
+  if (!scr_crypto_integer(keylen, "length", 9007199254740991.0)) return NULL;
+  size_t info_len = info->len * scr_bytes_elem_size(info->elem);
+  if (info_len > 1024) {
+    char message[192];
+    int len = snprintf(message, sizeof message,
+        "The value of \"info\" is out of range. It must be must not contain more than 1024 bytes. Received %zu", info_len);
+    scr_throw_error_msg_code(SCR_ERR_RANGE, message, (size_t)len, "ERR_OUT_OF_RANGE");
+    return NULL;
+  }
+  ScrDigestAlg alg;
+  if (!scr_digest_alg(digest->data, digest->len, &alg)) {
+    scr_crypto_invalid_digest(digest);
+    return NULL;
+  }
+  ScrDigestCtx inner, outer;
+  unsigned char prk[64], t[64];
+  scr_hmac_init(&inner, &outer, alg, salt->data, salt->len * scr_bytes_elem_size(salt->elem));
+  scr_digest_update(&inner, ikm->data, ikm->len * scr_bytes_elem_size(ikm->elem));
+  size_t hash_len = scr_hmac_final(&inner, &outer, prk);
+  if (keylen > 255 * hash_len) {
+    scr_crypto_zero(prk, sizeof prk);
+    scr_crypto_zero(&inner, sizeof inner);
+    scr_crypto_zero(&outer, sizeof outer);
+    scr_throw_error_msg_code(SCR_ERR_RANGE, "Invalid key length", 18, "ERR_CRYPTO_INVALID_KEYLEN");
+    return NULL;
+  }
+  ScrBytes *result = scr_bytes_new(SCR_BYTES_U8, keylen);
+  size_t offset = 0, previous_len = 0;
+  for (unsigned counter = 1; offset < (size_t)keylen; counter++) {
+    scr_hmac_init(&inner, &outer, alg, prk, hash_len);
+    scr_digest_update(&inner, t, previous_len);
+    scr_digest_update(&inner, info->data, info_len);
+    unsigned char byte = (unsigned char)counter;
+    scr_digest_update(&inner, &byte, 1);
+    scr_hmac_final(&inner, &outer, t);
+    size_t take = (size_t)keylen - offset;
+    if (take > hash_len) take = hash_len;
+    memcpy(result->data + offset, t, take);
+    offset += take;
+    previous_len = hash_len;
+  }
+  scr_crypto_zero(prk, sizeof prk);
+  scr_crypto_zero(t, sizeof t);
+  scr_crypto_zero(&inner, sizeof inner);
+  scr_crypto_zero(&outer, sizeof outer);
+  return result;
+}
+
+ScrDyn *scr_crypto_hkdf(ScrStr *digest, ScrBytes *ikm, ScrBytes *salt,
+                       ScrBytes *info, double keylen) {
+  ScrBytes *bytes = scr_crypto_hkdf_bytes(digest, ikm, salt, info, keylen);
+  if (!bytes) return NULL;
+  if (bytes->len == 0) {
+    scr_bytes_release(bytes);
+    scr_throw_error_msg(SCR_ERR_ERROR, "Deriving bits failed", 20);
+    return NULL;
+  }
+  ScrDyn *result = scr_array_buffer_from_bytes(bytes);
+  scr_bytes_release(bytes);
+  return result;
+}
+
+static uint32_t scr_scrypt_rotl(uint32_t x, unsigned n) {
+  return (x << n) | (x >> (32 - n));
+}
+
+/* Salsa20/8 core, RFC 7914 section 3. Unsigned arithmetic supplies the
+ * specified reduction modulo 2^32 without signed-overflow UB. */
+static void scr_scrypt_salsa(uint32_t block[16]) {
+  uint32_t x[16];
+  memcpy(x, block, sizeof x);
+  for (unsigned round = 0; round < 8; round += 2) {
+#define SCR_SALSA(a, b, c, n) x[a] ^= scr_scrypt_rotl(x[b] + x[c], n)
+    SCR_SALSA(4,0,12,7); SCR_SALSA(8,4,0,9); SCR_SALSA(12,8,4,13); SCR_SALSA(0,12,8,18);
+    SCR_SALSA(9,5,1,7); SCR_SALSA(13,9,5,9); SCR_SALSA(1,13,9,13); SCR_SALSA(5,1,13,18);
+    SCR_SALSA(14,10,6,7); SCR_SALSA(2,14,10,9); SCR_SALSA(6,2,14,13); SCR_SALSA(10,6,2,18);
+    SCR_SALSA(3,15,11,7); SCR_SALSA(7,3,15,9); SCR_SALSA(11,7,3,13); SCR_SALSA(15,11,7,18);
+    SCR_SALSA(1,0,3,7); SCR_SALSA(2,1,0,9); SCR_SALSA(3,2,1,13); SCR_SALSA(0,3,2,18);
+    SCR_SALSA(6,5,4,7); SCR_SALSA(7,6,5,9); SCR_SALSA(4,7,6,13); SCR_SALSA(5,4,7,18);
+    SCR_SALSA(11,10,9,7); SCR_SALSA(8,11,10,9); SCR_SALSA(9,8,11,13); SCR_SALSA(10,9,8,18);
+    SCR_SALSA(12,15,14,7); SCR_SALSA(13,12,15,9); SCR_SALSA(14,13,12,13); SCR_SALSA(15,14,13,18);
+#undef SCR_SALSA
+  }
+  for (size_t i = 0; i < 16; i++) block[i] += x[i];
+  scr_crypto_zero(x, sizeof x);
+}
+
+static void scr_scrypt_blockmix(uint32_t *x, uint32_t *y, size_t r) {
+  uint32_t block[16];
+  memcpy(block, x + (2 * r - 1) * 16, sizeof block);
+  for (size_t i = 0; i < 2 * r; i++) {
+    for (size_t k = 0; k < 16; k++) block[k] ^= x[i * 16 + k];
+    scr_scrypt_salsa(block);
+    size_t dest = (i / 2 + (i % 2) * r) * 16;
+    memcpy(y + dest, block, sizeof block);
+  }
+  memcpy(x, y, 128 * r);
+  scr_crypto_zero(block, sizeof block);
+}
+
+static bool scr_scrypt_params(double n, double r, double p, double maxmem, size_t *memory) {
+  uint64_t N = (uint64_t)n, R = (uint64_t)r, P = (uint64_t)p;
+  if (N < 2 || (N & (N - 1)) != 0) {
+    scr_throw_error_msg_code(SCR_ERR_RANGE, "Invalid scrypt params", 21, "ERR_CRYPTO_INVALID_SCRYPT_PARAMS");
+    return false;
+  }
+  /* Match Node's OpenSSL 3 scrypt guard, including X/Y working buffers
+   * and the initial PBKDF2 output; check every product before allocation. */
+  bool overflow = R == 0 || P == 0 || P > UINT64_C(0x3fffffff) / R;
+  if (!overflow && R <= 3 && N >= (UINT64_C(1) << (16 * R))) overflow = true;
+  uint64_t b = overflow ? 0 : 128 * R * P;
+  if (b > INT32_MAX || R > UINT64_MAX / 128 / (N + 2)) overflow = true;
+  uint64_t v = overflow ? 0 : 128 * R * (N + 2);
+  if (overflow || b > UINT64_MAX - v || b + v > (uint64_t)maxmem || b + v > SIZE_MAX) {
+    static const char message[] = "Invalid scrypt params: error:030000AC:digital envelope routines::memory limit exceeded";
+    scr_throw_error_msg_code(SCR_ERR_RANGE, message, sizeof message - 1, "ERR_CRYPTO_INVALID_SCRYPT_PARAMS");
+    return false;
+  }
+  *memory = (size_t)(b + v);
+  return true;
+}
+
+ScrBytes *scr_crypto_scrypt_derive(ScrBytes *password, ScrBytes *salt, double keylen,
+                                  double n, double r, double p, double maxmem) {
+  if (!scr_crypto_integer(keylen, "keylen", 2147483647.0) ||
+      !scr_crypto_integer(n, "N", 4294967295.0) || !scr_crypto_integer(r, "r", 4294967295.0) ||
+      !scr_crypto_integer(p, "p", 4294967295.0) || !scr_crypto_integer(maxmem, "maxmem", 9007199254740991.0)) return NULL;
+  if (n == 0) n = 16384;
+  if (r == 0) r = 8;
+  if (p == 0) p = 1;
+  if (maxmem == 0) maxmem = 33554432;
+  size_t memory;
+  if (!scr_scrypt_params(n, r, p, maxmem, &memory)) return NULL;
+  if (keylen == 0) return scr_bytes_new(SCR_BYTES_U8, 0);
+  size_t words = 32 * (size_t)r, block_len = words * sizeof(uint32_t);
+  size_t b_len = block_len * (size_t)p;
+  ScrBytes *b = scr_crypto_pbkdf2_raw(password->data, password->len * scr_bytes_elem_size(password->elem),
+      salt->data, salt->len * scr_bytes_elem_size(salt->elem), 1, b_len, SCR_DIGEST_SHA256);
+  uint32_t *work = malloc(memory - b_len);
+  if (!work) { scr_bytes_release(b); scr_trap("scriptc: out of memory\n"); }
+  uint32_t *x = work, *y = x + words, *v = y + words;
+  for (size_t part = 0; part < (size_t)p; part++) {
+    unsigned char *bytes = b->data + part * block_len;
+    for (size_t i = 0; i < words; i++) {
+      x[i] = (uint32_t)bytes[i * 4] | ((uint32_t)bytes[i * 4 + 1] << 8) |
+             ((uint32_t)bytes[i * 4 + 2] << 16) | ((uint32_t)bytes[i * 4 + 3] << 24);
+    }
+    for (size_t i = 0; i < (size_t)n; i++) {
+      memcpy(v + i * words, x, block_len);
+      scr_scrypt_blockmix(x, y, (size_t)r);
+    }
+    for (size_t i = 0; i < (size_t)n; i++) {
+      size_t j = (size_t)x[words - 16] & ((size_t)n - 1);
+      for (size_t k = 0; k < words; k++) x[k] ^= v[j * words + k];
+      scr_scrypt_blockmix(x, y, (size_t)r);
+    }
+    for (size_t i = 0; i < words; i++) {
+      for (size_t k = 0; k < 4; k++) bytes[i * 4 + k] = (unsigned char)(x[i] >> (8 * k));
+    }
+  }
+  ScrBytes *result = scr_crypto_pbkdf2_raw(password->data, password->len * scr_bytes_elem_size(password->elem),
+      b->data, b_len, 1, (size_t)keylen, SCR_DIGEST_SHA256);
+  scr_crypto_zero(b->data, b_len);
+  scr_bytes_release(b);
+  scr_crypto_zero(work, memory - b_len);
+  free(work);
+  return result;
+}
+
+static ScrDyn *scr_scrypt_read_option(ScrDyn *options, const char *name) {
+  if (options->kind != SCR_DYN_TYPED_REF) return scr_dyn_obj_read(options, name, strlen(name));
+  ScrDyn *view = scr_dyn_typed_ref_materialize(options);
+  if (!view) return NULL;
+  ScrDyn *value = scr_dyn_obj_read(view, name, strlen(name));
+  scr_dyn_release(view);
+  return value;
+}
+
+static bool scr_scrypt_option(ScrDyn *options, const char *name, double max, double *out, bool *present) {
+  ScrDyn *value = scr_scrypt_read_option(options, name);
+  if (scr_exc_pending()) return false;
+  *present = value && value->kind != SCR_DYN_UNDEF;
+  if (*present) {
+    scr_dyn_release(value);
+    value = scr_scrypt_read_option(options, name);
+    if (scr_exc_pending()) return false;
+    if (value->kind != SCR_DYN_NUM) {
+      scr_dyn_arg_type_fail(name, "number", value);
+      scr_dyn_release(value);
+      return false;
+    }
+    *out = value->v.num;
+    bool valid = scr_crypto_integer(*out, name, max);
+    scr_dyn_release(value);
+    return valid;
+  }
+  scr_dyn_release(value);
+  return true;
+}
+
+ScrBytes *scr_crypto_scrypt(ScrBytes *password, ScrBytes *salt, double keylen, ScrDyn *options) {
+  if (!scr_crypto_integer(keylen, "keylen", 2147483647.0)) return NULL;
+  double values[4] = {16384, 8, 1, 33554432};
+  if (options && scr_dyn_truthy(options)) {
+    const char *names[3] = {"N", "r", "p"};
+    const char *aliases[3] = {"cost", "blockSize", "parallelization"};
+    for (size_t i = 0; i < 3; i++) {
+      bool primary, alias;
+      if (!scr_scrypt_option(options, names[i], 4294967295.0, &values[i], &primary)) return NULL;
+      // Node reads the alias to test presence before checking the conflict.
+      ScrDyn *alias_value = scr_scrypt_read_option(options, aliases[i]);
+      if (scr_exc_pending()) return NULL;
+      alias = alias_value && alias_value->kind != SCR_DYN_UNDEF;
+      if (primary && alias) {
+        char message[160];
+        int len = snprintf(message, sizeof message, "Option \"%s\" cannot be used in combination with option \"%s\"", names[i], aliases[i]);
+        scr_dyn_release(alias_value);
+        scr_throw_error_msg_code(SCR_ERR_TYPE, message, (size_t)len, "ERR_INCOMPATIBLE_OPTION_PAIR");
+        return NULL;
+      }
+      if (alias) {
+        scr_dyn_release(alias_value);
+        alias_value = scr_scrypt_read_option(options, aliases[i]);
+        if (scr_exc_pending()) return NULL;
+        if (alias_value->kind != SCR_DYN_NUM) {
+          scr_dyn_arg_type_fail(aliases[i], "number", alias_value);
+          scr_dyn_release(alias_value);
+          return NULL;
+        }
+        values[i] = alias_value->v.num;
+        if (!scr_crypto_integer(values[i], aliases[i], 4294967295.0)) {
+          scr_dyn_release(alias_value);
+          return NULL;
+        }
+      }
+      scr_dyn_release(alias_value);
+    }
+    bool present;
+    if (!scr_scrypt_option(options, "maxmem", 9007199254740991.0, &values[3], &present)) return NULL;
+  }
+  return scr_crypto_scrypt_derive(password, salt, keylen, values[0], values[1], values[2], values[3]);
 }
 
 /* The composed `new crypto.X509Certificate(data).fingerprint` read, fused

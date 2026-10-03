@@ -4661,8 +4661,8 @@ export class LlEmitter {
     return fsRenameThunkFor(this, cbT);
   }
 
-  cryptoBytesThunkFor(cbT: IrType & { kind: "func" }): string {
-    return cryptoBytesThunkFor(this, cbT);
+  cryptoBytesThunkFor(cbT: IrType & { kind: "func" }, arrayBuffer = false): string {
+    return cryptoBytesThunkFor(this, cbT, arrayBuffer);
   }
 
   zlibBytesThunkFor(cbT: IrType & { kind: "func" }): string {

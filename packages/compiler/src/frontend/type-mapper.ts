@@ -2082,6 +2082,11 @@ function mapTypeInner(type: ts.Type, ctx: TypeMapperCtx): IrType | null {
   ) {
     return { kind: "secureCtx" };
   }
+  // Scrypt's runtime options retain property accessors and aliases. Use
+  // checked values so presence probes and repeated getter reads match Node.
+  if (psym?.name === "ScryptOptions" && checker.declarationsOf(psym).some(
+    (d) => ts.isInterfaceDeclaration(d) && ctx.isStdlibFile(d.getSourceFile()) && isDeclaredInAmbientModule(d, "crypto"),
+  )) return DYN;
   // crypto.Hash / crypto.Hmac: native incremental digest handles. Keep
   // provenance module-qualified so user classes with these common names
   // retain their ordinary structural/class representation.

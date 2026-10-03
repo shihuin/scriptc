@@ -3315,7 +3315,7 @@ static JSValue isl_host_digest(JSContext *ctx, JSValueConst this_val, int argc,
     JS_FreeCString(ctx, alg);
     return JS_EXCEPTION;
   }
-  unsigned char out[32];
+  unsigned char out[64];
   size_t n = scr_crypto_digest_raw(alg, data, len, out);
   JS_FreeCString(ctx, alg);
   return n == 0 ? JS_UNDEFINED : JS_NewUint8ArrayCopy(ctx, out, n);
@@ -3335,10 +3335,36 @@ static JSValue isl_host_hmac(JSContext *ctx, JSValueConst this_val, int argc,
     JS_FreeCString(ctx, alg);
     return JS_EXCEPTION;
   }
-  unsigned char out[32];
+  unsigned char out[64];
   size_t n = scr_crypto_hmac_raw(alg, key, keylen, data, len, out);
   JS_FreeCString(ctx, alg);
   return n == 0 ? JS_UNDEFINED : JS_NewUint8ArrayCopy(ctx, out, n);
+}
+
+/* The island validates JavaScript overloads; the native RFC 7914 core
+ * owns memory accounting, ROMix, and sensitive scratch cleanup. */
+static JSValue isl_host_scrypt(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  (void)this_val;
+  if (argc != 7) return JS_ThrowTypeError(ctx, "invalid scrypt bridge arity");
+  size_t password_len = 0, salt_len = 0;
+  uint8_t *password_data = JS_GetUint8Array(ctx, &password_len, argv[0]);
+  uint8_t *salt_data = JS_GetUint8Array(ctx, &salt_len, argv[1]);
+  if ((!password_data && password_len) || (!salt_data && salt_len)) return JS_EXCEPTION;
+  double values[5];
+  for (int i = 0; i < 5; i++) if (JS_ToFloat64(ctx, &values[i], argv[i + 2]) < 0) return JS_EXCEPTION;
+  /* These wrappers borrow engine storage for the synchronous core. No
+   * extra heap copies of the password or salt outlive the bridge call. */
+  ScrBytes password = {0}, salt = {0};
+  password.elem = salt.elem = SCR_BYTES_U8;
+  password.len = password_len;
+  password.data = password_data;
+  salt.len = salt_len;
+  salt.data = salt_data;
+  ScrBytes *result = scr_crypto_scrypt_derive(&password, &salt, values[0], values[1], values[2], values[3], values[4]);
+  if (scr_exc_pending()) return isl_throw_pending(ctx);
+  JSValue value = JS_NewUint8ArrayCopy(ctx, result->data, result->len);
+  scr_bytes_release(result);
+  return value;
 }
 
 static JSValue isl_host_pid(JSContext *ctx, JSValueConst this_val, int argc,
@@ -5621,7 +5647,7 @@ static const char isl_modules_bootstrap[] =
     "    return mod;\n"
     "  });\n"
     /* node:crypto — the hashing/random slice over host bridges
-     * (md5/sha1/sha256 digest + HMAC through the same C
+     * (MD5/SHA-1/SHA-2 digest + HMAC through the same C
      * implementations the static lowerings use; randomness through
      * the web prelude's CSPRNG), pbkdf2 over the HMAC bridge, and
      * honest throwing stubs for the key/cipher machinery the island
@@ -5839,12 +5865,119 @@ static const char isl_modules_bootstrap[] =
     "    }\n"
     "    queueMicrotask(() => callback(null, derived));\n"
     "  };\n"
+    "  const kdfError = (kind, code, message) => {\n"
+    "    const error = new kind(message);\n"
+    "    error.code = code;\n"
+    "    return error;\n"
+    "  };\n"
+    "  const kdfNumber = (value) => Number.isInteger(value) && Math.abs(value) > 4294967296 ? String(value).replace(/\\B(?=(\\d{3})+(?!\\d))/g, \"_\") : String(value);\n"
+    "  const kdfInteger = (value, name, max) => {\n"
+    "    if (typeof value !== \"number\") {\n"
+    "      const received = value === null ? \"null\" : value === undefined ? \"undefined\" : typeof value === \"object\" ? \"an instance of \" + ((value.constructor && value.constructor.name) || \"Object\") : \"type \" + typeof value + \" (\" + (typeof value === \"string\" ? \"'\" + value + \"'\" : String(value)) + \")\";\n"
+    "      throw kdfError(TypeError, \"ERR_INVALID_ARG_TYPE\", 'The \"' + name + '\" argument must be of type number. Received ' + received);\n"
+    "    }\n"
+    "    if (!Number.isInteger(value) || value < 0 || value > max) {\n"
+    "      const range = Number.isInteger(value) ? \">= 0 && <= \" + max : \"an integer\";\n"
+    "      throw kdfError(RangeError, \"ERR_OUT_OF_RANGE\", 'The value of \"' + name + '\" is out of range. It must be ' + range + '. Received ' + kdfNumber(value));\n"
+    "    }\n"
+    "    return value;\n"
+    "  };\n"
+    "  const kdfInput = (value, name, hkdfKey = false, hkdfSource = false) => {\n"
+    "    if (typeof value === \"string\") return Buffer.from(value);\n"
+    "    if (value instanceof ArrayBuffer) return new Uint8Array(value);\n"
+    "    if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);\n"
+    "    const received = value === null ? \"null\" : value === undefined ? \"undefined\" : typeof value === \"object\" ? \"an instance of \" + ((value.constructor && value.constructor.name) || \"Object\") : \"type \" + typeof value + \" (\" + (typeof value === \"string\" ? \"'\" + value + \"'\" : String(value)) + \")\";\n"
+    "    const expected = hkdfKey ? \"string or an instance of SecretKeyObject, ArrayBuffer, TypedArray, DataView, or Buffer\" : hkdfSource ? \"string or an instance of ArrayBuffer, TypedArray, DataView, or Buffer\" : \"string or an instance of ArrayBuffer, Buffer, TypedArray, or DataView\";\n"
+    "    throw kdfError(TypeError, \"ERR_INVALID_ARG_TYPE\", 'The \"' + name + '\" argument must be of type ' + expected + '. Received ' + received);\n"
+    "  };\n"
+    "  const kdfCallback = (callback) => {\n"
+    "    if (typeof callback !== \"function\") {\n"
+    "      const received = callback === undefined ? \"undefined\" : callback === null ? \"null\" : typeof callback === \"object\" ? \"an instance of \" + ((callback.constructor && callback.constructor.name) || \"Object\") : \"type \" + typeof callback + \" (\" + String(callback) + \")\";\n"
+    "      throw kdfError(TypeError, \"ERR_INVALID_ARG_TYPE\", 'The \"callback\" argument must be of type function. Received ' + received);\n"
+    "    }\n"
+    "  };\n"
+    "  const hkdfParameters = (digest, ikm, salt, info, keylen) => {\n"
+    "    if (typeof digest !== \"string\") {\n"
+    "      const received = digest === undefined ? \"undefined\" : digest === null ? \"null\" : \"type \" + typeof digest + \" (\" + String(digest) + \")\";\n"
+    "      throw kdfError(TypeError, \"ERR_INVALID_ARG_TYPE\", 'The \"digest\" argument must be of type string. Received ' + received);\n"
+    "    }\n"
+    "    ikm = kdfInput(ikm, \"ikm\", true);\n"
+    "    salt = kdfInput(salt, \"salt\", false, true);\n"
+    "    info = kdfInput(info, \"info\", false, true);\n"
+    "    kdfInteger(keylen, \"length\", Number.MAX_SAFE_INTEGER);\n"
+    "    if (info.length > 1024) throw kdfError(RangeError, \"ERR_OUT_OF_RANGE\", 'The value of \"info\" is out of range. It must be must not contain more than 1024 bytes. Received ' + info.length);\n"
+    "    return [digest, ikm, salt, info, keylen];\n"
+    "  };\n"
+    "  const hkdfDerive = (digest, ikm, salt, info, keylen) => {\n"
+    "    const prk = env.hmac(digest.toLowerCase(), salt, ikm);\n"
+    "    if (prk === undefined) throw kdfError(TypeError, \"ERR_CRYPTO_INVALID_DIGEST\", \"Invalid digest: \" + digest);\n"
+    "    if (keylen > 255 * prk.length) {\n"
+    "      prk.fill(0);\n"
+    "      throw kdfError(RangeError, \"ERR_CRYPTO_INVALID_KEYLEN\", \"Invalid key length\");\n"
+    "    }\n"
+    "    const result = new Uint8Array(keylen);\n"
+    "    let previous = new Uint8Array(0), offset = 0;\n"
+    "    for (let counter = 1; offset < keylen; counter++) {\n"
+    "      const block = new Uint8Array(previous.length + info.length + 1);\n"
+    "      block.set(previous);\n"
+    "      block.set(info, previous.length);\n"
+    "      block[block.length - 1] = counter;\n"
+    "      const next = env.hmac(digest.toLowerCase(), prk, block);\n"
+    "      previous.fill(0);\n"
+    "      block.fill(0);\n"
+    "      previous = next;\n"
+    "      const take = Math.min(next.length, keylen - offset);\n"
+    "      result.set(next.subarray(0, take), offset);\n"
+    "      offset += take;\n"
+    "    }\n"
+    "    prk.fill(0);\n"
+    "    previous.fill(0);\n"
+    "    return result.buffer;\n"
+    "  };\n"
+    "  const hkdfSync = (digest, ikm, salt, info, keylen) => {\n"
+    "    const result = hkdfDerive(...hkdfParameters(digest, ikm, salt, info, keylen));\n"
+    "    if (result.byteLength === 0) throw new Error(\"Deriving bits failed\");\n"
+    "    return result;\n"
+    "  };\n"
+    "  const hkdf = (digest, ikm, salt, info, keylen, callback) => {\n"
+    "    const params = hkdfParameters(digest, ikm, salt, info, keylen);\n"
+    "    kdfCallback(callback);\n"
+    "    const result = hkdfDerive(...params);\n"
+    "    setImmediate(() => result.byteLength === 0 ? callback(new Error(\"Deriving bits failed\")) : callback(null, result));\n"
+    "  };\n"
+    "  const scryptParameters = (password, salt, keylen, options) => {\n"
+    "    password = kdfInput(password, \"password\");\n"
+    "    salt = kdfInput(salt, \"salt\");\n"
+    "    kdfInteger(keylen, \"keylen\", 2147483647);\n"
+    "    const values = [16384, 8, 1, 33554432];\n"
+    "    if (options) {\n"
+    "      const names = [\"N\", \"r\", \"p\"], aliases = [\"cost\", \"blockSize\", \"parallelization\"];\n"
+    "      for (let i = 0; i < 3; i++) {\n"
+    "        const name = names[i], alias = aliases[i], present = options[name] !== undefined;\n"
+    "        if (present) values[i] = kdfInteger(options[name], name, 4294967295);\n"
+    "        if (options[alias] !== undefined) {\n"
+    "          if (present) throw kdfError(TypeError, \"ERR_INCOMPATIBLE_OPTION_PAIR\", 'Option \"' + name + '\" cannot be used in combination with option \"' + alias + '\"');\n"
+    "          values[i] = kdfInteger(options[alias], alias, 4294967295);\n"
+    "        }\n"
+    "      }\n"
+    "      if (options.maxmem !== undefined) values[3] = kdfInteger(options.maxmem, \"maxmem\", Number.MAX_SAFE_INTEGER);\n"
+    "    }\n"
+    "    return [password, salt, keylen, ...values];\n"
+    "  };\n"
+    "  const scryptSync = (password, salt, keylen, options) => Buffer.from(env.scrypt(...scryptParameters(password, salt, keylen, options)));\n"
+    "  const scrypt = (password, salt, keylen, options, callback) => {\n"
+    "    if (callback === undefined) { callback = options; options = undefined; }\n"
+    "    const params = scryptParameters(password, salt, keylen, options);\n"
+    "    kdfCallback(callback);\n"
+    "    const result = Buffer.from(env.scrypt(...params));\n"
+    "    setImmediate(() => callback(null, result));\n"
+    "  };\n"
     "  const die = (name) => function unsupported() {\n"
-    "    throw new Error(\"crypto.\" + name + \" is not available in the scriptc island (the embedded runtime carries the hashing/random slice only)\");\n"
+    "    throw new Error(\"crypto.\" + name + \" is not available in the scriptc island (the embedded runtime carries the hashing/random/KDF slice only)\");\n"
     "  };\n"
     "  class KeyObject {\n"
     "    constructor() {\n"
-    "      throw new Error(\"crypto.KeyObject is not available in the scriptc island (the embedded runtime carries the hashing/random slice only)\");\n"
+    "      throw new Error(\"crypto.KeyObject is not available in the scriptc island (the embedded runtime carries the hashing/random/KDF slice only)\");\n"
     "    }\n"
     "  }\n"
     "  const constants = {\n"
@@ -5862,8 +5995,8 @@ static const char isl_modules_bootstrap[] =
     "    createHash, createHmac, hash, Hash, Hmac,\n"
     "    randomBytes, randomFillSync, randomFill, randomInt, randomUUID,\n"
     "    getRandomValues: (ta) => webcrypto.getRandomValues(ta),\n"
-    "    timingSafeEqual, pbkdf2, pbkdf2Sync,\n"
-    "    getHashes: () => [\"md5\", \"sha1\", \"sha256\"],\n"
+    "    timingSafeEqual, pbkdf2, pbkdf2Sync, hkdf, hkdfSync, scrypt, scryptSync,\n"
+    "    getHashes: () => [\"md5\", \"sha1\", \"sha224\", \"sha256\", \"sha384\", \"sha512\"],\n"
     "    getCiphers: () => [],\n"
     "    getCurves: () => [],\n"
     "    webcrypto,\n"
@@ -5889,10 +6022,6 @@ static const char isl_modules_bootstrap[] =
     "    publicDecrypt: die(\"publicDecrypt\"),\n"
     "    privateEncrypt: die(\"privateEncrypt\"),\n"
     "    privateDecrypt: die(\"privateDecrypt\"),\n"
-    "    scrypt: die(\"scrypt\"),\n"
-    "    scryptSync: die(\"scryptSync\"),\n"
-    "    hkdf: die(\"hkdf\"),\n"
-    "    hkdfSync: die(\"hkdfSync\"),\n"
     "    X509Certificate: die(\"X509Certificate\"),\n"
     "    Certificate: die(\"Certificate\"),\n"
     "    checkPrime: die(\"checkPrime\"),\n"
@@ -5907,7 +6036,7 @@ static const char isl_modules_bootstrap[] =
     "  crypto.subtle = webcrypto ? webcrypto.subtle : undefined;\n"
     "  return crypto;\n"
     "}\n"
-    "    const mod = makeCrypto({ digest: (a, d) => host.digest(a, d), hmac: (a, k, d) => host.hmac(a, k, d), Buffer: builtins.buffer().Buffer });\n"
+    "    const mod = makeCrypto({ digest: (a, d) => host.digest(a, d), hmac: (a, k, d) => host.hmac(a, k, d), scrypt: (...args) => host.scrypt(...args), Buffer: builtins.buffer().Buffer });\n"
     "    mod.default = mod;\n"
     "    return mod;\n"
     "  });\n"
@@ -9683,6 +9812,7 @@ static void isl_modules_boot(void) {
   JS_SetPropertyStr(isl_ctx, host, "promiseState", JS_NewCFunction(isl_ctx, isl_host_promise_state, "promiseState", 1));
   JS_SetPropertyStr(isl_ctx, host, "digest", JS_NewCFunction(isl_ctx, isl_host_digest, "digest", 2));
   JS_SetPropertyStr(isl_ctx, host, "hmac", JS_NewCFunction(isl_ctx, isl_host_hmac, "hmac", 3));
+  JS_SetPropertyStr(isl_ctx, host, "scrypt", JS_NewCFunction(isl_ctx, isl_host_scrypt, "scrypt", 7));
   JS_SetPropertyStr(isl_ctx, host, "fs", JS_NewCFunction(isl_ctx, isl_host_fs, "fs", 4));
   JS_SetPropertyStr(isl_ctx, host, "fsConstants", JS_NewCFunction(isl_ctx, isl_host_fs_constants, "fsConstants", 0));
   JS_SetPropertyStr(isl_ctx, host, "path", JS_NewCFunction(isl_ctx, isl_host_path, "path", 4));

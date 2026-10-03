@@ -1003,6 +1003,10 @@ export const LIB_FN_SIGS: Record<IrLibFn, { argTypes: (IrType | null)[]; result:
   "crypto.pbkdf2": { argTypes: [BYTES_U8, BYTES_U8, F64, F64, STRING], result: BYTES_U8 },
   "crypto.randomBytesCb": { argTypes: [F64, null], result: VOID },
   "crypto.pbkdf2Cb": { argTypes: [BYTES_U8, BYTES_U8, F64, F64, STRING, null], result: VOID },
+  "crypto.hkdf": { argTypes: [STRING, BYTES_U8, BYTES_U8, BYTES_U8, F64], result: DYN },
+  "crypto.hkdfCb": { argTypes: [STRING, BYTES_U8, BYTES_U8, BYTES_U8, F64, null], result: VOID },
+  "crypto.scrypt": { argTypes: [BYTES_U8, BYTES_U8, F64, DYN], result: BYTES_U8 },
+  "crypto.scryptCb": { argTypes: [BYTES_U8, BYTES_U8, F64, DYN, null], result: VOID },
   // The Buffer statics and the fs/zlib Buffer forms: fixed always-u8
   // signatures (Buffer IS a Uint8Array — one bytes kind).
   "buffer.fromStr": { argTypes: [STRING, STRING], result: BYTES_U8 },

@@ -1533,7 +1533,7 @@ declare module "node:url" {
   export * from "url";
 }
 
-/* node:crypto: the static hashing/MAC/random/PBKDF2 utility slice. */
+/* node:crypto: the static hashing/MAC/random/key-derivation utility slice. */
 declare module "crypto" {
   export function randomUUID(): string;
   export function randomBytes(size: number): Buffer;
@@ -1558,6 +1558,21 @@ declare module "crypto" {
   export function pbkdf2Sync(password: string | Uint8Array, salt: string | Uint8Array, iterations: number, keylen: number, digest: string): Buffer;
   export function pbkdf2(password: string | Uint8Array, salt: string | Uint8Array, iterations: number, keylen: number, digest: string, callback: (error: Error | null, derivedKey: Buffer) => void): void;
   export function randomBytes(size: number, callback: (error: Error | null, buffer: Buffer) => void): void;
+  export type BinaryLike = string | ArrayBuffer | ArrayBufferView;
+  export interface ScryptOptions {
+    N?: number;
+    r?: number;
+    p?: number;
+    cost?: number;
+    blockSize?: number;
+    parallelization?: number;
+    maxmem?: number;
+  }
+  export function scryptSync(password: BinaryLike, salt: BinaryLike, keylen: number, options?: ScryptOptions): Buffer;
+  export function scrypt(password: BinaryLike, salt: BinaryLike, keylen: number, callback: (error: Error | null, derivedKey: Buffer) => void): void;
+  export function scrypt(password: BinaryLike, salt: BinaryLike, keylen: number, options: ScryptOptions, callback: (error: Error | null, derivedKey: Buffer) => void): void;
+  export function hkdfSync(digest: string, ikm: BinaryLike, salt: BinaryLike, info: BinaryLike, keylen: number): ArrayBuffer;
+  export function hkdf(digest: string, ikm: BinaryLike, salt: BinaryLike, info: BinaryLike, keylen: number, callback: (error: Error | null, derivedKey: ArrayBuffer) => void): void;
   /* The lowered X509Certificate surface is the data-record slice:
    * fingerprint (the SHA-1 of the DER, uppercase colon-separated) and
    * the validFrom/validTo validity window (Node's ASN1_TIME_print

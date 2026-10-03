@@ -291,8 +291,8 @@
       "apiEntries": 145,
       "static": {
         "supported": 0,
-        "partial": 18,
-        "refused": 30,
+        "partial": 22,
+        "refused": 26,
         "not-implemented": 97,
         "by-design": 0,
         "unreviewed": 0,
@@ -300,8 +300,8 @@
       },
       "dynamic": {
         "supported": 0,
-        "partial": 28,
-        "refused": 34,
+        "partial": 32,
+        "refused": 30,
         "not-implemented": 83,
         "by-design": 0,
         "unreviewed": 0,
@@ -23366,6 +23366,10 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -23373,7 +23377,8 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -23967,6 +23972,7 @@
         "evidence": "compiler-dedicated:crypto.createHash",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -23974,7 +23980,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.createHash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24001,6 +24008,7 @@
         "evidence": "compiler-dedicated:crypto.createHmac",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -24008,7 +24016,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.createHmac",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24443,7 +24452,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.getCiphers",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24473,7 +24483,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.getCurves",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24530,7 +24541,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.getFips",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24560,7 +24572,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.getHashes",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24590,7 +24603,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.getRandomValues",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24617,6 +24631,7 @@
         "evidence": "compiler-dedicated:crypto.hash",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -24624,7 +24639,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24647,12 +24663,21 @@
         "inherited": true
       },
       "static": {
-        "status": "refused",
-        "evidence": "surface-manifest:unsupported:node-builtin.crypto.hkdf"
+        "status": "partial",
+        "evidence": "compiler-dedicated:crypto.hkdf",
+        "tests": [
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
+        ]
       },
       "dynamic": {
-        "status": "refused",
-        "evidence": "island-stub:node:crypto.hkdf"
+        "status": "partial",
+        "evidence": "island-export:node:crypto.hkdf",
+        "tests": [
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -24674,12 +24699,21 @@
         "inherited": true
       },
       "static": {
-        "status": "refused",
-        "evidence": "surface-manifest:unsupported:node-builtin.crypto.hkdfSync"
+        "status": "partial",
+        "evidence": "compiler-dedicated:crypto.hkdfSync",
+        "tests": [
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
+        ]
       },
       "dynamic": {
-        "status": "refused",
-        "evidence": "island-stub:node:crypto.hkdfSync"
+        "status": "partial",
+        "evidence": "island-export:node:crypto.hkdfSync",
+        "tests": [
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -24705,6 +24739,7 @@
         "evidence": "compiler-dedicated:crypto.pbkdf2",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -24712,7 +24747,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.pbkdf2",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24739,6 +24775,7 @@
         "evidence": "compiler-dedicated:crypto.pbkdf2Sync",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -24746,7 +24783,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.pbkdf2Sync",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24884,14 +24922,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.randomBytes",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24921,7 +24964,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.randomFill",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24948,6 +24992,7 @@
         "evidence": "compiler-dedicated:crypto.randomFillSync",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -24955,7 +25000,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.randomFillSync",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -24982,6 +25028,7 @@
         "evidence": "compiler-dedicated:crypto.randomInt",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -24989,7 +25036,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.randomInt",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -25019,14 +25067,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.randomUUID",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -25049,12 +25102,21 @@
         "inherited": true
       },
       "static": {
-        "status": "refused",
-        "evidence": "surface-manifest:unsupported:node-builtin.crypto.scrypt"
+        "status": "partial",
+        "evidence": "compiler-dedicated:crypto.scrypt",
+        "tests": [
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
+        ]
       },
       "dynamic": {
-        "status": "refused",
-        "evidence": "island-stub:node:crypto.scrypt"
+        "status": "partial",
+        "evidence": "island-export:node:crypto.scrypt",
+        "tests": [
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -25076,12 +25138,21 @@
         "inherited": true
       },
       "static": {
-        "status": "refused",
-        "evidence": "surface-manifest:unsupported:node-builtin.crypto.scryptSync"
+        "status": "partial",
+        "evidence": "compiler-dedicated:crypto.scryptSync",
+        "tests": [
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
+        ]
       },
       "dynamic": {
-        "status": "refused",
-        "evidence": "island-stub:node:crypto.scryptSync"
+        "status": "partial",
+        "evidence": "island-export:node:crypto.scryptSync",
+        "tests": [
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
@@ -25164,7 +25235,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.setFips",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -25218,6 +25290,7 @@
         "evidence": "compiler-dedicated:crypto.timingSafeEqual",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -25225,7 +25298,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.timingSafeEqual",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -25282,7 +25356,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.constants",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -25339,7 +25414,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.subtle",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -25369,7 +25445,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.webcrypto",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26638,6 +26715,7 @@
         "evidence": "compiler-dedicated:Hash",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26645,7 +26723,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.Hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26672,6 +26751,7 @@
         "evidence": "compiler-dedicated:hash.copy",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26679,7 +26759,8 @@
         "status": "partial",
         "evidence": "island-member:node:crypto.hash.copy",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26706,6 +26787,7 @@
         "evidence": "compiler-dedicated:hash.digest",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26713,7 +26795,8 @@
         "status": "partial",
         "evidence": "island-member:node:crypto.hash.digest",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26740,6 +26823,7 @@
         "evidence": "compiler-dedicated:hash.update",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26747,7 +26831,8 @@
         "status": "partial",
         "evidence": "island-member:node:crypto.hash.update",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26774,6 +26859,7 @@
         "evidence": "compiler-dedicated:Hmac",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26781,7 +26867,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.Hmac",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26808,6 +26895,7 @@
         "evidence": "compiler-dedicated:hmac.digest",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26815,7 +26903,8 @@
         "status": "partial",
         "evidence": "island-member:node:crypto.hmac.digest",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -26842,6 +26931,7 @@
         "evidence": "compiler-dedicated:hmac.update",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -26849,7 +26939,8 @@
         "status": "partial",
         "evidence": "island-member:node:crypto.hmac.update",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -28544,6 +28635,7 @@
         "evidence": "compiler-dedicated:crypto.pbkdf2",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -32274,6 +32366,7 @@
         "evidence": "compiler-dedicated:Hash",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -32322,6 +32415,7 @@
         "evidence": "compiler-dedicated:Hmac",
         "tests": [
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -117153,6 +117247,10 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
           "tests/harness/npm-static.test.ts"
         ]
       },
@@ -117160,7 +117258,8 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -118891,14 +118990,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -119387,14 +119491,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -119532,14 +119641,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -119650,14 +119764,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -119768,14 +119887,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -120291,14 +120415,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -120436,14 +120565,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -120527,14 +120661,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -120672,14 +120811,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.hash",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"
@@ -120979,7 +121123,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.getRandomValues",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -121009,14 +121154,19 @@
           "tests/corpus/1534-crypto-hash-chain.ts",
           "tests/corpus/2556-crypto-introspection.ts",
           "tests/corpus/2890-crypto-static-utility.ts",
-          "tests/harness/npm-static.test.ts"
+          "tests/harness/npm-static.test.ts",
+          "tests/corpus/node24-crypto-sha2.ts",
+          "tests/corpus/node24-crypto-kdf.ts",
+          "tests/corpus/node24-crypto-kdf-errors.ts",
+          "tests/corpus/node24-crypto-kdf-options.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:crypto.randomUUID",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -121046,7 +121196,8 @@
         "status": "partial",
         "evidence": "island-export:node:crypto.subtle",
         "tests": [
-          "tests/fixtures/npm/cases/crypto-shims/main.ts"
+          "tests/fixtures/npm/cases/crypto-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
         ]
       },
       "anchorSource": "ancestor"

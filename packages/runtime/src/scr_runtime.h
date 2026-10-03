@@ -3063,22 +3063,33 @@ ScrBytes *scr_crypto_random_fill_rest(ScrBytes *bytes, double offset);
 double scr_crypto_random_int(double min, double max);
 ScrBytes *scr_crypto_pbkdf2(ScrBytes *password, ScrBytes *salt,
                             double iterations, double keylen, ScrStr *digest);
-typedef void (*ScrCryptoBytesFn)(ScrClosure *cb, ScrBytes *value /* moves */);
-void scr_crypto_defer_bytes(ScrBytes *value /* moves */, ScrClosure *cb /* moves */,
+ScrBytes *scr_crypto_hkdf_bytes(ScrStr *digest, ScrBytes *ikm, ScrBytes *salt,
+                                ScrBytes *info, double keylen);
+ScrDyn *scr_crypto_hkdf(ScrStr *digest, ScrBytes *ikm, ScrBytes *salt,
+                       ScrBytes *info, double keylen);
+ScrBytes *scr_crypto_scrypt(ScrBytes *password, ScrBytes *salt, double keylen, ScrDyn *options);
+ScrBytes *scr_crypto_scrypt_derive(ScrBytes *password, ScrBytes *salt, double keylen,
+                                  double n, double r, double p, double maxmem);
+typedef void (*ScrCryptoBytesFn)(ScrClosure *cb, ScrError *error /* borrowed */, ScrBytes *value /* moves */);
+void scr_crypto_defer_bytes(ScrBytes *value /* moves */, ScrError *error /* moves */, ScrClosure *cb /* moves */,
                             ScrCryptoBytesFn fn);
 void scr_crypto_random_bytes_async(double size, ScrClosure *cb /* moves */,
                                    ScrCryptoBytesFn fn);
 void scr_crypto_pbkdf2_async(ScrBytes *password, ScrBytes *salt,
                              double iterations, double keylen, ScrStr *digest,
                              ScrClosure *cb /* moves */, ScrCryptoBytesFn fn);
-/* One-shot raw digest/HMAC by algorithm name ("md5" | "sha1" | "sha256")
+void scr_crypto_hkdf_async(ScrStr *digest, ScrBytes *ikm, ScrBytes *salt,
+                           ScrBytes *info, double keylen, ScrClosure *cb, ScrCryptoBytesFn fn);
+void scr_crypto_scrypt_async(ScrBytes *password, ScrBytes *salt, double keylen,
+                             ScrDyn *options, ScrClosure *cb, ScrCryptoBytesFn fn);
+/* One-shot raw digest/HMAC by algorithm name ("md5", "sha1", and SHA-2)
  * — the island crypto shim's bridge (scr_island.c host hooks). Digest
- * bytes into out (≥32); returns the digest length, 0 for an unknown
+ * bytes into out (≥64); returns the digest length, 0 for an unknown
  * algorithm. */
 size_t scr_crypto_digest_raw(const char *alg, const unsigned char *data, size_t len,
-                             unsigned char out[32]);
+                             unsigned char out[64]);
 size_t scr_crypto_hmac_raw(const char *alg, const unsigned char *key, size_t keylen,
-                           const unsigned char *data, size_t len, unsigned char out[32]);
+                           const unsigned char *data, size_t len, unsigned char out[64]);
 /* The composed `new crypto.X509Certificate(data).fingerprint` read (the
  * handle never materializes): the SHA-1 of the DER, uppercase
  * colon-separated — PEM or raw-DER input; anything else throws Node's

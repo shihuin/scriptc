@@ -400,6 +400,8 @@ export const LIB_FN_SYMS: Record<string, string> = {
   "crypto.randomFillRest": "scr_crypto_random_fill_rest",
   "crypto.randomInt": "scr_crypto_random_int",
   "crypto.pbkdf2": "scr_crypto_pbkdf2",
+  "crypto.hkdf": "scr_crypto_hkdf",
+  "crypto.scrypt": "scr_crypto_scrypt",
   "process.stdoutWriteBytes": "scr_process_stdout_write_bytes",
   "process.stderrWriteBytes": "scr_process_stderr_write_bytes",
   "insp.buffer": "scr_insp_buffer",

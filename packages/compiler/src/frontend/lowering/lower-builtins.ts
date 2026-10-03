@@ -5341,11 +5341,11 @@ function cryptoEncoding(lowerer: Lowerer, node: ts.Expression, use: string): IrE
 
 function cryptoAlgorithm(lowerer: Lowerer, node: ts.Expression, use: string): IrExpr {
   const type = lowerer.typeOf(node);
-  if (type.isStringLiteralType() && !["md5", "sha1", "sha256"].includes(type.value.toLowerCase())) {
+  if (type.isStringLiteralType() && !["md5", "sha1", "sha224", "sha256", "sha384", "sha512"].includes(type.value.toLowerCase())) {
     lowerer.noLowering(
       `${use} with algorithm '${type.value}'`,
       node,
-      "md5, sha1, and sha256 are the lowered digest algorithms",
+      "md5, sha1, sha224, sha256, sha384, and sha512 are the lowered digest algorithms",
     );
   }
   return lowerer.lowerExprExpecting(node, STRING);
@@ -5370,7 +5370,19 @@ function cryptoInputBytes(lowerer: Lowerer, node: ts.Expression, loc: SrcLoc): I
   );
 }
 
-function errorFirstBytesCallback(lowerer: Lowerer, node: ts.Expression, api: string): IrExpr {
+function cryptoKdfInput(lowerer: Lowerer, node: ts.Expression): IrExpr {
+  const loc = locOf(node);
+  const type = lowerer.mapTypeOf(lowerer.typeOf(node));
+  if (type?.kind === "string" || (type?.kind === "bytes" && type.elem === "u8")) return cryptoInputBytes(lowerer, node, loc);
+  const symbol = lowerer.typeOf(node).getSymbol();
+  if (type?.kind === "bytes" || (symbol?.name === "ArrayBuffer" && lowerer.isStdlibSymbol(symbol))) {
+    const value = lowerer.coerceInto(node, lowerer.lowerExpr(node), DYN);
+    return { kind: "libCall", fn: "bytes.bufferSource", args: [value], type: BYTES_U8, loc };
+  }
+  lowerer.noLowering("crypto key derivation with this input", node, "strings, Buffers, numeric typed arrays, DataViews, and fixed-length ArrayBuffers are supported; KeyObjects are not yet lowered");
+}
+
+function errorFirstBytesCallback(lowerer: Lowerer, node: ts.Expression, api: string, arrayBuffer = false): IrExpr {
   let callback = lowerer.lowerExpr(node);
   if (callback.type.kind === "dyn") {
     callback = { kind: "dynCheck", value: callback, type: funcOf([DYN, DYN], VOID), loc: locOf(node) };
@@ -5391,8 +5403,8 @@ function errorFirstBytesCallback(lowerer: Lowerer, node: ts.Expression, api: str
     if (!valid) lowerer.unsupported("SC1090", node, `${api} callback error parameters must be Error | null`);
   }
   const value = callback.type.params[1];
-  if (value !== undefined && value.kind !== "dyn" && !(value.kind === "bytes" && value.elem === "u8")) {
-    lowerer.unsupported("SC1090", node, `${api} callback result parameters must be Buffer/Uint8Array values`);
+  if (value !== undefined && value.kind !== "dyn" && (arrayBuffer || !(value.kind === "bytes" && value.elem === "u8"))) {
+    lowerer.unsupported("SC1090", node, `${api} callback result parameters must be ${arrayBuffer ? "ArrayBuffer" : "Buffer/Uint8Array"} values`);
   }
   return voidizedCallback(lowerer, callback, locOf(node));
 }
@@ -5440,6 +5452,27 @@ function errorFirstBytesCallback(lowerer: Lowerer, node: ts.Expression, api: str
         type: VOID,
         loc,
       };
+    }
+    if (bi.member === "hkdf" || bi.member === "hkdfSync") {
+      const async = bi.member === "hkdf";
+      if (args.length !== (async ? 6 : 5)) lowerer.noLowering(`crypto.${bi.member} with ${args.length} arguments`, expr);
+      const values = [
+        cryptoAlgorithm(lowerer, args[0]!, `crypto.${bi.member}`),
+        cryptoKdfInput(lowerer, args[1]!), cryptoKdfInput(lowerer, args[2]!), cryptoKdfInput(lowerer, args[3]!),
+        lowerer.lowerExprExpecting(args[4]!, F64),
+      ];
+      if (async) values.push(errorFirstBytesCallback(lowerer, args[5]!, "crypto.hkdf", true));
+      return { kind: "libCall", fn: async ? "crypto.hkdfCb" : "crypto.hkdf", args: values, type: async ? VOID : DYN, loc };
+    }
+    if (bi.member === "scrypt" || bi.member === "scryptSync") {
+      const async = bi.member === "scrypt";
+      const minimum = async ? 4 : 3;
+      if (args.length < minimum || args.length > minimum + 1) lowerer.noLowering(`crypto.${bi.member} with ${args.length} arguments`, expr);
+      const values = [cryptoKdfInput(lowerer, args[0]!), cryptoKdfInput(lowerer, args[1]!), lowerer.lowerExprExpecting(args[2]!, F64)];
+      const options = args.length > minimum ? args[3]! : undefined;
+      values.push(options ? lowerer.coerceInto(options, lowerer.lowerExpr(options), DYN) : dynUndefinedExpr(loc));
+      if (async) values.push(errorFirstBytesCallback(lowerer, args[args.length - 1]!, "crypto.scrypt"));
+      return { kind: "libCall", fn: async ? "crypto.scryptCb" : "crypto.scrypt", args: values, type: async ? VOID : BYTES_U8, loc };
     }
     if (bi.member === "createHash") {
       if (args.length !== 1) {
