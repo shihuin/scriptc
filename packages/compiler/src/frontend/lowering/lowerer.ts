@@ -1616,6 +1616,7 @@ export class Lowerer {
   private readonly copyRetagHelpers = new Map<string, { name: string; shapes: number; unions: number }>();
   private readonly unionLiteralOwners = new Map<string, { owners: Map<string, number> | null; shapes: number; unions: number }>();
   private readonly strippedUndefinedArms = new Map<string, { type: IrType; unions: number }>();
+  private readonly addedUndefinedArms = new Map<string, { type: IrType | null; unions: number }>();
   private readonly stdlibSymbols = new Map<ts.Symbol, boolean>();
   /** Method adapter names are owned by class-method-values. Looking them
    * up must not scan and retain every unrelated lifted function. */
@@ -8488,7 +8489,16 @@ export class Lowerer {
    * declared result type of an index-signature read under
    * noUncheckedIndexedAccess. Null when the type cannot take the arm. */
   withUndefinedArmOf(t: IrType): IrType | null {
-    return withUndefinedArmCanonical(t, this.unions);
+    if (t.kind !== "union") return withUndefinedArmCanonical(t, this.unions);
+    const cached = this.addedUndefinedArms.get(t.unionId);
+    if (cached && cached.unions === this.unions.revision) return cached.type;
+    // As with removing undefined, repeated optional-read propagation can
+    // reuse the exact union transformation until a recursive contract closes.
+    // An unknown id is not cached: a later interning can create it.
+    if (!this.unions.get(t.unionId)) return null;
+    const type = withUndefinedArmCanonical(t, this.unions);
+    this.addedUndefinedArms.set(t.unionId, { type, unions: this.unions.revision });
+    return type;
   }
 
   /** True when a static type converts to a dyn value (the dynFrom

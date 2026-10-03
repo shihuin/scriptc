@@ -78,6 +78,7 @@ export class DeferredModuleInitializers {
   }
 
   process(lowerer: Lowerer, functions: readonly IrFunction[]): boolean {
+    if (this.pending.size === 0) return false;
     const demanded = new Set<string>();
     const classHelpers = new Map<string, string>();
     for (const info of lowerer.classes.values()) {
@@ -145,18 +146,39 @@ export class DeferredModuleInitializers {
         return true;
       } });
     }
+    if (demanded.size === 0) return false;
+    // Transforms replace blocks between waves, so index the live placeholders
+    // anew in each pass. Searching every body again for each initializer makes
+    // materializing large module registries quadratic in the program size.
+    const placeholders = new Map<string, Extract<IrStmt, { kind: "block" }>[]>();
+    const locationKey = (loc: IrStmt["loc"]): string => JSON.stringify([loc.file, loc.start, loc.end]);
+    const indexPlaceholders = (body: IrStmt[]): void => {
+      everyStmtList(body, { stmt: (statement) => {
+        if (statement.kind === "block" && statement.body.length === 0) {
+          const key = locationKey(statement.loc);
+          const blocks = placeholders.get(key) ?? [];
+          blocks.push(statement);
+          placeholders.set(key, blocks);
+        }
+        return true;
+      }, expr: () => true });
+    };
+    for (const fn of functions) indexPlaceholders(fn.body);
     for (const id of demanded) {
       const initialize = this.pending.get(id)!;
       this.pending.delete(id);
       for (const action of initialize) {
         const body = action.lower();
-        // IR transforms rebuild block nodes between worklist waves. Locate
-        // the live placeholder instead of filling a detached earlier node.
-        for (const fn of functions) everyStmtList(fn.body, { stmt: (statement) => {
-          if (statement.kind === "block" && statement.loc.file === action.loc.file &&
-              statement.loc.start === action.loc.start && statement.loc.end === action.loc.end && statement.body.length === 0) statement.body.push(...body);
-          return true;
-        }, expr: () => true });
+        let inserted = false;
+        for (const block of placeholders.get(locationKey(action.loc)) ?? []) {
+          if (block.body.length === 0) {
+            block.body.push(...body);
+            inserted = true;
+          }
+        }
+        // An inserted body can introduce a placeholder needed by another
+        // action in this pass. Unattached bodies are not part of the live IR.
+        if (inserted) indexPlaceholders(body);
       }
     }
     return demanded.size !== 0;

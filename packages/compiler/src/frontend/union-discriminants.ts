@@ -1,5 +1,4 @@
 import type { IrRecordShape, IrType, IrUnionDef, IrUnionDiscriminant } from "../ir/ir.js";
-import { typeEquals } from "../ir/ir.js";
 
 export type UnionLiteral = string | number | boolean;
 
@@ -78,7 +77,16 @@ export function remapUnionDiscriminant(
 ): IrUnionDiscriminant | undefined {
   const original = source.discriminant;
   if (!original) return undefined;
+  // Only record arms own discriminator cases, and their shape id is their
+  // complete type identity. Index them once rather than searching the whole
+  // destination for each case in large unions such as the compiler's IR.
+  const recordTags = new Map<string, number>();
+  for (let tag = 0; tag < arms.length; tag++) {
+    const arm = arms[tag]!;
+    if (arm.kind === "record" && !recordTags.has(arm.shapeId)) recordTags.set(arm.shapeId, tag);
+  }
   const seen = new Set<number>();
+  const covered = new Set<number>();
   const cases: IrUnionDiscriminant["cases"] = [];
   for (const entry of original.cases) {
     const arm = source.arms[entry.tag];
@@ -86,11 +94,18 @@ export function remapUnionDiscriminant(
       return undefined;
     }
     seen.add(entry.tag);
-    const tag = arms.findIndex((candidate) => typeEquals(candidate, arm));
-    if (tag >= 0) cases.push({ tag, values: entry.values.slice() });
+    const tag = recordTags.get(arm.shapeId);
+    if (tag !== undefined) {
+      covered.add(tag);
+      cases.push({ tag, values: entry.values.slice() });
+    }
   }
-  if (source.arms.some((arm, tag) => arm.kind === "record" && !seen.has(tag))) return undefined;
-  if (arms.some((arm, tag) => arm.kind === "record" && !cases.some((entry) => entry.tag === tag))) return undefined;
+  for (let tag = 0; tag < source.arms.length; tag++) {
+    if (source.arms[tag]!.kind === "record" && !seen.has(tag)) return undefined;
+  }
+  for (let tag = 0; tag < arms.length; tag++) {
+    if (arms[tag]!.kind === "record" && !covered.has(tag)) return undefined;
+  }
   if (cases.length === 0) return undefined;
   cases.sort((a, b) => a.tag - b.tag);
   return { field: original.field, cases };

@@ -9362,6 +9362,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/deferred-registry-many.ts": {
+   "order": [
+    "<repo>/tests/corpus/deferred-registry-many.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/destructure-call-assignment.js": {
    "order": [
     "<repo>/tests/corpus/destructure-call-assignment.js"

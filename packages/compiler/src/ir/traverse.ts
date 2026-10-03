@@ -613,32 +613,35 @@ export function mapStmtChildren(node: IrStmt, expr: (expr: IrExpr) => IrExpr, st
 }
 
 /** Preorder traversal. A false predicate stops the complete walk. */
-export function everyExpr(node: IrExpr, visitor: IrVisitor): boolean {
-  return visitor.expr(node) && everyExprChild(node,
-    (child) => everyExpr(child, visitor), (child) => everyStmt(child, visitor));
+function traversal(visitor: IrVisitor): IrVisitor {
+  // Allocate the mutually recursive callbacks once per walk. Creating them
+  // at every node makes native traversals allocate and retain their captures
+  // in proportion to the tree size, even when the visitor only reads it.
+  const expr = (node: IrExpr): boolean => visitor.expr(node) && everyExprChild(node, expr, stmt);
+  const stmt = (node: IrStmt): boolean => visitor.stmt(node) && everyStmtChild(node, expr, stmt);
+  return { expr, stmt };
 }
 
-export function everyStmt(node: IrStmt, visitor: IrVisitor): boolean {
-  return visitor.stmt(node) && everyStmtChild(node,
-    (child) => everyExpr(child, visitor), (child) => everyStmt(child, visitor));
-}
+export function everyExpr(node: IrExpr, visitor: IrVisitor): boolean { return traversal(visitor).expr(node); }
+
+export function everyStmt(node: IrStmt, visitor: IrVisitor): boolean { return traversal(visitor).stmt(node); }
 
 export function everyStmtList(body: IrStmt[], visitor: IrVisitor): boolean {
-  return body.every((node) => everyStmt(node, visitor));
+  return body.every(traversal(visitor).stmt);
 }
 
 /** Preorder rewrite: traverse the replacement's children, never mutate
  * the input tree, and leave type/loc/label metadata to the caller. */
-export function transformExpr(node: IrExpr, transform: IrTransform): IrExpr {
-  return mapExprChildren(transform.expr(node),
-    (child) => transformExpr(child, transform), (child) => transformStmt(child, transform));
+function transformation(transform: IrTransform): IrTransform {
+  const expr = (node: IrExpr): IrExpr => mapExprChildren(transform.expr(node), expr, stmt);
+  const stmt = (node: IrStmt): IrStmt => mapStmtChildren(transform.stmt(node), expr, stmt);
+  return { expr, stmt };
 }
 
-export function transformStmt(node: IrStmt, transform: IrTransform): IrStmt {
-  return mapStmtChildren(transform.stmt(node),
-    (child) => transformExpr(child, transform), (child) => transformStmt(child, transform));
-}
+export function transformExpr(node: IrExpr, transform: IrTransform): IrExpr { return transformation(transform).expr(node); }
+
+export function transformStmt(node: IrStmt, transform: IrTransform): IrStmt { return transformation(transform).stmt(node); }
 
 export function transformStmtList(body: IrStmt[], transform: IrTransform): IrStmt[] {
-  return body.map((node) => transformStmt(node, transform));
+  return body.map(transformation(transform).stmt);
 }

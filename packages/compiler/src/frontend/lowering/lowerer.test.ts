@@ -166,6 +166,46 @@ test("removing undefined reuses the discriminator transformation without hiding 
   expect(transform).toHaveBeenCalledTimes(2);
 });
 
+test("adding undefined reuses semantic union transformations and sees recursive completion", () => {
+  const lowerer = context();
+  const a = record(lowerer.shapes.intern([{ name: "kind", type: STRING }]));
+  const b = record(lowerer.shapes.intern([{ name: "kind", type: STRING }, { name: "value", type: F64 }]));
+  const discriminant = { field: "kind", cases: [{ tag: 0, values: ["a"] }, { tag: 1, values: ["b"] }] };
+  const union: IrType = { kind: "union", unionId: lowerer.unions.intern([a, b], discriminant) };
+  const transform = vi.spyOn(lowerer.unions, "transform");
+  const added = lowerer.withUndefinedArmOf(union);
+  for (let i = 0; i < 20; i++) expect(lowerer.withUndefinedArmOf(union)).toEqual(added);
+  expect(transform).toHaveBeenCalledTimes(1);
+  if (added?.kind !== "union") throw new Error("expected optional union");
+  expect(lowerer.unions.get(added.unionId)?.discriminant).toEqual(discriminant);
+
+  const recursive = {} as Type;
+  const pending: IrType = { kind: "union", unionId: lowerer.unions.recursiveRef(recursive) };
+  const before = lowerer.withUndefinedArmOf(pending);
+  lowerer.unions.finalizeRecursive(recursive, [a, b], discriminant);
+  expect(lowerer.withUndefinedArmOf(pending)).toEqual(added);
+  expect(lowerer.withUndefinedArmOf(pending)).not.toEqual(before);
+  expect(lowerer.withUndefinedArmOf(union)).toEqual(added);
+  expect(transform).toHaveBeenCalledTimes(4);
+});
+
+test("optional union widening keeps refused and missing contracts current", () => {
+  const lowerer = context();
+  const recursive = {} as Type;
+  const pending: IrType = { kind: "union", unionId: lowerer.unions.recursiveRef(recursive) };
+  expect(lowerer.withUndefinedArmOf(pending)).not.toBeNull();
+  lowerer.unions.finalizeRecursive(recursive, [{ kind: "date" }, STRING]);
+  expect(lowerer.withUndefinedArmOf(pending)).toBeNull();
+  expect(lowerer.withUndefinedArmOf(pending)).toBeNull();
+
+  const missing: IrType = { kind: "union", unionId: `u${lowerer.unions.unions.length}` };
+  expect(lowerer.withUndefinedArmOf(missing)).toBeNull();
+  expect(lowerer.unions.intern([F64, STRING])).toBe(missing.unionId);
+  expect(lowerer.withUndefinedArmOf(missing)?.kind).toBe("union");
+  expect(lowerer.withUndefinedArmOf(VOID)).toBeNull();
+  expect(lowerer.withUndefinedArmOf(JSVAL)).toBe(JSVAL);
+});
+
 test("stdlib provenance is cached by symbol identity, including merged and shadowed declarations", () => {
   const builtin = {} as Symbol, shadow = {} as Symbol;
   const userFile = { fileName: "user.ts" } as SourceFile;
