@@ -4779,13 +4779,8 @@ export function lowerForkCall(lowerer: Lowerer, expr: ts.CallExpression, loc: Sr
     );
   }
 
-/** Method calls on StringDecoder receivers: `d.write(chunk)` decodes the
-   * complete prefix of pending+chunk and re-buffers the trailing partial
-   * sequence; `d.end()` flushes the buffered partial as its replacement
-   * chars — Node's utf8 StringDecoder exactly (SEMANTICS.md), through the
-   * interned %strdec helpers over the packed-f64 pending field. end(buf)
-   * and the rest of @types/node's surface fence per member. Null for
-   * non-decoder receivers. */
+/** StringDecoder writes preserve pending bytes; end(input) performs the
+ * final write and flushes the state. String input passes through unchanged. */
   export function lowerStringDecoderMethodCall(lowerer: Lowerer, call: ts.CallExpression,
     access: ts.PropertyAccessExpression,): IrExpr | null {
     if (call.questionDotToken || access.questionDotToken) return null;
@@ -4793,47 +4788,43 @@ export function lowerForkCall(lowerer: Lowerer, expr: ts.CallExpression, loc: Sr
     if (!lowerer.isStdlibMember(access)) return null;
     const name = access.name.text;
     const loc = locOf(call);
-    if (name === "write" && call.arguments.length === 1) {
-      const receiver = lowerer.lowerExpr(access.expression);
-      if (receiver.type.kind !== "record") lowerer.badType(access.expression, lowerer.typeOf(access.expression));
-      let chunk = lowerBuiltinValuePreservingUndefined(lowerer, call.arguments[0]!);
-      chunk = checkedOptionalBuiltinArm(lowerer, chunk, BYTES_U8) ?? chunk;
-      if (!(chunk.type.kind === "bytes" && chunk.type.elem === "u8")) {
-        lowerer.noLowering(
-          `StringDecoder.write of '${lowerer.fmt(chunk.type)}' data`,
-          call.arguments[0]!,
-          "Buffer/Uint8Array chunks decode (narrow unions first)",
-        );
-      }
-      const helper = lowerer.strdecHelper("write", receiver.type.shapeId, loc);
-      return { kind: "call", callee: helper, args: [receiver, chunk], type: STRING, loc };
+    if ((name !== "write" && name !== "end") || call.arguments.length > 1 ||
+        (name === "write" && call.arguments.length !== 1) || call.arguments.some(ts.isSpreadElement)) {
+      lowerer.noLowering(`StringDecoder.${name}`, call, "use write(input) or end(input?)", lowerer.checker.getSymbolAtLocation(access.name));
     }
-    if (name === "end") {
-      if (call.arguments.length !== 0) {
-        lowerer.noLowering(
-          "StringDecoder.end with a buffer argument",
-          call,
-          "write the buffer, then end(): d.write(buf) + d.end() is Node's own equivalence",
-        );
-      }
-      const receiver = lowerer.lowerExpr(access.expression);
-      if (receiver.type.kind !== "record") lowerer.badType(access.expression, lowerer.typeOf(access.expression));
-      const helper = lowerer.strdecHelper("end", receiver.type.shapeId, loc);
-      return { kind: "call", callee: helper, args: [receiver], type: STRING, loc };
+    const receiver = lowerer.lowerExpr(access.expression);
+    if (receiver.type.kind !== "record") lowerer.badType(access.expression, lowerer.typeOf(access.expression));
+    if (call.arguments.length === 0) {
+      return { kind: "call", callee: lowerer.strdecHelper("end", receiver.type.shapeId, loc), args: [receiver], type: STRING, loc };
     }
-    lowerer.noLowering(
-      `StringDecoder.${name}`,
-      call,
-      "write(buffer) and end() are the supported StringDecoder members",
-      lowerer.checker.getSymbolAtLocation(access.name),
-    );
+    const node = call.arguments[0]!;
+    const undefinedArg = name === "end" ? lowerStaticallyUndefinedArgument(lowerer, node) : null;
+    if (undefinedArg) {
+      const saved = lowerer.declareHiddenLocal("%strdecRecv", receiver.type);
+      const result: IrExpr = { kind: "call", callee: lowerer.strdecHelper("end", receiver.type.shapeId, loc), args: [varRef(saved.id, receiver.type, loc)], type: STRING, loc };
+      return { kind: "seqExpr", stmts: [{ kind: "varDecl", localId: saved.id, init: receiver, loc }], result: defaultAfterUndefined(undefinedArg, result), type: STRING, loc };
+    }
+    let chunk = lowerBuiltinValuePreservingUndefined(lowerer, node);
+    if (chunk.type.kind === "string") {
+      const op = name === "end" ? "endString" : "writeString";
+      return { kind: "call", callee: lowerer.strdecHelper(op, receiver.type.shapeId, loc), args: [receiver, chunk], type: STRING, loc };
+    }
+    chunk = checkedOptionalBuiltinArm(lowerer, chunk, BYTES_U8) ?? chunk;
+    if (chunk.type.kind === "bytes" && chunk.type.elem !== "u8") {
+      chunk = { kind: "libCall", fn: "bytes.bufferSource", args: [lowerer.coerceInto(node, chunk, DYN)], type: BYTES_U8, loc };
+    }
+    if (!(chunk.type.kind === "bytes" && chunk.type.elem === "u8")) {
+      lowerer.noLowering(`StringDecoder.${name} of '${lowerer.fmt(chunk.type)}' data`, node, "pass a string or typed-array view (narrow unions first)");
+    }
+    const helper = lowerer.strdecHelper(name === "end" ? "endChunk" : "write", receiver.type.shapeId, loc);
+    return { kind: "call", callee: helper, args: [receiver, chunk], type: STRING, loc };
   }
 
 /** The interned %strdec helpers: write(d, chunk) returns the decoded
    * complete prefix and re-buffers the trailing partial into the pending
    * field; end(d) flushes it. Both thread the packed-f64 state through
    * the pure strdec.* libCalls. */
-  export function strdecHelper(lowerer: Lowerer, op: "write" | "end", shapeId: string, loc: SrcLoc): string {
+  export function strdecHelper(lowerer: Lowerer, op: "write" | "end" | "endChunk" | "endString" | "writeString", shapeId: string, loc: SrcLoc): string {
     const key = `strdec.${op}`;
     const existing = lowerer.widthHelpers.get(key);
     if (existing) return existing;
@@ -4865,7 +4856,7 @@ export function lowerForkCall(lowerer: Lowerer, expr: ts.CallExpression, loc: Sr
       { id: "s.0", name: "s", type: STRING, mutable: false },
     ];
     let body: IrStmt[];
-    if (op === "write") {
+    if (op === "write" || op === "endChunk") {
       params.push({ localId: "chunk.0", name: "chunk", type: BYTES_U8 });
       locals.splice(1, 0, { id: "chunk.0", name: "chunk", type: BYTES_U8, mutable: false });
       body = [
@@ -4903,6 +4894,24 @@ export function lowerForkCall(lowerer: Lowerer, expr: ts.CallExpression, loc: Sr
         },
         { kind: "return", value: varRef("s.0", STRING, loc), loc },
       ];
+    }
+    if (op === "endString" || op === "writeString") {
+      const inputT = STRING;
+      params.push({ localId: "chunk.0", name: "chunk", type: inputT });
+      locals.push({ id: "chunk.0", name: "chunk", type: inputT, mutable: false });
+      if (op === "writeString") body = [{ kind: "return", value: varRef("chunk.0", STRING, loc), loc }];
+      if (op === "endString") body[body.length - 1] = { kind: "return", value: {
+        kind: "strConcat", left: varRef("chunk.0", STRING, loc), right: varRef("s.0", STRING, loc), type: STRING, loc,
+      }, loc };
+    }
+    if (op === "endChunk") {
+      locals.push({ id: "tail.0", name: "tail", type: STRING, mutable: false });
+      body.splice(body.length - 1, 0,
+        { kind: "varDecl", localId: "tail.0", init: { kind: "libCall", fn: "strdec.end", args: [encRead(), pendingRead()], type: STRING, loc }, loc },
+        { kind: "recordSet", obj: varRef("d.0", recT, loc), shapeId, field: "%pending", value: { kind: "numLit", value: 0, type: F64, loc }, loc });
+      body[body.length - 1] = { kind: "return", value: {
+        kind: "strConcat", left: varRef("s.0", STRING, loc), right: varRef("tail.0", STRING, loc), type: STRING, loc,
+      }, loc };
     }
     lowerer.liftedFns.push({ name, params, returnType: STRING, locals, body, loc });
     return name;

@@ -82971,7 +82971,8 @@
           "confidence": "high",
           "source": "compiler-dedicated:StringDecoder",
           "tests": [
-            "tests/corpus/1662-string-decoder-encodings.ts"
+            "tests/corpus/1662-string-decoder-encodings.ts",
+            "tests/corpus/node24-string-decoder.ts"
           ]
         },
         "dynamic": {
@@ -82981,7 +82982,8 @@
           "confidence": "high",
           "source": "island-export:node:string_decoder.StringDecoder",
           "tests": [
-            "tests/fixtures/npm/cases/buffer-shims/main.ts"
+            "tests/fixtures/npm/cases/buffer-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
           ]
         }
       }
@@ -83008,7 +83010,8 @@
           "confidence": "high",
           "source": "compiler-dedicated:stringDecoder.end",
           "tests": [
-            "tests/corpus/1662-string-decoder-encodings.ts"
+            "tests/corpus/1662-string-decoder-encodings.ts",
+            "tests/corpus/node24-string-decoder.ts"
           ]
         },
         "dynamic": {
@@ -83018,7 +83021,8 @@
           "confidence": "high",
           "source": "island-member:node:string_decoder.stringDecoder.end",
           "tests": [
-            "tests/fixtures/npm/cases/buffer-shims/main.ts"
+            "tests/fixtures/npm/cases/buffer-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
           ]
         }
       }
@@ -83045,7 +83049,8 @@
           "confidence": "high",
           "source": "compiler-dedicated:stringDecoder.write",
           "tests": [
-            "tests/corpus/1662-string-decoder-encodings.ts"
+            "tests/corpus/1662-string-decoder-encodings.ts",
+            "tests/corpus/node24-string-decoder.ts"
           ]
         },
         "dynamic": {
@@ -83055,7 +83060,8 @@
           "confidence": "high",
           "source": "island-member:node:string_decoder.stringDecoder.write",
           "tests": [
-            "tests/fixtures/npm/cases/buffer-shims/main.ts"
+            "tests/fixtures/npm/cases/buffer-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
           ]
         }
       }

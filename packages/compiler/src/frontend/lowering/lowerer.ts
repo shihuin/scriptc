@@ -11024,7 +11024,7 @@ export class Lowerer {
     return lowerDcTracingChannelProperty(this, access);
   }
 
-  strdecHelper(op: "write" | "end", shapeId: string, loc: SrcLoc): string {
+  strdecHelper(op: "write" | "end" | "endChunk" | "endString" | "writeString", shapeId: string, loc: SrcLoc): string {
     return strdecHelper(this, op, shapeId, loc);
   }
 

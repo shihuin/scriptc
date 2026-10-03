@@ -13384,6 +13384,18 @@
     "<repo>/tests/corpus/js-open-binding-writes.js"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/node24-string-decoder.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-string-decoder.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-string-decoder/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-string-decoder/main.ts"
+   ],
+   "diags": []
   }
  }
 }

@@ -100291,14 +100291,16 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/corpus/1662-string-decoder-encodings.ts"
+          "tests/corpus/1662-string-decoder-encodings.ts",
+          "tests/corpus/node24-string-decoder.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/buffer-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
         ]
       },
       "anchorSource": "chapter"
@@ -100324,14 +100326,16 @@
         "status": "partial",
         "evidence": "compiler-dedicated:StringDecoder",
         "tests": [
-          "tests/corpus/1662-string-decoder-encodings.ts"
+          "tests/corpus/1662-string-decoder-encodings.ts",
+          "tests/corpus/node24-string-decoder.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-export:node:string_decoder.StringDecoder",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/buffer-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -100357,14 +100361,16 @@
         "status": "partial",
         "evidence": "compiler-dedicated:stringDecoder.end",
         "tests": [
-          "tests/corpus/1662-string-decoder-encodings.ts"
+          "tests/corpus/1662-string-decoder-encodings.ts",
+          "tests/corpus/node24-string-decoder.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-member:node:string_decoder.stringDecoder.end",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/buffer-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -100390,14 +100396,16 @@
         "status": "partial",
         "evidence": "compiler-dedicated:stringDecoder.write",
         "tests": [
-          "tests/corpus/1662-string-decoder-encodings.ts"
+          "tests/corpus/1662-string-decoder-encodings.ts",
+          "tests/corpus/node24-string-decoder.ts"
         ]
       },
       "dynamic": {
         "status": "partial",
         "evidence": "island-member:node:string_decoder.stringDecoder.write",
         "tests": [
-          "tests/fixtures/npm/cases/buffer-shims/main.ts"
+          "tests/fixtures/npm/cases/buffer-shims/main.ts",
+          "tests/fixtures/npm/cases/node24-string-decoder/main.ts"
         ]
       },
       "anchorSource": "exact"
