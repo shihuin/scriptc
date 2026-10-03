@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true,
+    "target": "es2022",
+    "module": "commonjs"
+  }
+}

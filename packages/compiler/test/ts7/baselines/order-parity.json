@@ -7873,6 +7873,18 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/4036-js-weak-type-object-reuse.js": {
+   "order": [
+    "<repo>/tests/corpus/4036-js-weak-type-object-reuse.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/4037-js-switch-fallthrough/main.js": {
+   "order": [
+    "<repo>/tests/corpus/4037-js-switch-fallthrough/main.js"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/404-rc-stress.ts": {
    "order": [
     "<repo>/tests/corpus/404-rc-stress.ts"
