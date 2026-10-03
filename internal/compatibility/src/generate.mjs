@@ -678,6 +678,9 @@ function publicDetail(tier) {
     return "No dynamic-island implementation exists for this Node API family yet.";
   }
   if (source.startsWith("island-feature:")) {
+    if (source === "island-feature:events.events.once") return "Waits for EventEmitter or EventTarget events with AbortSignal cancellation, Node abort errors, and listener cleanup.";
+    if (source === "island-feature:events.events.on") return "Iterates EventEmitter or EventTarget events with buffered delivery, close events, cancellation, watermark backpressure, and listener cleanup.";
+    if (source === "island-feature:events.events.addAbortListener") return "Registers disposable abort listeners that run even when ordinary propagation is stopped; already-aborted signals schedule the callback in a microtask.";
     if (source.startsWith("island-feature:events.")) {
       return "Implements EventEmitter listener lifecycle, symbol event names, filtered listener counts, and error monitoring; rejection capture and listener warnings remain outside this subset.";
     }

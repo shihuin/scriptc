@@ -5,8 +5,8 @@ static const struct {
   const char *exports;
 } isl_builtins[] = {
     {"node:events",
-     "EventEmitter,once,on,listenerCount,getEventListeners,setMaxListeners,defaultMaxListeners"
-     ",errorMonitor,captureRejectionSymbol"},
+     "EventEmitter,once,on,addAbortListener,listenerCount,getEventListeners,setMaxListeners,de"
+     "faultMaxListeners,errorMonitor,captureRejectionSymbol"},
     {"node:path",
      "sep,delimiter,basename,dirname,extname,join,resolve,normalize,relative,isAbsolute,toName"
      "spacedPath,parse,format,posix,win32"},

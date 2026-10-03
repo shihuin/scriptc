@@ -14,8 +14,8 @@
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 815,
-        "verify-gap": 2223,
+        "audit-partial": 816,
+        "verify-gap": 2222,
         "replace-refusal": 112,
         "implement": 218
       }
@@ -33726,9 +33726,9 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-member:node:events.events.once",
+          "source": "island-feature:events.events.once",
           "tests": [
-            "tests/fixtures/npm/cases/stream-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-async-events/main.ts"
           ]
         }
       }
@@ -33802,9 +33802,9 @@
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-member:node:events.events.on",
+          "source": "island-feature:events.events.on",
           "tests": [
-            "tests/fixtures/npm/cases/stream-shims/main.ts"
+            "tests/fixtures/npm/cases/node24-async-events/main.ts"
           ]
         }
       }
@@ -33871,12 +33871,14 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:events",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:events.events.addAbortListener",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-async-events/main.ts"
+          ]
         }
       }
     },

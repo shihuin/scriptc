@@ -13420,6 +13420,12 @@
     "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts"
+   ],
+   "diags": []
   }
  }
 }

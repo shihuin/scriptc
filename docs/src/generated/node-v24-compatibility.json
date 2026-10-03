@@ -443,9 +443,9 @@
       },
       "dynamic": {
         "supported": 0,
-        "partial": 25,
+        "partial": 26,
         "refused": 0,
-        "not-implemented": 53,
+        "not-implemented": 52,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -34795,7 +34795,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Waits for EventEmitter or EventTarget events with AbortSignal cancellation, Node abort errors, and listener cleanup.",
         "verification": "test-backed"
       }
     },
@@ -34851,7 +34851,7 @@
       },
       "dynamic": {
         "status": "partial",
-        "detail": "Implemented by the embedded Node compatibility shim.",
+        "detail": "Iterates EventEmitter or EventTarget events with buffered delivery, close events, cancellation, watermark backpressure, and listener cleanup.",
         "verification": "test-backed"
       }
     },
@@ -34906,9 +34906,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Registers disposable abort listeners that run even when ordinary propagation is stopped; already-aborted signals schedule the callback in a microtask.",
+        "verification": "test-backed"
       }
     },
     {

@@ -492,9 +492,9 @@
       },
       "dynamic": {
         "supported": 0,
-        "partial": 25,
+        "partial": 26,
         "refused": 0,
-        "not-implemented": 53,
+        "not-implemented": 52,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -48354,6 +48354,7 @@
         "status": "partial",
         "evidence": "derived:descendants",
         "tests": [
+          "tests/fixtures/npm/cases/node24-async-events/main.ts",
           "tests/fixtures/npm/cases/node24-event-emitter/main.ts",
           "tests/fixtures/npm/cases/stream-shims/main.ts"
         ]
@@ -50488,9 +50489,9 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.events.once",
+        "evidence": "island-feature:events.events.once",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-async-events/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50583,9 +50584,9 @@
       },
       "dynamic": {
         "status": "partial",
-        "evidence": "island-member:node:events.events.on",
+        "evidence": "island-feature:events.events.on",
         "tests": [
-          "tests/fixtures/npm/cases/stream-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-async-events/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -50646,8 +50647,11 @@
         "evidence": "compiler-unmatched:events"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "evidence": "island-unmatched:events"
+        "status": "partial",
+        "evidence": "island-feature:events.events.addAbortListener",
+        "tests": [
+          "tests/fixtures/npm/cases/node24-async-events/main.ts"
+        ]
       },
       "anchorSource": "exact"
     },
