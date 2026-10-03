@@ -27,8 +27,8 @@ test("parallel fingerprinting preserves the v1 byte stream and dependency order 
   const files: [string, string][] = [
     [join("a", "index.ts"), "export const value = 42;\n"],
     ["a.ts", ""],
-    ...Array.from({ length: 40 }, (_, i): [string, string] => [
-      join("z", `file${String(i).padStart(2, "0")}.js`),
+    ...Array.from({ length: 140 }, (_, i): [string, string] => [
+      join("z", `file${String(i).padStart(3, "0")}.js`),
       `// ${i}\n${"\u03bb".repeat(i * 1000)}`,
     ]),
   ];

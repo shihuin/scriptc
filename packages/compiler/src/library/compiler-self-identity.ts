@@ -80,7 +80,7 @@ export async function compilerImplementationIdentity(
   // trips on every application edit; reading the entire package at once
   // would retain all its bytes and open an unbounded number of files.
   const hash = createHash("sha256").update("scriptc-frontend-implementation-v1\0");
-  const batchSize = 16;
+  const batchSize = 64;
   for (let start = 0; start < entries.length; start += batchSize) {
     const batch = await Promise.all(entries.slice(start, start + batchSize).map(async (entry) => {
       if (entry.directory !== undefined) return { ...entry, info: entry.directory, bytes: null };

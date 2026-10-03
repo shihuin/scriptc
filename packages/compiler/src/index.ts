@@ -708,9 +708,20 @@ async function compileTracked(
     : null;
   let earlyCacheOptions: EarlyExecutableCacheOptions | null = null;
   if (outputKind === "exe") {
-    const implementation = await compilerImplementationIdentity();
     const helperObjectRoute = opts.nativeProgramObject === true ||
       (usesPrecompiledRuntimePack(opts, "llvm"));
+    // Package content and native driver discovery are independent inputs to
+    // the same cache key. Start both before waiting so edits do not pay their
+    // filesystem and subprocess latency serially.
+    const [implementation, nativeEnvironment] = await Promise.all([
+      compilerImplementationIdentity(),
+      helperObjectRoute
+        ? executableLinkerEnvironmentFingerprint(
+          process.env,
+          nativeCodegenTarget()?.defaultLinker,
+        )
+        : executableNativeEnvironmentFingerprint(),
+    ]);
     earlyCacheOptions = {
       entryPath,
       outDir: opts.outDir,
@@ -737,12 +748,7 @@ async function compileTracked(
           ? resolvePlatformLinker(process.env, nativeCodegenTarget()?.defaultLinker)
           : (process.env["SCRIPTC_CC"] ?? "clang"),
       ],
-      nativeEnvironment: helperObjectRoute
-        ? await executableLinkerEnvironmentFingerprint(
-          process.env,
-          nativeCodegenTarget()?.defaultLinker,
-        )
-        : await executableNativeEnvironmentFingerprint(),
+      nativeEnvironment,
       nodeVersion: process.version,
       implementation: implementation.digest,
       implementationDependencies: implementation.dependencies,
