@@ -8,16 +8,16 @@
     "tiers": {
       "static": {
         "replace-refusal": 47,
-        "verify-gap": 2558,
-        "audit-partial": 607,
+        "verify-gap": 2530,
+        "audit-partial": 635,
         "classify": 2,
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 755,
-        "verify-gap": 2272,
-        "replace-refusal": 124,
-        "implement": 217
+        "audit-partial": 803,
+        "verify-gap": 2231,
+        "replace-refusal": 116,
+        "implement": 218
       }
     },
     "priorities": {
@@ -33932,20 +33932,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.FileHandle",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.FileHandle",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -33965,20 +33971,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.appendFile",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.appendFile",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -33998,20 +34010,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.chmod",
+          "tests": [
+            "tests/corpus/3135-fs-file-handle-controls.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.chmod",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34064,20 +34081,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.close",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.close",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34163,20 +34186,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.datasync",
+          "tests": [
+            "tests/corpus/3135-fs-file-handle-controls.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.datasync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34196,20 +34224,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.read",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.read",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34229,20 +34263,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.read",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.read",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34262,20 +34302,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.read",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.read",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34328,20 +34374,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.readFile",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.readFile",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34394,20 +34446,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.readv",
+          "tests": [
+            "tests/corpus/3135-fs-file-handle-controls.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.readv",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34427,20 +34484,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.stat",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.stat",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34460,20 +34523,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.sync",
+          "tests": [
+            "tests/corpus/3135-fs-file-handle-controls.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.sync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34493,20 +34561,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.truncate",
+          "tests": [
+            "tests/corpus/3135-fs-file-handle-controls.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.truncate",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34559,20 +34632,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.write",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.write",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34592,20 +34671,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.write",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.write",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34625,20 +34710,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.write",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.write",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34658,20 +34749,26 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.writeFile",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts",
+            "tests/corpus/3136-fs-file-handle-options.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.writeFile",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34691,20 +34788,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.filehandle.writev",
+          "tests": [
+            "tests/corpus/3135-fs-file-handle-controls.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-member:node:fs/promises.filehandle.writev",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34759,20 +34861,24 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.fd",
+          "tests": [
+            "tests/corpus/2686-fs-file-handle.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-feature:fs.fd",
+          "tests": [
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -34839,7 +34945,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.access",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -34874,7 +34981,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.appendFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -34914,7 +35022,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.chmod",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -34982,7 +35091,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.copyFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35217,7 +35327,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.lstat",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35257,7 +35368,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.mkdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35292,7 +35404,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.mkdtemp",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35359,12 +35472,15 @@
           ]
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs/promises.open",
-          "tests": []
+          "source": "island-export:node:fs/promises.open",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -35433,7 +35549,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.readdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35473,7 +35590,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.readFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35508,7 +35626,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.readlink",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35545,7 +35664,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.realpath",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35585,7 +35705,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.rename",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35620,7 +35741,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.rmdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35660,7 +35782,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.rm",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35700,7 +35823,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.stat",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35839,7 +35963,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.unlink",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35945,7 +36070,8 @@
           "confidence": "high",
           "source": "island-export:node:fs/promises.writeFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -35980,7 +36106,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.constants",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36015,7 +36142,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.access",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36050,7 +36178,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.appendFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36085,7 +36214,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.chmod",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36147,12 +36277,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.close",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36186,7 +36319,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.copyFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36254,7 +36388,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.createReadStream",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36289,7 +36424,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.createWriteStream",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36324,7 +36460,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.exists",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36345,20 +36482,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.fs.fchmod",
+          "tests": [
+            "tests/corpus/3137-fs-vector-callbacks.cjs"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fchmod",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36411,20 +36553,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.fs.fdatasync",
+          "tests": [
+            "tests/corpus/3137-fs-vector-callbacks.cjs"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fdatasync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36452,12 +36599,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fstat",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36485,12 +36635,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fsync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36510,20 +36663,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.fs.ftruncate",
+          "tests": [
+            "tests/corpus/3137-fs-vector-callbacks.cjs"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.ftruncate",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36755,7 +36913,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.lstat",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36790,7 +36949,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.mkdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36825,7 +36985,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.mkdtemp",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -36854,12 +37015,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.open",
-          "tests": []
+          "source": "island-export:node:fs.open",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36953,12 +37117,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.read",
-          "tests": []
+          "source": "island-export:node:fs.read",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -36986,12 +37153,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.read",
-          "tests": []
+          "source": "island-export:node:fs.read",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37019,12 +37189,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.read",
-          "tests": []
+          "source": "island-export:node:fs.read",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37058,7 +37231,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.readdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37093,7 +37267,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.readFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37128,7 +37303,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.readlink",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37149,20 +37325,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.fs.readv",
+          "tests": [
+            "tests/corpus/3137-fs-vector-callbacks.cjs"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.readv",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37196,7 +37377,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.realpath",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37269,7 +37451,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.rename",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37304,7 +37487,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.rmdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37339,7 +37523,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.rm",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37374,7 +37559,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.stat",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37508,7 +37694,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.unlink",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37543,7 +37730,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.unwatchFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37676,12 +37864,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.write",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37709,12 +37900,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.write",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37742,12 +37936,15 @@
           "tests": []
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.write",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37781,7 +37978,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.writeFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37816,7 +38014,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.writeFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37837,20 +38036,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "compiler-feature:fs.fs.writev",
+          "tests": [
+            "tests/corpus/3137-fs-vector-callbacks.cjs"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.writev",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -37889,7 +38093,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.accessSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37929,7 +38134,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.appendFileSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -37969,7 +38175,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.chmodSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38047,7 +38254,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.closeSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38087,7 +38295,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.copyFileSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38160,7 +38369,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.existsSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38191,12 +38401,15 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fchmodSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38249,20 +38462,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "surface-manifest:node-builtin.fs.fdatasyncSync",
+          "tests": [
+            "tests/corpus/3134-fs-vectors.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fdatasyncSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38292,12 +38510,15 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fstatSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38327,12 +38548,15 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.fsyncSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38352,20 +38576,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "surface-manifest:node-builtin.fs.ftruncateSync",
+          "tests": [
+            "tests/corpus/3134-fs-vectors.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.ftruncateSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38604,7 +38833,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.lstatSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38644,7 +38874,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.mkdirSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38684,7 +38915,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.mkdtempSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38784,12 +39016,15 @@
           ]
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.openSync",
-          "tests": []
+          "source": "island-export:node:fs.openSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38828,7 +39063,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.readdirSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38868,7 +39104,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.readFileSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38903,7 +39140,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.readlinkSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -38937,12 +39175,15 @@
           ]
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.readSync",
-          "tests": []
+          "source": "island-export:node:fs.readSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -38975,12 +39216,15 @@
           ]
         },
         "dynamic": {
-          "status": "refused",
-          "action": "replace-refusal",
-          "verification": "explicit-refusal",
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
           "confidence": "high",
-          "source": "island-stub:node:fs.readSync",
-          "tests": []
+          "source": "island-export:node:fs.readSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -39000,20 +39244,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "surface-manifest:node-builtin.fs.readvSync",
+          "tests": [
+            "tests/corpus/3134-fs-vectors.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.readvSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -39052,7 +39301,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.realpathSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39127,7 +39377,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.renameSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39167,7 +39418,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.rmdirSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39207,7 +39459,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.rmSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39247,7 +39500,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.statSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39386,7 +39640,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.unlinkSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39459,7 +39714,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.writeFileSync",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -39493,12 +39749,15 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.writeSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -39531,12 +39790,15 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.writeSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -39569,12 +39831,15 @@
           ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.writeSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -39594,20 +39859,25 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "surface-manifest:node-builtin.fs.writevSync",
+          "tests": [
+            "tests/corpus/3134-fs-vectors.ts"
+          ]
         },
         "dynamic": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
-          "tests": []
+          "status": "partial",
+          "action": "audit-partial",
+          "verification": "test-backed",
+          "confidence": "high",
+          "source": "island-export:node:fs.writevSync",
+          "tests": [
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+          ]
         }
       }
     },
@@ -40004,7 +40274,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.Dirent",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40039,7 +40310,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isBlockDevice",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40074,7 +40346,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isCharacterDevice",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40109,7 +40382,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isDirectory",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40144,7 +40418,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isFIFO",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40179,7 +40454,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40214,7 +40490,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isSocket",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40249,7 +40526,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.dirent.isSymbolicLink",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40911,7 +41189,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.Stats",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40946,7 +41225,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isBlockDevice",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -40981,7 +41261,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isCharacterDevice",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -41016,7 +41297,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isDirectory",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -41051,7 +41333,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isFIFO",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -41086,7 +41369,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isFile",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -41121,7 +41405,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isSocket",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -41156,7 +41441,8 @@
           "confidence": "high",
           "source": "island-member:node:fs.stats.isSymbolicLink",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -42578,10 +42864,10 @@
         },
         "dynamic": {
           "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "island-unmatched:fs",
+          "action": "implement",
+          "verification": "declared-gap",
+          "confidence": "medium",
+          "source": "island-feature:fs.fsync",
           "tests": []
         }
       }
@@ -42682,7 +42968,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.mkdir",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }
@@ -43344,7 +43631,8 @@
           "confidence": "high",
           "source": "island-export:node:fs.constants",
           "tests": [
-            "tests/fixtures/npm/cases/fs-shims/main.ts"
+            "tests/fixtures/npm/cases/fs-shims/main.ts",
+            "tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
           ]
         }
       }

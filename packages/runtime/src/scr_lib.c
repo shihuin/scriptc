@@ -2019,13 +2019,15 @@ void scr_fs_throw(int e, const char *op, const ScrStr *path) {
   const char *name = scr_errno_name(e, namebuf, sizeof namebuf);
   const char *text = scr_errno_text(e);
   char pathbuf[PATH_MAX];
-  const char *shown = scr_fs_err_path(path, pathbuf);
+  const char *shown = path ? scr_fs_err_path(path, pathbuf) : "";
   size_t cap = strlen(name) + strlen(text) + strlen(op) + strlen(shown) + 8;
   char *msg = malloc(cap);
   if (!msg) {
     scr_trap("scriptc: out of memory\n");
   }
-  int len = snprintf(msg, cap, "%s: %s, %s '%s'", name, text, op, shown);
+  int len = path
+    ? snprintf(msg, cap, "%s: %s, %s '%s'", name, text, op, shown)
+    : snprintf(msg, cap, "%s: %s, %s", name, text, op);
   /* A real Error instance (name "Error", message = Node's text) — what a
    * typed catch's `e instanceof Error` + `e.message` observes in Node —
    * with `code` stamped to the errno name (the exotic-errno fallback
@@ -2353,6 +2355,20 @@ double scr_fs_open_numeric(ScrStr *path, double flags, double mode) {
 }
 
 static void scr_fs_throw_nopath(int e, const char *op);
+static bool scr_fs_write_fd_valid(double fd);
+
+double scr_fs_open_native(ScrStr *path, double flags, double mode) {
+#ifdef _WIN32
+  WCHAR *wide = scr_fs_win_wide(path);
+  if (!wide) { scr_fs_throw(scr_fs_win_errno(GetLastError()), "open", path); return 0; }
+  int fd = _wopen(wide, (int)flags | O_BINARY, (int)mode);
+  free(wide);
+#else
+  int fd = open(path->data, (int)flags | O_BINARY, (mode_t)mode);
+#endif
+  if (fd < 0) { scr_fs_throw(errno, "open", path); return 0; }
+  return (double)fd;
+}
 
 void scr_fs_fchmod(double fd, double mode) {
 #ifdef _WIN32
@@ -2371,6 +2387,40 @@ void scr_fs_fsync(double fd) {
   if (_commit((int)fd) != 0) scr_fs_throw_nopath(errno, "fsync");
 #else
   if (fsync((int)fd) != 0) scr_fs_throw_nopath(errno, "fsync");
+#endif
+}
+
+void scr_fs_fdatasync(double fd) {
+  if (!scr_fs_write_fd_valid(fd)) return;
+#if defined(_WIN32)
+  if (_commit((int)fd) != 0) scr_fs_throw_nopath(errno, "fdatasync");
+#elif defined(__APPLE__)
+  /* macOS/libuv implements fdatasync with fsync. */
+  if (fsync((int)fd) != 0) scr_fs_throw_nopath(errno, "fdatasync");
+#else
+  if (fdatasync((int)fd) != 0) scr_fs_throw_nopath(errno, "fdatasync");
+#endif
+}
+
+void scr_fs_ftruncate(double fd, double length) {
+  if (!scr_fs_write_fd_valid(fd)) return;
+  char received[48], msg[192];
+  scr_num_received(length, received);
+  if (!(isfinite(length) && trunc(length) == length) ||
+      length < -9007199254740991.0 || length > 9007199254740991.0) {
+    const char *bound = isfinite(length) && trunc(length) == length
+      ? ">= -9007199254740991 && <= 9007199254740991" : "an integer";
+    int n = snprintf(msg, sizeof msg,
+      "The value of \"len\" is out of range. It must be %s. Received %s", bound, received);
+    scr_throw_error_msg_code(SCR_ERR_RANGE, msg, (size_t)n, "ERR_OUT_OF_RANGE");
+    return;
+  }
+  if (length < 0) length = 0;
+#ifdef _WIN32
+  int error = (int)_chsize_s((int)fd, (__int64)length);
+  if (error) scr_fs_throw_nopath(error, "ftruncate");
+#else
+  if (ftruncate((int)fd, (off_t)length) != 0) scr_fs_throw_nopath(errno, "ftruncate");
 #endif
 }
 
@@ -2769,6 +2819,73 @@ double scr_fs_read_sync(double fd, ScrBytes *buf, double offset, double length,
     return 0;
   }
   return (double)n;
+}
+
+/* Gather/scatter one contiguous window around ONE kernel operation. Multiple
+ * scalar calls would change short I/O and pipe atomicity. This portable seam
+ * also preserves positioned I/O on targets without preadv/pwritev. */
+double scr_fs_read_zero(double fd, double position) {
+  if (!scr_fs_write_fd_valid(fd)) return 0;
+  uint8_t dummy;
+  ssize_t n = position < 0 ? read((int)fd, &dummy, 0)
+    : scr_fs_pread((int)fd, &dummy, 0, position);
+  if (n < 0) scr_fs_throw_nopath(errno, "read");
+  return 0;
+}
+
+static double scr_fs_vector_sync(double fd, ScrArr *buffers, double position,
+                                 bool writing) {
+  size_t count = (size_t)scr_arr_len(buffers);
+  if (writing && count == 0) return 0;
+  if (!scr_fs_write_fd_valid(fd)) return 0;
+  if (count == 0) { scr_fs_throw_nopath(EINVAL, "read"); return 0; }
+  size_t length = 0;
+  for (size_t i = 0; i < count; i++) {
+    ScrBytes *buf = scr_arr_get_ref(buffers, (double)i);
+    size_t n = buf->len;
+    scr_bytes_release(buf);
+    if (n > SIZE_MAX - length) scr_trap("scriptc: vector I/O size overflow\n");
+    length += n;
+  }
+  uint8_t *data = malloc(length ? length : 1);
+  if (!data) scr_trap("scriptc: out of memory\n");
+  if (writing) {
+    size_t at = 0;
+    for (size_t i = 0; i < count; i++) {
+      ScrBytes *buf = scr_arr_get_ref(buffers, (double)i);
+      if (buf->len) memcpy(data + at, buf->data, buf->len);
+      at += buf->len;
+      scr_bytes_release(buf);
+    }
+  }
+  ScrBytes window = {SIZE_MAX, length, SCR_BYTES_U8, data, NULL};
+  position = isfinite(position) && position >= 0 && position <= 9007199254740991.0
+    ? trunc(position) : -1;
+  double transferred = writing
+    ? scr_fs_write_sync(fd, &window, 0, (double)length, position)
+    : length == 0 ? scr_fs_read_zero(fd, position)
+      : scr_fs_read_sync(fd, &window, 0, (double)length, position);
+  if (!writing && !scr_exc_pending()) {
+    size_t at = 0, remaining = (size_t)transferred;
+    for (size_t i = 0; i < count && remaining; i++) {
+      ScrBytes *buf = scr_arr_get_ref(buffers, (double)i);
+      size_t n = buf->len < remaining ? buf->len : remaining;
+      if (n) memcpy(buf->data, data + at, n);
+      at += n;
+      remaining -= n;
+      scr_bytes_release(buf);
+    }
+  }
+  free(data);
+  return transferred;
+}
+
+double scr_fs_readv_sync(double fd, ScrArr *buffers, double position) {
+  return scr_fs_vector_sync(fd, buffers, position, false);
+}
+
+double scr_fs_writev_sync(double fd, ScrArr *buffers, double position) {
+  return scr_fs_vector_sync(fd, buffers, position, true);
 }
 
 void scr_fs_close(double fd) {

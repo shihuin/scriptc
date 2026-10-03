@@ -2871,8 +2871,47 @@ static JSValue isl_host_fs(JSContext *ctx, JSValueConst this_val, int argc,
       return JS_EXCEPTION;
     }
   }
-  if (strcmp(op, "readFile") == 0) {
-    ScrBytes *data = scr_fs_read_file_bytes(a);
+  if (strcmp(op, "open") == 0) {
+    double flags = 0, mode = 0666;
+    JS_ToFloat64(ctx, &flags, argv[2]);
+    JS_ToFloat64(ctx, &mode, argv[3]);
+    ret = JS_NewFloat64(ctx, scr_fs_open_native(a, flags, mode));
+  } else if (strcmp(op, "close") == 0 || strcmp(op, "fsync") == 0 ||
+             strcmp(op, "fdatasync") == 0 || strcmp(op, "ftruncate") == 0 ||
+             strcmp(op, "fchmod") == 0) {
+    double fd = 0, value = 0;
+    JS_ToFloat64(ctx, &fd, argv[1]);
+    if (argc > 2) JS_ToFloat64(ctx, &value, argv[2]);
+    if (strcmp(op, "close") == 0) scr_fs_close(fd);
+    else if (strcmp(op, "fsync") == 0) scr_fs_fsync(fd);
+    else if (strcmp(op, "fdatasync") == 0) scr_fs_fdatasync(fd);
+    else if (strcmp(op, "ftruncate") == 0) scr_fs_ftruncate(fd, value);
+    else scr_fs_fchmod(fd, value);
+  } else if (strcmp(op, "read") == 0 || strcmp(op, "write") == 0 ||
+             strcmp(op, "readv") == 0 || strcmp(op, "writev") == 0) {
+    double fd = 0, offset = 0, length = 0, position = -1;
+    JS_ToFloat64(ctx, &fd, argv[1]);
+    JS_ToFloat64(ctx, &offset, argv[3]);
+    JS_ToFloat64(ctx, &length, argv[4]);
+    JS_ToFloat64(ctx, &position, argv[5]);
+    size_t size = 0;
+    uint8_t *data = JS_GetUint8Array(ctx, &size, argv[2]);
+    if (data || size == 0) {
+      ScrBytes buffer = {SIZE_MAX, size, SCR_BYTES_U8, data, NULL};
+      if (strcmp(op, "readv") == 0 && argc > 6 && JS_ToBool(ctx, argv[6])) {
+        scr_fs_throw(EINVAL, "read", NULL);
+      } else {
+        double n = op[0] == 'r'
+          ? strcmp(op, "readv") == 0 && length == 0 ? scr_fs_read_zero(fd, position)
+            : scr_fs_read_sync(fd, &buffer, offset, length, position)
+          : scr_fs_write_sync(fd, &buffer, offset, length, position);
+        ret = JS_NewFloat64(ctx, n);
+      }
+    } else ret = JS_EXCEPTION;
+  } else if (strcmp(op, "readFile") == 0) {
+    double fd = 0;
+    if (!a) JS_ToFloat64(ctx, &fd, argv[1]);
+    ScrBytes *data = a ? scr_fs_read_file_bytes(a) : scr_fs_read_fd_bytes(fd);
     if (data) {
       ret = JS_NewUint8ArrayCopy(ctx, data->data, (size_t)scr_bytes_len(data));
       scr_bytes_release(data);
@@ -2881,10 +2920,22 @@ static JSValue isl_host_fs(JSContext *ctx, JSValueConst this_val, int argc,
     size_t len = 0;
     uint8_t *buf = JS_GetUint8Array(ctx, &len, argv[2]);
     if (buf || len == 0) {
-      ScrStr *data = scr_str_new((const char *)buf, len);
-      if (strcmp(op, "writeFile") == 0) scr_fs_write_file(a, data);
-      else scr_fs_append_file(a, data);
-      scr_str_release(data);
+      if (a) {
+        ScrStr *data = scr_str_new((const char *)buf, len);
+        if (strcmp(op, "writeFile") == 0) scr_fs_write_file(a, data);
+        else scr_fs_append_file(a, data);
+        scr_str_release(data);
+      } else {
+        double fd = 0;
+        JS_ToFloat64(ctx, &fd, argv[1]);
+        ScrBytes buffer = {SIZE_MAX, len, SCR_BYTES_U8, buf, NULL};
+        size_t at = 0;
+        while (at < len && !scr_exc_pending()) {
+          double n = scr_fs_write_sync(fd, &buffer, (double)at, (double)(len - at), -1);
+          if (n <= 0) { if (!scr_exc_pending()) scr_fs_throw(EIO, "write", NULL); break; }
+          at += (size_t)n;
+        }
+      }
     } else {
       ret = JS_EXCEPTION;
     }
@@ -2945,8 +2996,11 @@ static JSValue isl_host_fs(JSContext *ctx, JSValueConst this_val, int argc,
       scr_fs_scandir_free(s);
       ret = arr;
     }
-  } else if (strcmp(op, "stat") == 0 || strcmp(op, "lstat") == 0) {
-    ScrStats *st = strcmp(op, "stat") == 0 ? scr_fs_stat(a) : scr_fs_lstat(a);
+  } else if (strcmp(op, "stat") == 0 || strcmp(op, "lstat") == 0 || strcmp(op, "fstat") == 0) {
+    double fd = 0;
+    if (strcmp(op, "fstat") == 0) JS_ToFloat64(ctx, &fd, argv[1]);
+    ScrStats *st = strcmp(op, "fstat") == 0 ? scr_fs_fstat(fd)
+      : strcmp(op, "stat") == 0 ? scr_fs_stat(a) : scr_fs_lstat(a);
     if (st) {
       JSValue arr = JS_NewArray(ctx);
       JS_SetPropertyUint32(ctx, arr, 0, JS_NewBool(ctx, scr_stats_is_file(st)));
@@ -3205,6 +3259,14 @@ static JSValue isl_host_fs_constants(JSContext *ctx, JSValueConst this_val, int 
   ISL_CONST(O_EXCL);
   ISL_CONST(O_TRUNC);
   ISL_CONST(O_APPEND);
+#ifdef O_SYNC
+  ISL_CONST(O_SYNC);
+#else
+  JS_SetPropertyStr(ctx, o, "O_SYNC", JS_NewInt32(ctx, 0));
+#endif
+#ifdef O_NOFOLLOW
+  ISL_CONST(O_NOFOLLOW);
+#endif
 #ifdef O_NONBLOCK
   ISL_CONST(O_NONBLOCK);
 #endif
@@ -3987,13 +4049,19 @@ static const char isl_modules_bootstrap[] =
     "function makeFs(env) {\n"
     "  const Buffer = env.Buffer;\n"
     "  const constants = env.fsConstants();\n"
-    "  const call = env.fs;\n"
+    "  const call = (op, ...args) => {\n"
+    "    try { return env.fs(op, ...args); } catch (e) {\n"
+    "      if (e.code && !e.code.startsWith('ERR_') && e.code !== 'SC2020') {\n"
+    "        e.syscall = op === 'readv' ? 'read' : op === 'writev' ? 'write' : op;\n"
+    "        if (typeof args[0] === 'string') e.path = args[0];\n"
+    "      }\n"
+    "      throw e;\n"
+    "    }\n"
+    "  };\n"
     "  const pathOf = (p) => {\n"
     "    if (typeof p === \"string\") return p;\n"
     "    if (p instanceof Uint8Array) return Buffer.from(p).toString(\"utf8\");\n"
-    "    if (p !== null && typeof p === \"object\" && typeof p.href === \"string\" && p.href.startsWith(\"file://\")) {\n"
-    "      return decodeURIComponent(p.href.slice(7));\n"
-    "    }\n"
+    "    if (p instanceof env.URL) return env.fileURLToPath(p);\n"
     "    const e = new TypeError('The \"path\" argument must be of type string or an instance of Buffer or URL. Received ' + (p === null ? \"null\" : typeof p === \"object\" ? \"an instance of \" + ((p.constructor && p.constructor.name) || \"Object\") : \"type \" + typeof p + \" (\" + JSON.stringify(p) + \")\"));\n"
     "    e.code = \"ERR_INVALID_ARG_TYPE\";\n"
     "    throw e;\n"
@@ -4049,16 +4117,16 @@ static const char isl_modules_bootstrap[] =
     "    isBlockDevice() { return this._kind === 7; }\n"
     "  }\n"
     "  const readFileSync = (p, options) => {\n"
-    "    const u8 = call(\"readFile\", pathOf(p));\n"
+    "    const u8 = call(\"readFile\", typeof p === \"number\" ? fdOf(p) : pathOf(p));\n"
     "    const enc = encodingOf(options, null);\n"
     "    const buf = Buffer.from(u8.buffer, u8.byteOffset, u8.length);\n"
     "    return enc === null ? buf : buf.toString(enc);\n"
     "  };\n"
     "  const writeFileSync = (p, data, options) => {\n"
-    "    call(\"writeFile\", pathOf(p), dataToU8(data, options));\n"
+    "    call(\"writeFile\", typeof p === \"number\" ? fdOf(p) : pathOf(p), dataToU8(data, options));\n"
     "  };\n"
     "  const appendFileSync = (p, data, options) => {\n"
-    "    call(\"appendFile\", pathOf(p), dataToU8(data, options));\n"
+    "    call(\"appendFile\", typeof p === \"number\" ? fdOf(p) : pathOf(p), dataToU8(data, options));\n"
     "  };\n"
     "  const existsSync = (p) => {\n"
     "    try {\n"
@@ -4112,11 +4180,209 @@ static const char isl_modules_bootstrap[] =
     "  const readlinkSync = (p) => call(\"readlink\", pathOf(p));\n"
     "  const copyFileSync = (src, dest) => call(\"copyFile\", pathOf(src), pathOf(dest));\n"
     "  const renameSync = (src, dest) => call(\"rename\", pathOf(src), pathOf(dest));\n"
+    "  // Descriptor callbacks validate before scheduling; only system I/O failures\n"
+    "  // travel through the callback. Payloads always retain the caller's identity.\n"
+    "  const received = (v) => v === undefined ? 'undefined' : v === null ? 'null' : typeof v === 'string' ? 'type string (' + JSON.stringify(v) + ')' : typeof v === 'object' ? 'an instance of ' + ((v.constructor && v.constructor.name) || 'Object') : 'type ' + typeof v + ' (' + String(v) + ')';\n"
+    "  const failType = (name, expected, v) => { const e = new TypeError('The \"' + name + '\" argument must be ' + expected + '. Received ' + received(v)); e.code = 'ERR_INVALID_ARG_TYPE'; throw e; };\n"
+    "  const failRange = (name, range, v) => { const e = new RangeError('The value of \"' + name + '\" is out of range. It must be ' + range + '. Received ' + String(v)); e.code = 'ERR_OUT_OF_RANGE'; throw e; };\n"
+    "  const integer = (v, name, min = -9007199254740991, max = 9007199254740991) => {\n"
+    "    if (typeof v !== 'number') failType(name, 'of type number', v);\n"
+    "    if (!Number.isInteger(v)) failRange(name, 'an integer', v);\n"
+    "    if (v < min || v > max) failRange(name, '>= ' + min + ' && <= ' + max, v);\n"
+    "    return v;\n"
+    "  };\n"
+    "  const fdOf = (fd) => integer(fd, 'fd', 0, 2147483647);\n"
+    "  const cbOf = (cb) => { if (typeof cb !== 'function') failType('cb', 'of type function', cb); return cb; };\n"
+    "  const optionsOf = (o) => { if (o != null && (typeof o !== 'object' || Array.isArray(o))) failType('options', 'of type object', o); return o || {}; };\n"
+    "  const viewOf = (v) => { if (!ArrayBuffer.isView(v)) failType('buffer', 'an instance of Buffer, TypedArray, or DataView', v); return new Uint8Array(v.buffer, v.byteOffset, v.byteLength); };\n"
+    "  const modeOf = (m, dflt = 0o666) => { if (m === undefined) return dflt; if (typeof m === 'string') { if (!/^[0-7]+$/.test(m)) { const e = new TypeError(\"The argument 'mode' must be a 32-bit unsigned integer or an octal string. Received '\" + m + \"'\"); e.code = 'ERR_INVALID_ARG_VALUE'; throw e; } m = parseInt(m, 8); } return integer(m, 'mode', 0, 4294967295); };\n"
+    "  const flagsOf = (f) => {\n"
+    "    if (f === undefined) f = 'r';\n"
+    "    if (typeof f === 'number') return integer(f, 'flags', -2147483648, 2147483647);\n"
+    "    if (typeof f !== 'string') failType('flags', 'of type string or number', f);\n"
+    "    const c = constants, sync = c.O_SYNC || 0;\n"
+    "    const flags = { r: c.O_RDONLY, rs: c.O_RDONLY | sync, sr: c.O_RDONLY | sync, 'r+': c.O_RDWR, 'rs+': c.O_RDWR | sync, 'sr+': c.O_RDWR | sync,\n"
+    "      w: c.O_WRONLY | c.O_CREAT | c.O_TRUNC, wx: c.O_WRONLY | c.O_CREAT | c.O_TRUNC | c.O_EXCL, xw: c.O_WRONLY | c.O_CREAT | c.O_TRUNC | c.O_EXCL,\n"
+    "      'w+': c.O_RDWR | c.O_CREAT | c.O_TRUNC, 'wx+': c.O_RDWR | c.O_CREAT | c.O_TRUNC | c.O_EXCL, 'xw+': c.O_RDWR | c.O_CREAT | c.O_TRUNC | c.O_EXCL,\n"
+    "      a: c.O_WRONLY | c.O_CREAT | c.O_APPEND, ax: c.O_WRONLY | c.O_CREAT | c.O_APPEND | c.O_EXCL, xa: c.O_WRONLY | c.O_CREAT | c.O_APPEND | c.O_EXCL,\n"
+    "      as: c.O_WRONLY | c.O_CREAT | c.O_APPEND | sync, sa: c.O_WRONLY | c.O_CREAT | c.O_APPEND | sync,\n"
+    "      'a+': c.O_RDWR | c.O_CREAT | c.O_APPEND, 'ax+': c.O_RDWR | c.O_CREAT | c.O_APPEND | c.O_EXCL, 'xa+': c.O_RDWR | c.O_CREAT | c.O_APPEND | c.O_EXCL,\n"
+    "      'as+': c.O_RDWR | c.O_CREAT | c.O_APPEND | sync, 'sa+': c.O_RDWR | c.O_CREAT | c.O_APPEND | sync };\n"
+    "    if (Object.prototype.hasOwnProperty.call(flags, f)) return flags[f];\n"
+    "    const e = new TypeError(\"The argument 'flags' is invalid. Received '\" + f + \"'\"); e.code = 'ERR_INVALID_ARG_VALUE'; throw e;\n"
+    "  };\n"
+    "  const openArgs = (p, flags, mode) => {\n"
+    "    const path = pathOf(p);\n"
+    "    if (path.includes('\\0')) { const e = new TypeError(\"The argument 'path' must be a string, Uint8Array, or URL without null bytes. Received \" + JSON.stringify(path)); e.code = 'ERR_INVALID_ARG_VALUE'; throw e; }\n"
+    "    return [path, flagsOf(flags), modeOf(mode)];\n"
+    "  };\n"
+    "  const openSync = (p, flags, mode) => call('open', ...openArgs(p, flags, mode));\n"
+    "  const closeSync = (fd) => call('close', fdOf(fd));\n"
+    "  const fsyncSync = (fd) => call('fsync', fdOf(fd));\n"
+    "  const fdatasyncSync = (fd) => call('fdatasync', fdOf(fd));\n"
+    "  const ftruncateSync = (fd, len = 0) => { fdOf(fd); integer(len, 'len'); return call('ftruncate', fd, Math.max(0, len)); };\n"
+    "  const fchmodSync = (fd, mode) => { fdOf(fd); if (mode === undefined) failType('mode', 'of type number', mode); return call('fchmod', fd, modeOf(mode)); };\n"
+    "  const fstatSync = (fd, options) => {\n"
+    "    fdOf(fd);\n"
+    "    if (options && options.bigint) { const e = new Error('fs.fstat with bigint Stats is not supported in the scriptc island'); e.code = 'SC2020'; throw e; }\n"
+    "    return new Stats(call('fstat', fd));\n"
+    "  };\n"
+    "  const readWindow = (buffer, offset, length, position, nullOffset, coerceLength = true) => {\n"
+    "    const bytes = viewOf(buffer);\n"
+    "    offset = offset === undefined || (nullOffset && offset === null) ? 0 : integer(offset, 'offset', 0);\n"
+    "    if (coerceLength) length |= 0;\n"
+    "    if (length === 0) return [bytes, offset, 0, -1];\n"
+    "    if (bytes.length === 0) { const e = new TypeError(\"The argument 'buffer' is empty and cannot be written. Received \" + (Buffer.isBuffer(buffer) ? '<Buffer >' : String(buffer))); e.code = 'ERR_INVALID_ARG_VALUE'; throw e; }\n"
+    "    if (offset > bytes.length) failRange('offset', '>= 0 && <= 9007199254740991', offset);\n"
+    "    if (length < 0 || offset + length > bytes.length) failRange('length', '<= ' + (bytes.length - offset), length);\n"
+    "    if (position == null) position = -1;\n"
+    "    else if (typeof position === 'bigint') {\n"
+    "      if (position < -1n || position > 9007199254740991n) { const e = new Error('fs.read positions outside the safe integer range are not supported in the scriptc island'); e.code = 'SC2020'; throw e; }\n"
+    "      position = Number(position);\n"
+    "    } else integer(position, 'position', -1);\n"
+    "    return [bytes, offset, length, position];\n"
+    "  };\n"
+    "  const readSync = function(fd, buffer, offset, length, position) {\n"
+    "    viewOf(buffer);\n"
+    "    if (arguments.length <= 3 || typeof offset === 'object') {\n"
+    "      ({ offset = 0, length = buffer.byteLength - offset, position = null } = optionsOf(offset));\n"
+    "    }\n"
+    "    const a = readWindow(buffer, offset, length, position, false);\n"
+    "    if (a[2] === 0) return 0;\n"
+    "    return call('read', fdOf(fd), ...a);\n"
+    "  };\n"
+    "  const writeWindow = (buffer, offset, length, position) => {\n"
+    "    const bytes = viewOf(buffer);\n"
+    "    offset = offset == null || typeof offset === 'function' ? 0 : integer(offset, 'offset', 0);\n"
+    "    if (typeof length !== 'number') length = bytes.length - offset;\n"
+    "    if (offset > bytes.length) failRange('offset', '<= ' + bytes.length, offset);\n"
+    "    if (length < 0) failRange('length', '>= 0', length);\n"
+    "    if (length > bytes.length - offset) failRange('length', '<= ' + (bytes.length - offset), length);\n"
+    "    integer(length, 'length', 0);\n"
+    "    position = typeof position === 'number' ? position : -1;\n"
+    "    return [bytes, offset, length, position];\n"
+    "  };\n"
+    "  const stringBytes = (buffer, encoding) => {\n"
+    "    if (typeof buffer !== 'string') failType('buffer', 'of type string or an instance of Buffer, TypedArray, or DataView', buffer);\n"
+    "    if (encoding && !Buffer.isEncoding(encoding)) { const e = new TypeError('Unknown encoding: ' + encoding); e.code = 'ERR_UNKNOWN_ENCODING'; throw e; }\n"
+    "    return Buffer.from(buffer, encoding || 'utf8');\n"
+    "  };\n"
+    "  const writeSync = (fd, buffer, offset, length, position) => {\n"
+    "    let a;\n"
+    "    if (ArrayBuffer.isView(buffer)) {\n"
+    "      if (typeof offset === 'object') { const o = optionsOf(offset); offset = o.offset; length = o.length; position = o.position; }\n"
+    "      a = writeWindow(buffer, offset, length, position);\n"
+    "    } else { const bytes = stringBytes(buffer, length); a = [bytes, 0, bytes.length, typeof offset === 'number' ? offset : -1]; }\n"
+    "    return call('write', fdOf(fd), ...a);\n"
+    "  };\n"
+    "  const vectorArgs = (buffers, position) => {\n"
+    "    if (!Array.isArray(buffers)) failType('buffers', 'an instance of Array', buffers);\n"
+    "    const views = buffers.map((b) => viewOf(b));\n"
+    "    position = typeof position === 'number' && Number.isFinite(position) && position >= 0 ? Math.trunc(position) : -1;\n"
+    "    return [views, position];\n"
+    "  };\n"
+    "  const vectorIO = (writing, fd, buffers, views, position) => {\n"
+    "    if (writing && buffers.length === 0) return 0;\n"
+    "    fdOf(fd);\n"
+    "    const length = views.reduce((n, b) => n + b.length, 0);\n"
+    "    const bytes = writing ? Buffer.concat(views) : Buffer.alloc(length);\n"
+    "    const n = call(writing ? 'writev' : 'readv', fd, bytes, 0, length, position, buffers.length === 0);\n"
+    "    if (!writing) { let at = 0; for (const b of views) { const size = Math.min(b.length, n - at); if (size > 0) b.set(bytes.subarray(at, at + size)); at += b.length; } }\n"
+    "    return n;\n"
+    "  };\n"
+    "  const readvSync = (fd, buffers, position) => { const [views, pos] = vectorArgs(buffers, position); return vectorIO(false, fd, buffers, views, pos); };\n"
+    "  const writevSync = (fd, buffers, position) => { const [views, pos] = vectorArgs(buffers, position); return vectorIO(true, fd, buffers, views, pos); };\n"
+    "  const callbackIO = (cb, action, payload) => {\n"
+    "    let result, error = null;\n"
+    "    try { result = action(); } catch (e) { error = e; }\n"
+    "    env.nextTick(() => payload === undefined ? cb(error, result) : cb(error, result || 0, payload));\n"
+    "  };\n"
+    "  const open = function(p, flags, mode, cb) {\n"
+    "    if (arguments.length < 3) { cb = flags; flags = 'r'; mode = 0o666; }\n"
+    "    else if (typeof mode === 'function') { cb = mode; mode = 0o666; }\n"
+    "    const a = openArgs(p, flags, mode); cbOf(cb); callbackIO(cb, () => call('open', ...a));\n"
+    "  };\n"
+    "  const read = function(fd, buffer, offset, length, position, cb) {\n"
+    "    fdOf(fd);\n"
+    "    if (arguments.length <= 4) {\n"
+    "      let o;\n"
+    "      if (arguments.length === 4) { o = optionsOf(offset); cb = length; }\n"
+    "      else if (arguments.length === 3) { cb = offset; if (!ArrayBuffer.isView(buffer)) { o = optionsOf(buffer); ({ buffer = Buffer.alloc(16384) } = o); } }\n"
+    "      else { cb = buffer; buffer = Buffer.alloc(16384); }\n"
+    "      ({ offset = 0, length = buffer.byteLength - offset, position = null } = o || {});\n"
+    "    }\n"
+    "    viewOf(buffer); cbOf(cb);\n"
+    "    const a = readWindow(buffer, offset, length, position, true);\n"
+    "    callbackIO(cb, () => a[2] === 0 ? 0 : call('read', fd, ...a), buffer);\n"
+    "  };\n"
+    "  const write = function(fd, buffer, offset, length, position, cb) {\n"
+    "    fdOf(fd); let a;\n"
+    "    if (ArrayBuffer.isView(buffer)) {\n"
+    "      cb = cb || position || length || offset; cbOf(cb);\n"
+    "      if (typeof offset === 'object') { const o = optionsOf(offset); offset = o.offset; length = o.length; position = o.position; }\n"
+    "      a = writeWindow(buffer, offset, length, position);\n"
+    "    } else {\n"
+    "      if (typeof position !== 'function') { if (typeof offset === 'function') { position = offset; offset = null; } else position = length; length = 'utf8'; }\n"
+    "      const bytes = stringBytes(buffer, length); cb = position; cbOf(cb); a = [bytes, 0, bytes.length, typeof offset === 'number' ? offset : -1];\n"
+    "    }\n"
+    "    callbackIO(cb, () => call('write', fd, ...a), buffer);\n"
+    "  };\n"
+    "  const vectorCallback = (writing) => (fd, buffers, position, cb) => {\n"
+    "    fdOf(fd); const [views, pos] = vectorArgs(buffers, position); cb = cb || position; cbOf(cb);\n"
+    "    callbackIO(cb, () => vectorIO(writing, fd, buffers, views, pos), buffers);\n"
+    "  };\n"
+    "  const controlCallback = (op, normalize) => (...args) => {\n"
+    "    const cb = args.pop(); fdOf(args[0]); normalize(args); cbOf(cb);\n"
+    "    callbackIO(cb, () => call(op, ...args));\n"
+    "  };\n"
+    "  const handleState = new WeakMap();\n"
+    "  class FileHandle extends env.EventEmitter {\n"
+    "    constructor(fd) { super(); handleState.set(this, { fd }); }\n"
+    "    get fd() { return handleState.get(this).fd; }\n"
+    "    close = () => {\n"
+    "      const state = handleState.get(this);\n"
+    "      if (state.fd === -1) return Promise.resolve();\n"
+    "      const fd = state.fd; state.fd = -1;\n"
+    "      const result = Promise.resolve().then(() => closeSync(fd));\n"
+    "      this.emit('close'); return result;\n"
+    "    };\n"
+    "    async [Symbol.asyncDispose || Symbol.for('nodejs.asyncDispose')]() { await this.close(); }\n"
+    "    async _call(op, action) {\n"
+    "      if (this.fd === -1) { const e = new Error('file closed'); e.code = 'EBADF'; e.syscall = op; throw e; }\n"
+    "      return action(this.fd);\n"
+    "    }\n"
+    "    read(buffer, offset, length, position) {\n"
+    "      return this._call('read', (fd) => {\n"
+    "        if (!ArrayBuffer.isView(buffer)) { ({ buffer = Buffer.alloc(16384), offset = 0, length = buffer.byteLength - offset, position = null } = optionsOf(buffer)); }\n"
+    "        if (offset !== null && typeof offset === 'object') { ({ offset = 0, length = buffer.byteLength - offset, position = null } = optionsOf(offset)); }\n"
+    "        if (offset == null) offset = 0;\n"
+    "        if (length == null) length = buffer.byteLength - offset;\n"
+    "        const a = readWindow(buffer, offset, length, position, true, false);\n"
+    "        return { __proto__: null, bytesRead: a[2] === 0 ? 0 : call('read', fd, ...a), buffer };\n"
+    "      });\n"
+    "    }\n"
+    "    write(buffer, offset, length, position) {\n"
+    "      return this._call('write', (fd) => {\n"
+    "        const bytesWritten = buffer && buffer.byteLength === 0 ? 0 : writeSync(fd, buffer, offset, length, position);\n"
+    "        return { __proto__: null, bytesWritten, buffer };\n"
+    "      });\n"
+    "    }\n"
+    "    readv(buffers, position) { return this._call('readv', (fd) => ({ __proto__: null, bytesRead: readvSync(fd, buffers, position), buffers })); }\n"
+    "    writev(buffers, position) { return this._call('writev', (fd) => ({ __proto__: null, bytesWritten: writevSync(fd, buffers, position), buffers })); }\n"
+    "    readFile(options) { return this._call('readFile', (fd) => readFileSync(fd, options)); }\n"
+    "    writeFile(data, options) { return this._call('writeFile', (fd) => writeFileSync(fd, data, options)); }\n"
+    "    appendFile(data, options) { return this._call('writeFile', (fd) => writeFileSync(fd, data, options)); }\n"
+    "    stat(options) { return this._call('fstat', (fd) => fstatSync(fd, options)); }\n"
+    "    sync() { return this._call('fsync', fsyncSync); }\n"
+    "    datasync() { return this._call('fdatasync', fdatasyncSync); }\n"
+    "    truncate(len = 0) { return this._call('ftruncate', (fd) => ftruncateSync(fd, len)); }\n"
+    "    chmod(mode) { return this._call('fchmod', (fd) => fchmodSync(fd, mode)); }\n"
+    "  }\n"
     "  const sync = {\n"
     "    readFileSync, writeFileSync, appendFileSync, existsSync, realpathSync,\n"
     "    mkdirSync, rmSync, rmdirSync, unlinkSync, readdirSync, statSync,\n"
     "    lstatSync, accessSync, mkdtempSync, chmodSync, copyFileSync, renameSync,\n"
-    "    readlinkSync,\n"
+    "    readlinkSync, openSync, closeSync, readSync, writeSync, readvSync, writevSync, fstatSync, fchmodSync, ftruncateSync, fsyncSync, fdatasyncSync,\n"
     "  };\n"
     "  const callbackify = (syncFn) => (...args) => {\n"
     "    const cb = args.pop();\n"
@@ -4213,22 +4479,13 @@ static const char isl_modules_bootstrap[] =
     "    watchFile: () => {\n"
     "      throw new Error(\"fs.watchFile is not available in the scriptc island\");\n"
     "    },\n"
-    "    openSync: () => {\n"
-    "      throw new Error(\"fs.openSync is not available in the scriptc island (whole-file reads/writes only)\");\n"
-    "    },\n"
-    "    closeSync: () => undefined,\n"
-    "    readSync: () => {\n"
-    "      throw new Error(\"fs.readSync is not available in the scriptc island (whole-file reads/writes only)\");\n"
-    "    },\n"
-    "    writeSync: () => {\n"
-    "      throw new Error(\"fs.writeSync is not available in the scriptc island (whole-file reads/writes only)\");\n"
-    "    },\n"
-    "    read: () => {\n"
-    "      throw new Error(\"fs.read is not available in the scriptc island (whole-file reads/writes only)\");\n"
-    "    },\n"
-    "    open: () => {\n"
-    "      throw new Error(\"fs.open is not available in the scriptc island (whole-file reads/writes only)\");\n"
-    "    },\n"
+    "    open, read, write, readv: vectorCallback(false), writev: vectorCallback(true),\n"
+    "    close: controlCallback('close', () => {}),\n"
+    "    fsync: controlCallback('fsync', () => {}),\n"
+    "    fdatasync: controlCallback('fdatasync', () => {}),\n"
+    "    ftruncate: controlCallback('ftruncate', (a) => { a[1] = a[1] === undefined ? 0 : integer(a[1], 'len'); }),\n"
+    "    fchmod: controlCallback('fchmod', (a) => { if (a[1] === undefined) failType('mode', 'of type number', a[1]); a[1] = modeOf(a[1]); }),\n"
+    "    fstat: (fd, options, cb) => { fdOf(fd); if (typeof options === 'function') { cb = options; options = undefined; } cbOf(cb); callbackIO(cb, () => fstatSync(fd, options)); },\n"
     "    unwatchFile: () => undefined,\n"
     "  };\n"
     "  fs.promises = {\n"
@@ -4250,13 +4507,11 @@ static const char isl_modules_bootstrap[] =
     "    rename: promisify(renameSync),\n"
     "    readlink: promisify(readlinkSync),\n"
     "    constants,\n"
-    "    open: () => {\n"
-    "      return Promise.reject(new Error(\"fs.promises.open is not available in the scriptc island (whole-file reads/writes only)\"));\n"
-    "    },\n"
+    "    open: async (p, flags, mode) => new FileHandle(openSync(p, flags, mode)),\n"
     "  };\n"
     "  return fs;\n"
     "}\n"
-    "    const fs = makeFs({ fs: (...a) => host.fs(...a), fsConstants: () => host.fsConstants(), Buffer: builtins.buffer().Buffer, Readable: builtins.stream().Readable, Writable: builtins.stream().Writable, nextTick: (fn) => queueMicrotask(fn) });\n"
+    "    const fs = makeFs({ fs: (...a) => host.fs(...a), fsConstants: () => host.fsConstants(), Buffer: builtins.buffer().Buffer, Readable: builtins.stream().Readable, Writable: builtins.stream().Writable, EventEmitter: builtins.events().EventEmitter, URL: builtins.url().URL, fileURLToPath: builtins.url().fileURLToPath, nextTick: (fn) => queueMicrotask(fn) });\n"
     "    fs.default = fs;\n"
     "    return fs;\n"
     "  });\n"

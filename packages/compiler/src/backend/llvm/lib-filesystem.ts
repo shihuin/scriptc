@@ -203,17 +203,20 @@ export function emitFilesystemLibCall(host: LlvmEmitterContext, e: LibCallExpr):
       B.line(`call void @scr_fs_rename_async(ptr ${args[0]!.name}, ptr ${args[1]!.name}, ptr ${args[2]!.name}, ptr @${adapter})`);
       return { name: "", type: e.type };
     }
-    if (e.fn === "fileHandle.read" || e.fn === "fileHandle.writeBytes" || e.fn === "fileHandle.writeStr") {
+    if (e.fn === "fileHandle.read" || e.fn === "fileHandle.writeBytes" || e.fn === "fileHandle.writeStr" || e.fn === "fileHandle.readv" || e.fn === "fileHandle.writev") {
       if (e.type.kind !== "promise" || e.type.inner.kind !== "record") {
         throw new InternalCompilerError(`llvm emitter bug: ${e.fn} result`);
       }
       const args = e.args.map((a) => host.emitExpr(a));
-      const sym = e.fn === "fileHandle.read"
+      const vector = e.fn === "fileHandle.readv" || e.fn === "fileHandle.writev";
+      const sym = vector
+        ? e.fn === "fileHandle.readv" ? "scr_file_handle_readv" : "scr_file_handle_writev"
+        : e.fn === "fileHandle.read"
         ? "scr_file_handle_read"
         : e.fn === "fileHandle.writeBytes"
           ? "scr_file_handle_write_bytes"
           : "scr_file_handle_write_str";
-      const tail = e.fn === "fileHandle.writeStr"
+      const tail = vector ? "ptr, ptr, double" : e.fn === "fileHandle.writeStr"
         ? "ptr, ptr, double, ptr"
         : "ptr, ptr, double, double, double, i1 zeroext";
       host.declare(`declare double @${sym}(${tail})`);
@@ -224,10 +227,10 @@ export function emitFilesystemLibCall(host: LlvmEmitterContext, e: LibCallExpr):
       const inner = e.type.inner;
       const rec = B.tmp();
       B.line(`${rec} = call ptr @${mangleRecordNew(inner.shapeId)}()`);
-      const countField = e.fn === "fileHandle.read" ? "bytesRead" : "bytesWritten";
+      const countField = e.fn === "fileHandle.read" || e.fn === "fileHandle.readv" ? "bytesRead" : "bytesWritten";
       host.storeField(host.recordFieldPtr(rec, inner.shapeId, countField).ptr, F64, count);
       const payload = host.retainValue(args[1]!.name, e.args[1]!.type);
-      B.line(`store ptr ${payload}, ptr ${host.recordFieldPtr(rec, inner.shapeId, "buffer").ptr}`);
+      B.line(`store ptr ${payload}, ptr ${host.recordFieldPtr(rec, inner.shapeId, vector ? "buffers" : "buffer").ptr}`);
       const rc = vAdapters(host.shapeHost, inner);
       host.declare(`declare ptr @scr_promise_settled_ref(ptr, ptr, ptr, ptr)`);
       const result = B.tmp();

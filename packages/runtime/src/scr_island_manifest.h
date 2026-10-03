@@ -26,7 +26,9 @@ static const struct {
      "Sync,renameSync,constants,Stats,Dirent,promises,readFile,writeFile,appendFile,exists,rea"
      "lpath,mkdir,rm,rmdir,unlink,readdir,stat,lstat,access,mkdtemp,chmod,copyFile,rename,read"
      "link,readlinkSync,createReadStream,createWriteStream,watch,watchFile,unwatchFile,openSyn"
-     "c,closeSync,readSync,read,open"},
+     "c,closeSync,readSync,read,open,writeSync,write,close,readvSync,writevSync,readv,writev,f"
+     "statSync,fstat,fchmodSync,fchmod,fsyncSync,fsync,fdatasyncSync,fdatasync,ftruncateSync,f"
+     "truncate"},
     {"node:fs/promises",
      "readFile,writeFile,appendFile,realpath,mkdir,rm,rmdir,unlink,readdir,stat,lstat,access,m"
      "kdtemp,chmod,copyFile,rename,readlink,constants,open"},

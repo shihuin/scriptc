@@ -469,21 +469,60 @@ static void scr_fs_cb_schedule(const ScrDyn *callback, ScrDyn *result, const Scr
 
 static bool scr_fs_read_validate(const ScrDyn *, const ScrDyn *, const ScrDyn *, const ScrDyn *, const ScrDyn *);
 static bool scr_fs_encoding_chk(const ScrDyn *);
+static bool scr_fs_int_range_chk(const ScrDyn *, const char *, double, double, const char *);
+static bool scr_fs_mode_chk(const ScrDyn *, const char *);
+
+static ScrArr *scr_fs_cb_vectors(const ScrDyn *buffers) {
+  ScrDyn *snapshot = buffers->kind == SCR_DYN_TYPED_REF && scr_dyn_isl_is_array(buffers)
+    ? scr_dyn_typed_ref_materialize(buffers) : NULL;
+  const ScrDyn *array = snapshot ? snapshot : buffers;
+  if (array->kind != SCR_DYN_ARR) {
+    scr_dyn_arg_type_fail("buffers", "an instance of Array", buffers);
+    scr_dyn_release(snapshot);
+    return NULL;
+  }
+  ScrArr *out = scr_arr_new_ref(scr_bytes_retain_v, scr_bytes_release_v, NULL, array->v.arr.len);
+  for (size_t i = 0; i < array->v.arr.len; i++) {
+    const ScrDyn *buffer = array->v.arr.items[i];
+    if (!scr_dyn_bytes_is(buffer, SCR_BYTES_U8)) {
+      scr_dyn_arg_type_fail("buffers", "an Array of ArrayBufferView", buffers);
+      scr_arr_release(out);
+      scr_dyn_release(snapshot);
+      return NULL;
+    }
+    /* push_ref consumes the reference produced by unbox. */
+    scr_arr_push_ref(out, scr_dyn_bytes_unbox(buffer));
+  }
+  scr_dyn_release(snapshot);
+  return out;
+}
 
 static ScrDyn *scr_fs_cb_invoke(ScrStr *member, ScrDyn *const *args, size_t argc) {
   const char *op = member->data;
+  bool vector = !strcmp(op, "readv") || !strcmp(op, "writev");
+  bool newControl = !strcmp(op, "fdatasync") || !strcmp(op, "fchmod") || !strcmp(op, "ftruncate");
+  if ((vector || newControl) && !scr_fs_int_range_chk(scr_fs_cb_arg(args, argc, 0), "fd", 0, 2147483647.0, ">= 0 && <= 2147483647")) return NULL;
+  ScrArr *vectors = vector ? scr_fs_cb_vectors(scr_fs_cb_arg(args, argc, 1)) : NULL;
+  if (vector && !vectors) return NULL;
   bool fileCallback = !strcmp(op, "readFile") || !strcmp(op, "mkdtemp");
   const ScrDyn *callback = argc >= (fileCallback ? 2u : 1u) ? args[argc - 1] : scr_dyn_undefined();
-  if (!scr_fs_cb_chk(callback, fileCallback ? "cb" : "callback")) return NULL;
+  if (!scr_fs_cb_chk(callback, fileCallback || vector ? "cb" : "callback")) { scr_arr_release(vectors); return NULL; }
   size_t count = argc - 1;
 #define ARG(index) scr_fs_cb_arg(args, count, index)
   if (!strcmp(op, "readFile") && !scr_fs_encoding_chk(ARG(1))) return NULL;
   if (!strcmp(op, "read") && count >= 4 && !scr_fs_read_validate(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4))) return NULL;
-  bool descriptor = !strcmp(op, "close") || !strcmp(op, "fstat") || !strcmp(op, "ftruncate") || !strcmp(op, "fsync") || !strcmp(op, "read") || !strcmp(op, "write");
+  bool descriptor = vector || newControl || !strcmp(op, "close") || !strcmp(op, "fstat") || !strcmp(op, "fsync") || !strcmp(op, "read") || !strcmp(op, "write");
   ScrStr *path = descriptor ? NULL : scr_fs_cb_path(ARG(0), !strcmp(op, "mkdtemp") ? "prefix" : "path");
   if (!descriptor && !path) return NULL;
   double fd = descriptor ? scr_fs_cb_number(ARG(0), "fd", -1) : -1;
-  if (scr_exc_pending()) { scr_str_release(path); return NULL; }
+  if (scr_exc_pending()) { scr_str_release(path); scr_arr_release(vectors); return NULL; }
+  if (newControl && strcmp(op, "fdatasync")) {
+    const ScrDyn *value = ARG(1);
+    if (strcmp(op, "ftruncate") || value->kind != SCR_DYN_UNDEF) {
+      bool chmod = !strcmp(op, "fchmod");
+      if (chmod ? !scr_fs_mode_chk(value, "mode") : !scr_fs_int_range_chk(value, "len", -9007199254740991.0, 9007199254740991.0, ">= -9007199254740991 && <= 9007199254740991")) return NULL;
+    }
+  }
   ScrDyn *result = NULL;
   const ScrDyn *buffer = NULL;
   if (!strcmp(op, "readFile")) {
@@ -535,6 +574,14 @@ static ScrDyn *scr_fs_cb_invoke(ScrStr *member, ScrDyn *const *args, size_t argc
   else if (!strcmp(op, "fstat")) result = scr_fs_cb_stats(NULL, fd, ARG(1), false);
   else if (!strcmp(op, "close")) scr_fs_close(fd);
   else if (!strcmp(op, "fsync")) scr_fs_fsync(fd);
+  else if (!strcmp(op, "fdatasync")) scr_fs_fdatasync(fd);
+  else if (!strcmp(op, "fchmod")) scr_fs_fchmod(fd, ARG(1)->kind == SCR_DYN_STR ? (double)strtol(ARG(1)->v.str->data, NULL, 8) : ARG(1)->v.num);
+  else if (vector) {
+    double position = ARG(2)->kind == SCR_DYN_NUM ? ARG(2)->v.num : -1;
+    result = scr_dyn_new_num(!strcmp(op, "readv") ? scr_fs_readv_sync(fd, vectors, position) : scr_fs_writev_sync(fd, vectors, position));
+    scr_arr_release(vectors);
+    buffer = ARG(1);
+  }
   else if (!strcmp(op, "open")) {
     double opened = scr_fs_cb_open(path, ARG(1), scr_fs_cb_number(ARG(2), "mode", 0666), "r");
     if (!scr_exc_pending()) result = scr_dyn_new_num(opened);
@@ -624,8 +671,8 @@ static ScrDyn *scr_fs_cb_invoke(ScrStr *member, ScrDyn *const *args, size_t argc
   } else if (!strcmp(op, "truncate") || !strcmp(op, "ftruncate")) {
     double length = scr_fs_cb_number(ARG(1), "len", 0);
     if (!scr_exc_pending()) {
-      int rc = descriptor ? ftruncate((int)fd, (off_t)length) : truncate(path->data, (off_t)length);
-      if (rc < 0) scr_fs_throw(errno, descriptor ? "ftruncate" : "truncate", path);
+      if (descriptor) scr_fs_ftruncate(fd, length);
+      else if (truncate(path->data, (off_t)length) < 0) scr_fs_throw(errno, "truncate", path);
     }
   } else if (!strcmp(op, "readlink")) {
 #ifndef _WIN32

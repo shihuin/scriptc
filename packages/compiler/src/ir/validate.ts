@@ -428,6 +428,10 @@ export const LIB_FN_SIGS: Record<IrLibFn, { argTypes: (IrType | null)[]; result:
   "fs.fstatSync": { argTypes: [F64], result: STATS_T },
   "fs.fchmodSync": { argTypes: [F64, F64], result: VOID },
   "fs.fsyncSync": { argTypes: [F64], result: VOID },
+  "fs.fdatasyncSync": { argTypes: [F64], result: VOID },
+  "fs.ftruncateSync": { argTypes: [F64, F64], result: VOID },
+  "fs.readvSync": { argTypes: [F64, arrayOf(BYTES_U8), F64], result: F64 },
+  "fs.writevSync": { argTypes: [F64, arrayOf(BYTES_U8), F64], result: F64 },
   "fs.linkSync": { argTypes: [STRING, STRING], result: VOID },
   "fs.openSync": { argTypes: [STRING, STRING], result: F64 },
   "fs.openNumericSync": { argTypes: [STRING, F64, F64], result: F64 },
@@ -1078,6 +1082,12 @@ export const LIB_FN_SIGS: Record<IrLibFn, { argTypes: (IrType | null)[]; result:
   "fsp.open": { argTypes: [STRING, STRING, F64], result: { kind: "promise", inner: FILEHANDLE_T } },
   "fileHandle.fd": { argTypes: [FILEHANDLE_T], result: F64 },
   "fileHandle.close": { argTypes: [FILEHANDLE_T], result: { kind: "promise", inner: VOID } },
+  "fileHandle.sync": { argTypes: [FILEHANDLE_T], result: { kind: "promise", inner: VOID } },
+  "fileHandle.datasync": { argTypes: [FILEHANDLE_T], result: { kind: "promise", inner: VOID } },
+  "fileHandle.truncate": { argTypes: [FILEHANDLE_T, F64], result: { kind: "promise", inner: VOID } },
+  "fileHandle.chmod": { argTypes: [FILEHANDLE_T, F64], result: { kind: "promise", inner: VOID } },
+  "fileHandle.readv": { argTypes: [FILEHANDLE_T, arrayOf(BYTES_U8), F64], result: { kind: "promise", inner: VOID } },
+  "fileHandle.writev": { argTypes: [FILEHANDLE_T, arrayOf(BYTES_U8), F64], result: { kind: "promise", inner: VOID } },
   // read/write carry call-site result record shapes; the validator checks
   // those below, so promise<void> is only a table sentinel.
   "fileHandle.read": { argTypes: [FILEHANDLE_T, BYTES_U8, F64, F64, F64, BOOL], result: { kind: "promise", inner: VOID } },
@@ -4691,19 +4701,20 @@ function validateFunction(
   }
 
   function checkLibValueCall(e: IrExpr & { kind: "libCall" }): boolean {
-    if (e.fn === "fileHandle.read" || e.fn === "fileHandle.writeBytes" || e.fn === "fileHandle.writeStr") {
+    if (e.fn === "fileHandle.read" || e.fn === "fileHandle.writeBytes" || e.fn === "fileHandle.writeStr" || e.fn === "fileHandle.readv" || e.fn === "fileHandle.writev") {
       const inner = e.type.kind === "promise" ? e.type.inner : undefined;
       const shape = inner?.kind === "record" ? records.get(inner.shapeId) : undefined;
-      const countName = e.fn === "fileHandle.read" ? "bytesRead" : "bytesWritten";
+      const countName = e.fn === "fileHandle.read" || e.fn === "fileHandle.readv" ? "bytesRead" : "bytesWritten";
+      const payloadName = e.fn === "fileHandle.readv" || e.fn === "fileHandle.writev" ? "buffers" : "buffer";
       const payload = e.args[1]?.type;
       const count = shape?.fields.find((f) => f.name === countName);
-      const buffer = shape?.fields.find((f) => f.name === "buffer");
+      const buffer = shape?.fields.find((f) => f.name === payloadName);
       const ok =
         shape !== undefined && !shape.tuple && shape.indexValue === undefined && shape.fields.length === 2 &&
         count?.type.kind === "f64" && payload !== undefined && buffer !== undefined &&
         typeEquals(buffer.type, payload);
       if (!ok) {
-        err(`libCall ${e.fn} must return a promise of { ${countName}: number, buffer }`, e.loc);
+        err(`libCall ${e.fn} must return a promise of { ${countName}: number, ${payloadName} }`, e.loc);
       }
       return true;
     }

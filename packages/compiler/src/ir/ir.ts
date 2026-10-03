@@ -3658,6 +3658,12 @@ export type IrLibFn =
   | "fsp.open"
   | "fileHandle.fd"
   | "fileHandle.close"
+  | "fileHandle.sync"
+  | "fileHandle.datasync"
+  | "fileHandle.truncate"
+  | "fileHandle.chmod"
+  | "fileHandle.readv"
+  | "fileHandle.writev"
   | "fileHandle.read"
   | "fileHandle.writeBytes"
   | "fileHandle.writeStr"
@@ -4796,6 +4802,10 @@ export type IrLibFn =
   | "fs.fstatSync"
   | "fs.fchmodSync"
   | "fs.fsyncSync"
+  | "fs.fdatasyncSync"
+  | "fs.ftruncateSync"
+  | "fs.readvSync"
+  | "fs.writevSync"
   | "fs.linkSync"
   /** fs.openSync(path, flags) → the raw fd as f64; fs.readSync/fs.writeSync
    * over Buffer windows perform sequential I/O when position is -1 and
@@ -7973,6 +7983,10 @@ export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
   "fs.fstatSync",
   "fs.fchmodSync",
   "fs.fsyncSync",
+  "fs.fdatasyncSync",
+  "fs.ftruncateSync",
+  "fs.readvSync",
+  "fs.writevSync",
   "fs.linkSync",
   "fs.writeFileModeSync",
   "fs.mkdirModeSync",

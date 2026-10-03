@@ -458,18 +458,18 @@
       "apiEntries": 276,
       "static": {
         "supported": 0,
-        "partial": 49,
+        "partial": 77,
         "refused": 0,
-        "not-implemented": 227,
+        "not-implemented": 199,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
         "supported": 0,
-        "partial": 78,
-        "refused": 10,
-        "not-implemented": 188,
+        "partial": 126,
+        "refused": 2,
+        "not-implemented": 148,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
@@ -35069,14 +35069,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35097,14 +35097,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35125,14 +35125,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35181,14 +35181,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35265,14 +35265,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35293,14 +35293,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35321,14 +35321,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35349,14 +35349,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35405,14 +35405,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35461,14 +35461,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35489,14 +35489,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35517,14 +35517,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35545,14 +35545,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35601,14 +35601,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35629,14 +35629,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35657,14 +35657,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35685,14 +35685,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35713,14 +35713,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented by the embedded Node compatibility shim.",
+        "verification": "test-backed"
       }
     },
     {
@@ -35769,14 +35769,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented embedded module-loader subset.",
+        "verification": "test-backed"
       }
     },
     {
@@ -36250,9 +36250,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -36866,9 +36866,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37029,14 +37029,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37085,14 +37085,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37118,9 +37118,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37146,9 +37146,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37169,14 +37169,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37454,9 +37454,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37538,9 +37538,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37566,9 +37566,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37594,9 +37594,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -37701,14 +37701,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38126,9 +38126,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38154,9 +38154,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38182,9 +38182,9 @@
         "verification": "registry-gap"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38261,14 +38261,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the documented scriptc module-loader subset.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38518,9 +38518,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38569,14 +38569,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the call shapes accepted by the compiler lowering.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38602,9 +38602,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38630,9 +38630,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38653,14 +38653,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the call shapes accepted by the compiler lowering.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -38994,9 +38994,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39106,9 +39106,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39134,9 +39134,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "refused",
-        "detail": "Exposed only as an explicit throwing or rejecting compatibility stub.",
-        "verification": "explicit-refusal"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39157,14 +39157,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the call shapes accepted by the compiler lowering.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39526,9 +39526,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39554,9 +39554,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39582,9 +39582,9 @@
         "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -39605,14 +39605,14 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Implemented for the call shapes accepted by the compiler lowering.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "verification": "test-backed"
       }
     },
     {
@@ -42103,8 +42103,8 @@
       },
       "dynamic": {
         "status": "not-implemented",
-        "detail": "This API is not implemented by the dynamic-island shim.",
-        "verification": "registry-gap"
+        "detail": "Not implemented in the embedded module-loader subset yet.",
+        "verification": "declared-gap"
       }
     },
     {

@@ -932,6 +932,12 @@
       "status": "static"
     },
     {
+      "id": "node-builtin.fs.fdatasyncSync",
+      "kind": "node-builtin",
+      "name": "fs.fdatasyncSync",
+      "status": "static"
+    },
+    {
       "id": "node-builtin.fs.fstatSync",
       "kind": "node-builtin",
       "name": "fs.fstatSync",
@@ -941,6 +947,12 @@
       "id": "node-builtin.fs.fsyncSync",
       "kind": "node-builtin",
       "name": "fs.fsyncSync",
+      "status": "static"
+    },
+    {
+      "id": "node-builtin.fs.ftruncateSync",
+      "kind": "node-builtin",
+      "name": "fs.ftruncateSync",
       "status": "static"
     },
     {
@@ -1071,6 +1083,12 @@
       "status": "static"
     },
     {
+      "id": "node-builtin.fs.readvSync",
+      "kind": "node-builtin",
+      "name": "fs.readvSync",
+      "status": "static"
+    },
+    {
       "id": "node-builtin.fs.realpathSync",
       "kind": "node-builtin",
       "name": "fs.realpathSync",
@@ -1134,6 +1152,12 @@
       "id": "node-builtin.fs.writeSync",
       "kind": "node-builtin",
       "name": "fs.writeSync",
+      "status": "static"
+    },
+    {
+      "id": "node-builtin.fs.writevSync",
+      "kind": "node-builtin",
+      "name": "fs.writevSync",
       "status": "static"
     },
     {

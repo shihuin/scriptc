@@ -7813,6 +7813,30 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/3134-fs-vectors.ts": {
+   "order": [
+    "<repo>/tests/corpus/3134-fs-vectors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/3135-fs-file-handle-controls.ts": {
+   "order": [
+    "<repo>/tests/corpus/3135-fs-file-handle-controls.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/3136-fs-file-handle-options.ts": {
+   "order": [
+    "<repo>/tests/corpus/3136-fs-file-handle-options.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/3137-fs-vector-callbacks.cjs": {
+   "order": [
+    "<repo>/tests/corpus/3137-fs-vector-callbacks.cjs"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/400-fib.ts": {
    "order": [
     "<repo>/tests/corpus/400-fib.ts"
@@ -12956,6 +12980,12 @@
   "<repo>/tests/fixtures/npm/cases/namespace/main.ts": {
    "order": [
     "<repo>/tests/fixtures/npm/cases/namespace/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-fs-descriptors/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
    ],
    "diags": []
   },

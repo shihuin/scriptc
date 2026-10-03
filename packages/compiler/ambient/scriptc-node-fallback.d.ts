@@ -1172,6 +1172,10 @@ declare module "node:fs" {
   export function openSync(path: string, flags: string): number;
   export function openSync(path: string, flags: number, mode?: number): number;
   export function closeSync(fd: number): void;
+  export function fdatasyncSync(fd: number): void;
+  export function ftruncateSync(fd: number, len?: number): void;
+  export function readvSync(fd: number, buffers: Uint8Array[], position?: number | null): number;
+  export function writevSync(fd: number, buffers: Uint8Array[], position?: number | null): number;
   /* Read into a caller buffer from the fd's current position when position
    * is omitted/null, or from a numeric byte position without advancing the
    * fd. Answers the byte count, 0 at EOF. */
@@ -1265,9 +1269,31 @@ declare module "fs/promises" {
     bytesWritten: number;
     buffer: T;
   }
+  export interface FileReadvResult<T extends Uint8Array[]> {
+    bytesRead: number;
+    buffers: T;
+  }
+  export interface FileWritevResult<T extends Uint8Array[]> {
+    bytesWritten: number;
+    buffers: T;
+  }
+  export interface FileReadOptions<T extends Uint8Array = Buffer> {
+    buffer?: T;
+    offset?: number | null;
+    length?: number | null;
+    position?: number | null;
+  }
   export interface FileHandle extends AsyncDisposable {
     readonly fd: number;
     close(): Promise<void>;
+    sync(): Promise<void>;
+    datasync(): Promise<void>;
+    truncate(len?: number): Promise<void>;
+    chmod(mode: number): Promise<void>;
+    readv<T extends Uint8Array[]>(buffers: T, position?: number | null): Promise<FileReadvResult<T>>;
+    writev<T extends Uint8Array[]>(buffers: T, position?: number | null): Promise<FileWritevResult<T>>;
+    read<T extends Uint8Array = Buffer>(options?: FileReadOptions<T> | null): Promise<FileReadResult<T>>;
+    read<T extends Uint8Array>(buffer: T, options: Omit<FileReadOptions<T>, "buffer">): Promise<FileReadResult<T>>;
     read<T extends Uint8Array>(
       buffer: T,
       offset?: number | null,
@@ -1280,6 +1306,7 @@ declare module "fs/promises" {
       length?: number | null,
       position?: number | null,
     ): Promise<FileWriteResult<T>>;
+    write<T extends Uint8Array>(buffer: T, options: Omit<FileReadOptions<T>, "buffer">): Promise<FileWriteResult<T>>;
     write(data: string, position?: number | null, encoding?: "utf8" | "utf-8" | null): Promise<FileWriteResult<string>>;
     readFile(options?: null): Promise<Buffer>;
     readFile(encoding: "utf8" | "utf-8"): Promise<string>;

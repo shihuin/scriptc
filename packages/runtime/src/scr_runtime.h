@@ -2607,6 +2607,8 @@ ScrStats *scr_fs_lstat(ScrStr *path); /* +1, or throws; NO follow (lstat) */
 ScrStats *scr_fs_fstat(double fd); /* +1, or throws */
 void scr_fs_fchmod(double fd, double mode);
 void scr_fs_fsync(double fd);
+void scr_fs_fdatasync(double fd);
+void scr_fs_ftruncate(double fd, double length);
 void scr_fs_link(ScrStr *source, ScrStr *dest);
 ScrStats *scr_stats_retain(ScrStats *s);
 void scr_stats_release(ScrStats *s);
@@ -3137,6 +3139,9 @@ ScrStr *scr_path_win32_to_namespaced_path(ScrStr *path);
  * The pair behind spawn's fd-stdio form. */
 double scr_fs_open(ScrStr *path, ScrStr *flags);
 double scr_fs_open_numeric(ScrStr *path, double flags, double mode);
+/* Engine callers supply the target OS's flags, rather than the frontend's
+ * portable constant mask. Argument validation happens before this seam. */
+double scr_fs_open_native(ScrStr *path, double flags, double mode);
 ScrFileHandle *scr_file_handle_open(ScrStr *path, ScrStr *flags, double mode);
 ScrFileHandle *scr_file_handle_retain(ScrFileHandle *h);
 void scr_file_handle_release(ScrFileHandle *h);
@@ -3144,6 +3149,12 @@ void *scr_file_handle_retain_v(void *p);
 void scr_file_handle_release_v(void *p);
 double scr_file_handle_fd(ScrFileHandle *h);
 void scr_file_handle_close(ScrFileHandle *h);
+ScrPromise *scr_file_handle_sync_promise(ScrFileHandle *h);
+ScrPromise *scr_file_handle_datasync_promise(ScrFileHandle *h);
+ScrPromise *scr_file_handle_truncate_promise(ScrFileHandle *h, double length);
+ScrPromise *scr_file_handle_chmod_promise(ScrFileHandle *h, double mode);
+double scr_file_handle_readv(ScrFileHandle *h, ScrArr *buffers, double position);
+double scr_file_handle_writev(ScrFileHandle *h, ScrArr *buffers, double position);
 double scr_file_handle_read(ScrFileHandle *h, ScrBytes *buf, double offset,
                             double length, double position, bool length_default);
 double scr_file_handle_write_bytes(ScrFileHandle *h, ScrBytes *buf,
@@ -3167,6 +3178,11 @@ double scr_fs_write_sync(double fd, ScrBytes *buf, double offset, double length,
                          double position);
 double scr_fs_write_str_sync(double fd, ScrStr *data, double position,
                              ScrStr *encoding);
+double scr_fs_readv_sync(double fd, ScrArr *buffers, double position);
+double scr_fs_writev_sync(double fd, ScrArr *buffers, double position);
+/* Unlike scalar readSync's zero-length fast path, a nonempty vector of
+ * empty views still tests the descriptor and positioned-read capability. */
+double scr_fs_read_zero(double fd, double position);
 void scr_fs_close(double fd);
 
 /* ── WHATWG URL (scr_url.c) ──────────────────────────────────────────

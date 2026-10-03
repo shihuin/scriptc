@@ -3,7 +3,7 @@
  * against the in-container Linux Node oracle. The fixture node_modules
  * are COMMITTED TEST DATA; binaries embed the package sources at build
  * time, the Node lane resolves them from the repo mount. */
-import { globSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export interface NpmCase {
@@ -11,6 +11,8 @@ export interface NpmCase {
   entry: string;
   /** Every argv list runs both sides; default: one run with no args. */
   argvs?: string[][];
+  /** Opt in to byte-exact stderr checks, including caught-error programs. */
+  compareStderr?: boolean;
 }
 
 export function npmCases(fixturesRoot: string): NpmCase[] {
@@ -23,7 +25,7 @@ export function npmCases(fixturesRoot: string): NpmCase[] {
       // names the shipped .d.ts never declares, the __toESM interop
       // family), so they stay out of the flagless island lane by design.
       .filter((entry) => !/\/(246[5-9]|255[67])-[^/]+\/main\.ts$/.test(entry))
-      .map((entry) => ({ name: entry.split("/").at(-2)!, entry })),
+      .map((entry) => ({ name: entry.split("/").at(-2)!, entry, compareStderr: readFileSync(entry, "utf8").split("\n", 2).includes("// @stderr") })),
     {
       // THE acceptance test: a calculator CLI on the real commander package
       // (pinned in the fixture; see its README), across the happy paths,

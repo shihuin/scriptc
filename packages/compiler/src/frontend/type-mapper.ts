@@ -2500,36 +2500,61 @@ function mapTypeInner(type: ts.Type, ctx: TypeMapperCtx): IrType | null {
       ),
     };
   }
+  // Filesystem options are data records. Keep their declared optional fields
+  // instead of allowing arbitrary standard-library interfaces into records.
+  if (
+    (psym?.name === "FileReadOptions" || psym?.name === "ReadOptions" || psym?.name === "ReadOptionsWithBuffer" || psym?.name === "WriteOptions") &&
+    checker.declarationsOf(psym).some((d) => ts.isInterfaceDeclaration(d) && ctx.isStdlibFile(d.getSourceFile()) &&
+      (isDeclaredInAmbientModule(d, "fs/promises") || isDeclaredInAmbientModule(d, "fs")))
+  ) {
+    const fields: { name: string; type: IrType }[] = [];
+    for (const property of checker.getPropertiesOfType(widened)) {
+      if (!["buffer", "offset", "length", "position"].includes(property.name)) return null;
+      const type = mapType(checker.getTypeOfSymbol(property), ctx);
+      if (!type) return null;
+      fields.push({ name: property.name, type });
+    }
+    const order = fields.map((field) => field.name);
+    fields.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+    return { kind: "record", shapeId: ctx.shapes.intern(fields, false, undefined, order) };
+  }
   // fs/promises FileReadResult<T> / FileWriteResult<T>: the two-field
   // null-prototype objects returned by FileHandle.read/write. The native
   // record does not model the prototype (unobservable through the lowered
   // surface); it preserves the caller buffer/string by reference.
   if (
-    (psym?.name === "FileReadResult" || psym?.name === "FileWriteResult") &&
+    (psym?.name === "FileReadResult" || psym?.name === "FileWriteResult" || psym?.name === "FileReadvResult" || psym?.name === "FileWritevResult" || psym?.name === "ReadVResult" || psym?.name === "WriteVResult") &&
     checker.declarationsOf(psym).some(
       (d) =>
         ts.isInterfaceDeclaration(d) &&
         ctx.isStdlibFile(d.getSourceFile()) &&
-        isDeclaredInAmbientModule(d, "fs/promises"),
+        (isDeclaredInAmbientModule(d, "fs/promises") ||
+          ((psym.name === "ReadVResult" || psym.name === "WriteVResult") && isDeclaredInAmbientModule(d, "fs"))),
     )
   ) {
     const args = checker.getTypeArguments(widened as ts.TypeReference);
     if (args.length !== 1) return null;
-    const payload = mapType(args[0]!, ctx);
-    if (!payload || !(payload.kind === "string" || (payload.kind === "bytes" && payload.elem === "u8"))) {
+    const vector = psym.name === "FileReadvResult" || psym.name === "FileWritevResult" || psym.name === "ReadVResult" || psym.name === "WriteVResult";
+    const emptyVector = vector && checker.isArrayType(args[0]!) &&
+      (checker.getTypeArguments(args[0]! as ts.TypeReference)[0]!.flags & ts.TypeFlags.Never) !== 0;
+    const payload = emptyVector ? arrayOf(bytesOf("u8")) : mapType(args[0]!, ctx);
+    if (!payload || (vector
+      ? !(payload.kind === "array" && payload.elem.kind === "bytes" && payload.elem.elem === "u8")
+      : !(payload.kind === "string" || (payload.kind === "bytes" && payload.elem === "u8")))) {
       return null;
     }
-    const count = psym.name === "FileReadResult" ? "bytesRead" : "bytesWritten";
+    const count = psym.name === "FileReadResult" || psym.name === "FileReadvResult" || psym.name === "ReadVResult" ? "bytesRead" : "bytesWritten";
+    const payloadName = vector ? "buffers" : "buffer";
     return {
       kind: "record",
       shapeId: ctx.shapes.intern(
         [
-          { name: "buffer", type: payload },
+          { name: payloadName, type: payload },
           { name: count, type: F64 },
         ],
         false,
         undefined,
-        [count, "buffer"],
+        [count, payloadName],
       ),
     };
   }

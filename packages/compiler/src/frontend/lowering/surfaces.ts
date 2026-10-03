@@ -721,6 +721,10 @@ export const BUILTIN_MODULE_FNS: Record<string, Record<string, BuiltinModuleFn |
     fstatSync: { fn: "fs.fstatSync", params: [F64], result: STATS_T, valueParams: exactValueParams(F64) },
     fchmodSync: { fn: "fs.fchmodSync", params: [F64, F64], result: VOID, valueParams: exactValueParams(F64, F64) },
     fsyncSync: { fn: "fs.fsyncSync", params: [F64], result: VOID, valueParams: exactValueParams(F64) },
+    fdatasyncSync: { fn: "fs.fdatasyncSync", params: [F64], result: VOID, valueParams: exactValueParams(F64) },
+    ftruncateSync: { fn: "fs.ftruncateSync", params: [F64, F64], result: VOID },
+    readvSync: { fn: "fs.readvSync", params: [F64, arrayOf(BYTES_U8), F64], result: F64 },
+    writevSync: { fn: "fs.writevSync", params: [F64, arrayOf(BYTES_U8), F64], result: F64 },
     linkSync: { fn: "fs.linkSync", params: [STRING, STRING], result: VOID, valueParams: exactValueParams(STRING, STRING) },
     // realpath(3) — Node's realpathSync (failures spell syscall "lstat",
     // Node's own message shape).
@@ -1349,7 +1353,7 @@ export function builtinModuleFnOf(lowerer: Lowerer, module: string, member: stri
 /** Native error-first function values used by platform service adapters. */
 export const FS_CALLBACK_MEMBERS = new Set([
   "access", "cp", "copyFile", "chmod", "chown", "glob", "link", "mkdir", "mkdtemp", "rm", "rmdir", "unlink",
-  "open", "close", "fstat", "ftruncate", "fsync", "read", "write", "readlink", "realpath", "rename", "stat", "lstat",
+  "open", "close", "fstat", "ftruncate", "fsync", "fdatasync", "fchmod", "read", "write", "readv", "writev", "readlink", "realpath", "rename", "stat", "lstat",
   "symlink", "truncate", "utimes", "readFile", "writeFile", "appendFile", "readdir",
 ]);
 

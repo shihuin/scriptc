@@ -476,6 +476,37 @@ ScrPromise *scr_file_handle_close_promise(ScrFileHandle *h) {
   return scr_promise_settled_void();
 }
 
+ScrPromise *scr_file_handle_sync_promise(ScrFileHandle *h) {
+  if (scr_file_handle_require_open(h)) scr_fs_fsync((double)h->fd);
+  return scr_promise_settled_void();
+}
+
+ScrPromise *scr_file_handle_datasync_promise(ScrFileHandle *h) {
+  if (scr_file_handle_require_open(h)) scr_fs_fdatasync((double)h->fd);
+  return scr_promise_settled_void();
+}
+
+ScrPromise *scr_file_handle_truncate_promise(ScrFileHandle *h, double length) {
+  if (scr_file_handle_require_open(h)) scr_fs_ftruncate((double)h->fd, length);
+  return scr_promise_settled_void();
+}
+
+ScrPromise *scr_file_handle_chmod_promise(ScrFileHandle *h, double mode) {
+  if (scr_file_handle_require_open(h) && scr_file_handle_mode_valid(mode))
+    scr_fs_fchmod((double)h->fd, mode);
+  return scr_promise_settled_void();
+}
+
+double scr_file_handle_readv(ScrFileHandle *h, ScrArr *buffers, double position) {
+  if (!scr_file_handle_require_open(h)) return 0;
+  return scr_fs_readv_sync((double)h->fd, buffers, position);
+}
+
+double scr_file_handle_writev(ScrFileHandle *h, ScrArr *buffers, double position) {
+  if (!scr_file_handle_require_open(h)) return 0;
+  return scr_fs_writev_sync((double)h->fd, buffers, position);
+}
+
 ScrPromise *scr_file_handle_read_file_promise(ScrFileHandle *h,
                                               ScrStr *encoding) {
   (void)encoding;

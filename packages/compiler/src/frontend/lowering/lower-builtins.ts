@@ -1585,6 +1585,17 @@ function lowerFsSyncBufferWindow(
       const args: IrExpr = { kind: "dynArrLit", elems: expr.arguments.map((arg) => lowerer.lowerExprExpecting(arg, DYN)), type: DYN, loc };
       return { kind: "libCall", fn: "fs.callbackCall", args: [{ kind: "strLit", value: bi.member, type: STRING, loc }, args], type: DYN, loc };
     }
+    if (bi.module === "fs" && (bi.member === "readvSync" || bi.member === "writevSync" || bi.member === "ftruncateSync")) {
+      const vector = bi.member !== "ftruncateSync";
+      const required = vector ? 2 : 1;
+      if (expr.arguments.length < required || expr.arguments.length > required + 1 || expr.arguments.some(ts.isSpreadElement))
+        lowerer.noLowering(`${name} with this argument shape`, expr);
+      const args = [lowerer.lowerExprExpecting(expr.arguments[0]!, F64)];
+      if (vector) args.push(lowerer.lowerExprExpecting(expr.arguments[1]!, arrayOf(BYTES_U8)));
+      const optional = expr.arguments[required];
+      args.push(optional ? lowerBuiltinOptionalDefault(lowerer, optional, F64, numLit(vector ? -1 : 0, loc), vector) : numLit(vector ? -1 : 0, loc));
+      return { kind: "libCall", fn: fn.fn, args, type: vector ? F64 : VOID, loc };
+    }
     // Numeric open flags are interpreted symbolically at the call site. The
     // O_* bit values differ between Darwin and Linux, so emit a stable mask
     // and let the target runtime select its own native constants.
@@ -5952,17 +5963,20 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
     const loc = locOf(call);
     const receiver = (): IrExpr => lowerer.lowerExprExpecting(access.expression, FILEHANDLE_T);
     const promise = (inner: IrType): IrType => ({ kind: "promise", inner });
-    const num = (node: ts.Expression | undefined, dflt: number): { value: IrExpr; defaulted: IrExpr } => {
+    const num = (node: ts.Expression | undefined, dflt: number, lowered?: IrExpr): { value: IrExpr; defaulted: IrExpr } => {
       const defaultValue: IrExpr = { kind: "numLit", value: dflt, type: F64, loc };
-      if (!node) return { value: defaultValue, defaulted: boolLit(true, loc) };
-      const undefinedArg = lowerStaticallyUndefinedArgument(lowerer, node);
+      if (!node && !lowered) return { value: defaultValue, defaulted: boolLit(true, loc) };
+      if (lowered && isUnitType(lowered.type)) {
+        return { value: defaultAfterUndefined(lowered, defaultValue), defaulted: boolLit(true, loc) };
+      }
+      const undefinedArg = !lowered && node ? lowerStaticallyUndefinedArgument(lowerer, node) : null;
       if (undefinedArg) {
         return { value: defaultAfterUndefined(undefinedArg, defaultValue), defaulted: boolLit(true, loc) };
       }
-      if ((lowerer.typeOf(node).flags & ts.TypeFlags.Null) !== 0) {
+      if (!lowered && node && (lowerer.typeOf(node).flags & ts.TypeFlags.Null) !== 0) {
         return { value: defaultAfterUndefined(lowerer.lowerExpr(node), defaultValue), defaulted: boolLit(true, loc) };
       }
-      const value = lowerer.lowerExpr(node);
+      const value = lowered ?? lowerer.lowerExpr(node!);
       if (value.type.kind === "union") {
         const def = lowerer.unions.get(value.type.unionId);
         const units = def?.arms.filter(isUnitType) ?? [];
@@ -6010,7 +6024,7 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
           };
         }
       }
-      return { value: lowerer.coerceInto(node, value, F64), defaulted: boolLit(false, loc) };
+      return { value: lowerer.coerceInto(node ?? call, value, F64), defaulted: boolLit(false, loc) };
     };
     const utf8 = (node: ts.Expression | undefined): IrExpr => {
       const dflt = { kind: "strLit", value: "utf8", type: STRING, loc } satisfies IrExpr;
@@ -6032,6 +6046,28 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
       return lowerBuiltinOptionalDefault(lowerer, node, STRING, dflt, true);
     };
 
+    if (name === "sync" || name === "datasync") {
+      if (call.arguments.length !== 0) lowerer.noLowering(`FileHandle.${name} with arguments`, call);
+      return { kind: "libCall", fn: name === "sync" ? "fileHandle.sync" : "fileHandle.datasync", args: [receiver()], type: promise(VOID), loc };
+    }
+    if (name === "truncate" || name === "chmod") {
+      if (call.arguments.length > 1 || (name === "chmod" && call.arguments.length !== 1))
+        lowerer.noLowering(`FileHandle.${name} with ${call.arguments.length} arguments`, call);
+      return {
+        kind: "libCall", fn: name === "truncate" ? "fileHandle.truncate" : "fileHandle.chmod",
+        args: [receiver(), num(call.arguments[0], 0).value], type: promise(VOID), loc,
+      };
+    }
+    if (name === "readv" || name === "writev") {
+      if (call.arguments.length < 1 || call.arguments.length > 2)
+        lowerer.noLowering(`FileHandle.${name} with ${call.arguments.length} arguments`, call);
+      const type = lowerer.mapTypeOf(lowerer.typeOf(call));
+      if (type?.kind !== "promise" || type.inner.kind !== "record") lowerer.badType(call, lowerer.typeOf(call));
+      return {
+        kind: "libCall", fn: name === "readv" ? "fileHandle.readv" : "fileHandle.writev",
+        args: [receiver(), lowerer.lowerExprExpecting(call.arguments[0]!, arrayOf(BYTES_U8)), num(call.arguments[1], -1).value], type, loc,
+      };
+    }
     if (name === "close" || name === "stat") {
       if (call.arguments.length !== 0) lowerer.noLowering(`FileHandle.${name} with arguments`, call);
       return {
@@ -6091,6 +6127,59 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
         dataNode,
         "string and Uint8Array data are supported",
       );
+    }
+
+    if (name === "read" || name === "write") {
+      const firstNode = call.arguments[0];
+      const firstT = firstNode ? lowerer.mapTypeOf(lowerer.typeOf(firstNode)) : undefined;
+      const secondT = call.arguments[1] ? lowerer.mapTypeOf(lowerer.typeOf(call.arguments[1]!)) : undefined;
+      const readOptions = name === "read" && (!firstNode || firstT?.kind === "record" || (firstT && isUnitType(firstT)));
+      const bufferOptions = firstT?.kind === "bytes" && firstT.elem === "u8" && secondT?.kind === "record";
+      if (readOptions || bufferOptions) {
+        if (call.arguments.length > (bufferOptions ? 2 : 1)) lowerer.noLowering(`FileHandle.${name} options with extra arguments`, call);
+        const type = lowerer.mapTypeOf(lowerer.typeOf(call));
+        if (type?.kind !== "promise" || type.inner.kind !== "record") lowerer.badType(call, lowerer.typeOf(call));
+        const stmts: IrStmt[] = [];
+        const stage = (value: IrExpr, label: string): IrExpr => {
+          const local = lowerer.declareHiddenLocal(label, value.type);
+          stmts.push({ kind: "varDecl", localId: local.id, init: value, loc: value.loc });
+          return varRef(local.id, local.type, loc);
+        };
+        const handle = stage(receiver(), "%fhWindowReceiver");
+        let buffer = bufferOptions ? stage(lowerer.lowerExprExpecting(firstNode!, BYTES_U8), "%fhWindowBuffer") : undefined;
+        const optionsNode = bufferOptions ? call.arguments[1] : firstNode;
+        const options = optionsNode ? stage(lowerer.lowerExpr(optionsNode), "%fhWindowOptions") : undefined;
+        const field = (key: string): IrExpr | undefined => {
+          if (options?.type.kind !== "record") return undefined;
+          const fields = lowerer.shapes.get(options.type.shapeId)?.fields;
+          const getter = fields?.find((f) => f.name === `%get:${key}`);
+          if (getter?.type.kind === "func") {
+            const callee: IrExpr = { kind: "recordGet", obj: options, shapeId: options.type.shapeId, field: getter.name, type: getter.type, loc };
+            return { kind: "callValue", callee, args: [], type: getter.type.ret, loc };
+          }
+          const member = fields?.find((f) => f.name === key);
+          return member ? { kind: "recordGet", obj: options, shapeId: options.type.shapeId, field: key, type: member.type, loc } : undefined;
+        };
+        if (!buffer) {
+          const supplied = field("buffer");
+          const fresh: IrExpr = { kind: "bytesNew", source: numLit(16384, loc), type: BYTES_U8, loc };
+          if (!supplied || isUnitType(supplied.type)) buffer = supplied ? defaultAfterUndefined(supplied, fresh) : fresh;
+          else if (supplied.type.kind === "union") {
+            const arms = lowerer.unions.get(supplied.type.unionId)?.arms;
+            if (!arms?.every((arm) => typeEquals(arm, BYTES_U8) || isUnitType(arm))) lowerer.noLowering("FileHandle.read with this buffer type", call);
+            buffer = { kind: "nullish", left: supplied, right: fresh, type: BYTES_U8, loc };
+          } else buffer = lowerer.coerceInto(call, supplied, BYTES_U8);
+          buffer = stage(buffer, "%fhWindowBuffer");
+        }
+        const offset = num(undefined, 0, field("offset"));
+        const length = num(undefined, -1, field("length"));
+        const position = num(undefined, -1, field("position"));
+        const result: IrExpr = {
+          kind: "libCall", fn: name === "read" ? "fileHandle.read" : "fileHandle.writeBytes",
+          args: [handle, buffer, offset.value, length.value, position.value, length.defaulted], type, loc,
+        };
+        return { kind: "seqExpr", stmts, result, type, loc };
+      }
     }
 
     if (name === "read") {
@@ -6168,7 +6257,7 @@ function lowerOptionalStringSearchParams(lowerer: Lowerer, init: IrExpr, loc: Sr
     lowerer.noLowering(
       `FileHandle.${name}`,
       call,
-      "fd, close(), read(), write(), readFile(), writeFile(), appendFile(), and stat() are the supported FileHandle members",
+      "fd, close(), read(), write(), readv(), writev(), readFile(), writeFile(), appendFile(), stat(), sync(), datasync(), truncate(), and chmod() are the supported FileHandle members",
       lowerer.checker.getSymbolAtLocation(access.name),
     );
   }
