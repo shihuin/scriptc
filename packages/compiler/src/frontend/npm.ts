@@ -1,8 +1,9 @@
 /* The npm RUNTIME graph: what --dynamic builds embed.
  *
- * Types come from the package's shipped .d.ts (program.ts resolves those
- * through TypeScript itself); the CODE that runs is the package's shipped
- * JS, resolved HERE at build time with Node's own resolution algorithm —
+ * Types come from declarations or TypeScript source (program.ts resolves
+ * those through TypeScript itself); the CODE that runs is the package's shipped
+ * JS (or JavaScript emitted from a TypeScript runtime entry), resolved
+ * HERE at build time with Node's own resolution algorithm —
  * for every (importer, specifier) pair, node_modules directories are
  * probed from the importing FILE upward to the filesystem root, symlinks
  * are resolved with realpath (pnpm/bun virtual stores are symlink farms —
@@ -525,6 +526,9 @@ export class NpmGraphBuilder {
    * once; the `__require` attribution chain re-reads helper chunks
    * through this cache. */
   private readonly specifiersCache = new Map<string, ModuleSpecifiers | null>();
+  /** Helper attribution can read a module before walk reaches it. Share
+   * preparation so its edges and embedded source always use the same JS. */
+  private readonly sourceCache = new Map<string, { source: string } | { error: string }>();
 
   constructor(private readonly services: FrontendServices, private readonly host: NpmGraphHost = realNpmGraphHost) {}
 
@@ -895,6 +899,8 @@ export class NpmGraphBuilder {
   /** The nearest package.json "type" above `file` — the .js format rule.
    * Resolution-time overrides (the "module" field) win. */
   private formatOf(file: string): EmbeddedFormat {
+    if (file.endsWith(".mts")) return "esm";
+    if (file.endsWith(".cts")) return "cjs";
     const override = this.formatOverrides.get(file);
     if (override) return override;
     if (file.endsWith(".mjs")) return "esm";
@@ -1179,18 +1185,40 @@ export class NpmGraphBuilder {
       this.modules.set(key, { key, source: NpmGraphBuilder.nativeAddonStub(key), format: "cjs" });
       return;
     }
-    const source = this.host.readFile(key);
-    if (source === null) {
+    const prepared = this.sourceOf(key);
+    if ("error" in prepared) {
       this.errors.push({
-        message: `cannot read embedded module '${key}' (dependency chain: ${NpmGraphBuilder.chainOf(chain)})`,
+        message: `${prepared.error} (dependency chain: ${NpmGraphBuilder.chainOf(chain)})`,
       });
       return;
     }
+    const source = prepared.source;
     const format = this.formatOf(key);
     this.modules.set(key, { key, source, format });
     if (lazy) this.lazilyReached.add(key);
     if (format === "json") return;
     this.sweepEdges(key, source, chain, lazy);
+  }
+
+  private sourceOf(key: string): { source: string } | { error: string } {
+    const cached = this.sourceCache.get(key);
+    if (cached !== undefined) return cached;
+    const source = this.host.readFile(key);
+    let result: { source: string } | { error: string };
+    if (source === null) {
+      result = { error: `cannot read embedded module '${key}'` };
+    } else if (/\.(?:[cm]?ts|tsx)$/.test(key)) {
+      try {
+        const format = this.formatOf(key);
+        result = { source: this.services.emitRuntimeTypeScript(key, source, format === "esm" ? "esm" : "cjs") };
+      } catch (error) {
+        result = { error: `cannot emit TypeScript module '${key}': ${error instanceof Error ? error.message : String(error)}` };
+      }
+    } else {
+      result = { source };
+    }
+    this.sourceCache.set(key, result);
+    return result;
   }
 
   /** moduleSpecifiersOf through the per-module cache (each module parses
@@ -1199,7 +1227,8 @@ export class NpmGraphBuilder {
   private specifiersOf(key: string, source?: string): ModuleSpecifiers | null {
     let cached = this.specifiersCache.get(key);
     if (cached === undefined) {
-      const text = source ?? this.host.readFile(key);
+      const prepared = source === undefined ? this.sourceOf(key) : { source };
+      const text = "source" in prepared ? prepared.source : null;
       cached = text === null ? null : moduleSpecifiersOfFile(this.services.parse(key, text, "js"));
       this.specifiersCache.set(key, cached);
     }

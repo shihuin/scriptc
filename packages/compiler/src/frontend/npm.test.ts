@@ -1,4 +1,6 @@
 import { join } from "node:path";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 import { moduleSpecifiersOf } from "./npm-node.js";
@@ -7,6 +9,63 @@ import { NpmGraphBuilder } from "./npm-node.js";
 const fixturesRoot = fileURLToPath(new URL("../../../../tests/fixtures/npm/", import.meta.url));
 const fixture = (...parts: string[]): string => join(fixturesRoot, ...parts);
 const portable = (path: string): string => path.replaceAll("\\", "/");
+
+test("TypeScript runtime entries embed emitted JS and only its runtime dependencies", () => {
+  const entry = fixture("typescript", "main.ts");
+  const builder = new NpmGraphBuilder();
+  builder.addImport(entry, "tsruntime");
+  builder.addImport(entry, "tsruntime/common");
+  const graph = builder.finish();
+  expect(graph.errors).toEqual([]);
+  const modules = graph.modules.map((module) => ({ ...module, key: portable(module.key) }));
+  expect(modules.map((module) => module.key.split("/").at(-1)).sort()).toEqual([
+    "common.cts", "export-side.ts", "index.ts", "side.ts", "unused.ts", "value.mts",
+  ]);
+  const root = modules.find((module) => module.key.endsWith("/tsruntime/index.ts"));
+  expect(root).toBeDefined();
+  if (root === undefined) return;
+  expect(root.format).toBe("esm");
+  expect(root.source).not.toContain("import type");
+  expect(root.source).not.toContain("export type");
+  expect(root.source).not.toContain(": number");
+  expect(root.source).not.toContain("./types.ts");
+  const edges = graph.edges.filter((edge) => portable(edge.from) === root.key);
+  expect(edges.map((edge) => edge.specifier).sort()).toEqual(["./export-side.ts", "./side.ts", "./unused.ts", "./value.mts"]);
+  expect(edges.every((edge) => portable(edge.to).endsWith(edge.specifier.slice(2)))).toBe(true);
+  expect(modules.find((module) => module.key.endsWith("/value.mts"))?.format).toBe("esm");
+  const common = modules.find((module) => module.key.endsWith("/common.cts"));
+  expect(common).toBeDefined();
+  if (common === undefined) return;
+  expect(common.format).toBe("cjs");
+  expect(common.source).not.toContain(": number");
+  expect(common.esm).toContain("value");
+});
+
+test.for([
+  ["index.ts", "export function broken(: number) {}", "TS"],
+  ["index.d.ts", "export declare const value: number;", "declaration files"],
+  ["index.d.mts", "export declare const value: number;", "declaration files"],
+  ["index.d.cts", "export declare const value: number;", "declaration files"],
+  ["index.tsx", "export const value = <div />;", "TSX runtime modules"],
+] as const)("invalid runtime source %s produces an attributed graph error", ([name, source, message]) => {
+  const dir = mkdtempSync(join(tmpdir(), "scriptc-npm-typescript-"));
+  try {
+    const pkg = join(dir, "node_modules", "invalid-typescript");
+    mkdirSync(pkg, { recursive: true });
+    writeFileSync(join(pkg, "package.json"), JSON.stringify({ name: "invalid-typescript", type: "module", main: name }));
+    writeFileSync(join(pkg, name), source);
+    const builder = new NpmGraphBuilder();
+    builder.addImport(join(dir, "main.ts"), "invalid-typescript");
+    const graph = builder.finish();
+    expect(graph.modules).toEqual([]);
+    expect(graph.errors).toHaveLength(1);
+    const diagnostic = graph.errors[0]?.message;
+    expect(diagnostic).toContain(name);
+    expect(diagnostic).toContain(message);
+    expect(diagnostic).toContain("dependency chain: invalid-typescript");
+    expect(diagnostic).not.toContain("scriptc-typescript-");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
 
 test("collects import.meta.resolve literals as resolution-only edges", () => {
   const result = moduleSpecifiersOf(

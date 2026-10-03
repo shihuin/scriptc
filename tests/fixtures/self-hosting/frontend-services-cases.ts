@@ -47,8 +47,12 @@ export function runFrontendServices(services: FrontendServices, input: string, o
   const entry = join(request.directory, "main.ts");
   const graphKey = builder.addImport(entry, "service-fetch");
   check(graphKey !== null, "package entry resolution");
+  builder.addImport(entry, "service-typescript");
   const graph = builder.finish();
   check(graph.errors.length === 0, "package graph diagnostics");
+  const typed = graph.modules.filter((module) => /\.(?:ts|mts)$/.test(module.key));
+  check(typed.length === 2, "TypeScript runtime graph");
+  check(typed.every((module) => !module.source.includes(": number") && !module.source.includes("missing-types")), "TypeScript runtime emission");
 
   const host = services.createProgramHost({ cwd: request.directory });
   const sourcePath = join(request.directory, "virtual.ts");

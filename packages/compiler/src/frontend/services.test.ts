@@ -44,6 +44,25 @@ test("a host without a compile-time evaluator refuses explicitly", () => {
   expect(factory).not.toHaveBeenCalled();
 });
 
+test("TypeScript package emission belongs to its host and obeys the service lifecycle", () => {
+  const emit = vi.fn(() => "export const value = 1;");
+  const factory = vi.fn(() => { throw new Error("emission must not open a parser connection"); });
+  const services = new FrontendServices(factory, process.cwd(), undefined, undefined, emit);
+  expect(services.emitRuntimeTypeScript("index.ts", "export const value: number = 1;", "esm")).toBe("export const value = 1;");
+  expect(emit).toHaveBeenCalledExactlyOnceWith("index.ts", "export const value: number = 1;", "esm");
+  expect(factory).not.toHaveBeenCalled();
+  services.close();
+  expect(() => services.emitRuntimeTypeScript("index.ts", "", "esm")).toThrow("closed");
+  expect(emit).toHaveBeenCalledTimes(1);
+});
+
+test("a host without a TypeScript package emitter refuses explicitly", () => {
+  const { services, factory } = setup();
+  try { expect(() => services.emitRuntimeTypeScript("index.ts", "", "esm")).toThrow("does not provide TypeScript package emission"); }
+  finally { services.close(); }
+  expect(factory).not.toHaveBeenCalled();
+});
+
 test("service construction and irrelevant rewrites open no connections", () => {
   const { services, factory } = setup();
   expect(services.rewriteCjs("exports.value = 1;", "index.js")).toBeNull();

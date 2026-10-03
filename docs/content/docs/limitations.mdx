@@ -205,6 +205,8 @@ Static tasks drain before engine jobs run at event-loop quiescence. A static `aw
 
 Top-level `await` is unsupported in embedded ESM packages. It is supported in the program's own ESM graph and packages compiled through `--npm-static`.
 
+TypeScript runtime sources in embedded packages are emitted in isolation using the package's module format. Package compiler configuration is not applied, and type-only dependencies must use explicit `import type`, `export type`, or inline `type` specifiers. Declaration files and TSX runtime entries are rejected during the build.
+
 `--npm-static` and `--provenance-sources` are experimental. See [npm Dependencies](/docs/dependencies) for their current restrictions.
 
 ## Process events

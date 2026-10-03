@@ -11,6 +11,9 @@ import type { SourceFile } from "./ts7/ast-types.js";
  * verifies the returned value before baking it into the program. */
 export type ComptimeEvaluator = (source: string, timeoutMs: number) => unknown;
 
+/** Emit an isolated package source without resolving or executing its imports. */
+export type RuntimeTypeScriptEmitter = (path: string, source: string, format: "esm" | "cjs") => string;
+
 /** A Node host keeps its process-specific resolver settings and hooks. Native
  * clients use the filesystem resolver when no host adapter is supplied. */
 export interface RuntimeModuleResolver {
@@ -32,6 +35,7 @@ export class FrontendServices {
     private readonly cwd = process.cwd(),
     private readonly comptimeEvaluator: ComptimeEvaluator | undefined = undefined,
     readonly runtimeModuleResolver: RuntimeModuleResolver | undefined = undefined,
+    private readonly runtimeTypeScriptEmitter: RuntimeTypeScriptEmitter | undefined = undefined,
   ) {
     this.fetchAnalyzer = new NpmFetchAnalyzer((options) => createApi({ ...options, collectTiming: false }), cwd);
   }
@@ -42,6 +46,11 @@ export class FrontendServices {
     return this.parser ??= new Ts7SourceParser((options) => this.createApi({ ...options, collectTiming: false }), this.cwd);
   }
   parse(path: string, source: string, kind: Ts7SourceKind): SourceFile { return this.sourceParser().parse(path, source, kind); }
+  emitRuntimeTypeScript(path: string, source: string, format: "esm" | "cjs"): string {
+    this.ensureOpen();
+    if (this.runtimeTypeScriptEmitter === undefined) throw new Error("this compiler host does not provide TypeScript package emission");
+    return this.runtimeTypeScriptEmitter(path, source, format);
+  }
   evaluateComptime(source: string, timeoutMs: number): unknown {
     this.ensureOpen();
     if (this.comptimeEvaluator === undefined) throw new Error("this compiler host does not provide compile-time evaluation");

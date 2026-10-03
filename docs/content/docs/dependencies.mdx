@@ -44,6 +44,8 @@ The compiler resolves packages from `node_modules` using Node.js package resolut
 
 The package's JavaScript and its resolved imports are embedded at build time. The executable does not load `node_modules` at runtime. Deploy it to a machine compatible with the build's target platform.
 
+Packages can also expose TypeScript runtime entries (`.ts`, `.mts`, or `.cts`). The compiler emits JavaScript before collecting and embedding runtime imports, removing type annotations and type-only bindings. `import type` and `export type` declarations do not add runtime dependencies. See [Limitations](/docs/limitations#embedded-javascript-engine) for package source restrictions.
+
 Workspace packages with a TypeScript executable entry compile as program modules, including `.js` import specifiers that resolve to `.ts` source. Workspace packages with JavaScript executable entries use the same policy as other JavaScript dependencies: execute them with `--dynamic`, or attempt static compilation with `--npm-static`.
 
 ## Runtime behavior
