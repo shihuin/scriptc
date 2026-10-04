@@ -1,0 +1,6 @@
+{
+ "order": [
+  "<repo>/tests/corpus/4040-js-void-ternary-guarded.js"
+ ],
+ "diags": []
+}
