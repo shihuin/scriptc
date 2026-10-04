@@ -2647,6 +2647,24 @@ function lowerExprInner(lowerer: Lowerer, expr: ts.Expression): IrExpr {
       // inert when the types already agree.
       const intoDyn = (e: IrExpr): IrExpr =>
         e.type.kind === "dyn" ? e : { kind: "dynFrom", value: e, type: DYN, loc: e.loc };
+      // A conditional whose arms are void — `cond ? voidCallA() : voidCallB()`
+      // in a position whose value is discarded. A ternary is a VALUE, so it
+      // cannot be typed void (the validator rejects one), and it does not need
+      // to be: the value of a void call is `undefined`, which the checked-
+      // dynamic tree represents exactly. Without this the lowering produced a
+      // void-typed ternary and the validator stopped with "ternary must not be
+      // void" — reached in vendored react-reconciler wherever a void call is
+      // guarded by a logical operand.
+      if (type.kind === "void") {
+        return {
+          kind: "ternary",
+          cond,
+          then: lowerer.coerceToExpected(thenRaw, DYN),
+          else_: lowerer.coerceToExpected(elseRaw, DYN),
+          type: DYN,
+          loc,
+        };
+      }
       const then = dynJoin ? intoDyn(thenRaw) : lowerer.coerceInto(expr.whenTrue, thenRaw, type);
       const else_ = dynJoin ? intoDyn(elseRaw) : lowerer.coerceInto(expr.whenFalse, elseRaw, type);
       if (then.type.kind !== type.kind || else_.type.kind !== type.kind) {
