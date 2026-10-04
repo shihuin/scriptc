@@ -7879,6 +7879,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/4040-js-void-ternary-guarded.js": {
+   "order": [
+    "<repo>/tests/corpus/4040-js-void-ternary-guarded.js"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/405-params-optional.ts": {
    "order": [
     "<repo>/tests/corpus/405-params-optional.ts"
@@ -10161,6 +10167,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/js-open-binding-writes.js": {
+   "order": [
+    "<repo>/tests/corpus/js-open-binding-writes.js"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/js-optional-class-fields.js": {
    "order": [
     "<repo>/tests/corpus/js-optional-class-fields.js"
@@ -10608,6 +10620,18 @@
    ],
    "diags": []
   },
+  "<repo>/tests/corpus/node24-buffer-encoding-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-buffer-encoding-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-buffer-encoding.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-buffer-encoding.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/corpus/node24-crypto-kdf-errors.ts": {
    "order": [
     "<repo>/tests/corpus/node24-crypto-kdf-errors.ts"
@@ -10629,6 +10653,132 @@
   "<repo>/tests/corpus/node24-crypto-sha2.ts": {
    "order": [
     "<repo>/tests/corpus/node24-crypto-sha2.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-files-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-files-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-files.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-files.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-imports.cjs": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-imports.cjs"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-parse-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-parse-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-env-parse.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-env-parse.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-file-url-buffer.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-file-url-buffer.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-file-url-errors.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-file-url-errors.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-file-url-options.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-file-url-options.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-parseargs.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-parseargs.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-string-decoder.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-string-decoder.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-system-error-validation.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-system-error-validation.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-system-errors.cjs": {
+   "order": [
+    "<repo>/tests/corpus/node24-system-errors.cjs"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-system-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-system-errors.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-codec-properties.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-codec-properties.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-encode-into.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-encode-into.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities-coercion.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities-coercion.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities-validation.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities-validation.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities.cjs": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities.cjs"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-url-factories.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-url-factories.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-url-factory-errors.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-url-factory-errors.ts"
    ],
    "diags": []
   },
@@ -13007,15 +13157,135 @@
    ],
    "diags": []
   },
+  "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/fixtures/npm/cases/node24-crypto-kdf/main.ts": {
    "order": [
     "<repo>/tests/fixtures/npm/cases/node24-crypto-kdf/main.ts"
    ],
    "diags": []
   },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-async/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-async/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-env/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-env/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-file-url-conversion/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-file-url-conversion/main.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/fixtures/npm/cases/node24-fs-descriptors/main.ts": {
    "order": [
     "<repo>/tests/fixtures/npm/cases/node24-fs-descriptors/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-mime/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-mime/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-parseargs/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-parseargs/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-promise-timers/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-promise-timers/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-string-decoder/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-string-decoder/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-system-errors/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-system-errors/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-text-utilities/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-text-utilities/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-url-factories/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-url-factories/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts"
    ],
    "diags": []
   },
@@ -13229,6 +13499,12 @@
    ],
    "diags": []
   },
+  "<repo>/tests/fixtures/node-types/env-files.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/env-files.ts"
+   ],
+   "diags": []
+  },
   "<repo>/tests/fixtures/node-types/fenced.ts": {
    "order": [
     "<repo>/tests/fixtures/node-types/fenced.ts"
@@ -13238,6 +13514,12 @@
   "<repo>/tests/fixtures/node-types/fetch-static.ts": {
    "order": [
     "<repo>/tests/fixtures/node-types/fetch-static.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/file-url-conversion.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/file-url-conversion.ts"
    ],
    "diags": []
   },
@@ -13271,99 +13553,9 @@
    ],
    "diags": []
   },
-  "<repo>/tests/fixtures/node-types/url-getters.ts": {
+  "<repo>/tests/fixtures/node-types/system-errors.ts": {
    "order": [
-    "<repo>/tests/fixtures/node-types/url-getters.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-url-factories.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-url-factories.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-url-factory-errors.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-url-factory-errors.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-url-factories/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-url-factories/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/node-types/url-factories.ts": {
-   "order": [
-    "<repo>/tests/fixtures/node-types/url-factories.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-env-parse.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-env-parse.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-env-parse-errors.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-env-parse-errors.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-env-files.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-env-files.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-env-files-errors.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-env-files-errors.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-env-imports.cjs": {
-   "order": [
-    "<repo>/tests/corpus/node24-env-imports.cjs"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-env/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-env/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/node-types/env-files.ts": {
-   "order": [
-    "<repo>/tests/fixtures/node-types/env-files.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-buffer-encoding-errors.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-buffer-encoding-errors.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-buffer-encoding.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-buffer-encoding.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-text-codec-properties.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-text-codec-properties.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-text-encode-into.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-text-encode-into.ts"
+    "<repo>/tests/fixtures/node-types/system-errors.ts"
    ],
    "diags": []
   },
@@ -13373,207 +13565,21 @@
    ],
    "diags": []
   },
-  "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-text-encoding/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/js-open-binding-writes.js": {
-   "order": [
-    "<repo>/tests/corpus/js-open-binding-writes.js"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-string-decoder.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-string-decoder.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-string-decoder/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-string-decoder/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-parseargs.js": {
-   "order": [
-    "<repo>/tests/corpus/node24-parseargs.js"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-parseargs/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-parseargs/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-util-adapters/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-event-emitter/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-async-events/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-promise-timers/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-promise-timers/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-timers-unref/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-mime/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-mime/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-mime-errors/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-commonjs-metadata/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-async/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-async/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-file-url-buffer.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-file-url-buffer.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-file-url-errors.js": {
-   "order": [
-    "<repo>/tests/corpus/node24-file-url-errors.js"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-file-url-options.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-file-url-options.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-file-url-conversion/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-file-url-conversion/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/node-types/file-url-conversion.ts": {
-   "order": [
-    "<repo>/tests/fixtures/node-types/file-url-conversion.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-system-errors.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-system-errors.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-system-errors.cjs": {
-   "order": [
-    "<repo>/tests/corpus/node24-system-errors.cjs"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-system-error-validation.js": {
-   "order": [
-    "<repo>/tests/corpus/node24-system-error-validation.js"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-system-errors/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-system-errors/main.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/node-types/system-errors.ts": {
-   "order": [
-    "<repo>/tests/fixtures/node-types/system-errors.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-text-utilities.ts": {
-   "order": [
-    "<repo>/tests/corpus/node24-text-utilities.ts"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-text-utilities.cjs": {
-   "order": [
-    "<repo>/tests/corpus/node24-text-utilities.cjs"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/corpus/node24-text-utilities-validation.js": {
-   "order": [
-    "<repo>/tests/corpus/node24-text-utilities-validation.js"
-   ],
-   "diags": []
-  },
-  "<repo>/tests/fixtures/npm/cases/node24-text-utilities/main.ts": {
-   "order": [
-    "<repo>/tests/fixtures/npm/cases/node24-text-utilities/main.ts"
-   ],
-   "diags": []
-  },
   "<repo>/tests/fixtures/node-types/text-utilities.ts": {
    "order": [
     "<repo>/tests/fixtures/node-types/text-utilities.ts"
    ],
    "diags": []
   },
-  "<repo>/tests/corpus/node24-text-utilities-coercion.js": {
+  "<repo>/tests/fixtures/node-types/url-factories.ts": {
    "order": [
-    "<repo>/tests/corpus/node24-text-utilities-coercion.js"
+    "<repo>/tests/fixtures/node-types/url-factories.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/url-getters.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/url-getters.ts"
    ],
    "diags": []
   }
