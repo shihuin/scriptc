@@ -628,6 +628,12 @@ function publicDetail(tier) {
     if (source === "compiler-feature:util.util.getSystemErrorMap") {
       return "Returns a fresh Map of platform-specific error codes, names, and messages; entry tuples support updates but retain their fixed size.";
     }
+    if (source === "compiler-feature:util.util.stripVTControlCharacters") {
+      return "Removes ANSI control sequences with the Node matcher and validates common non-string argument forms.";
+    }
+    if (source === "compiler-feature:util.util.toUSVString") {
+      return "Converts native strings, primitives, and tested object conversion hooks to well-formed Unicode strings; native storage replaces unpaired surrogates at creation.";
+    }
     if (/^compiler-feature:util\.util\.getSystemError(?:Name|Message)$/.test(source)) {
       return "Converts platform-specific negative error codes to names or messages, with Node-compatible validation for common argument forms.";
     }
@@ -690,6 +696,8 @@ function publicDetail(tier) {
     return "No dynamic-island implementation exists for this Node API family yet.";
   }
   if (source.startsWith("island-feature:")) {
+    if (source === "island-feature:util.util.stripVTControlCharacters") return "Removes ANSI control sequences with the Node matcher and validates non-string arguments.";
+    if (source === "island-feature:util.util.toUSVString") return "Replaces unpaired surrogate code units and preserves Node string coercion, custom conversion hooks, and conversion errors.";
     if (source.startsWith("island-feature:diagnostics_channel.")) return "Publishes synchronous, promise, and callback tracing lifecycle events with result/error identity, subscriber management, and store bindings. Bound stores follow the embedded engine's synchronous AsyncLocalStorage model and do not propagate across awaits.";
     if (source.startsWith("island-feature:timers.timersPromises.")) return "Provides cancellable promise timers, buffered interval iteration, scheduler waits and yields, and ref options over the native event loop; delay warnings remain outside this subset.";
     if (source.startsWith("island-feature:timers.")) return "Provides timer and immediate handles with reference control, refresh, cancellation, and disposal over the native event loop.";

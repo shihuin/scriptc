@@ -1323,16 +1323,16 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 18,
+        "partial": 20,
         "refused": 0,
-        "not-implemented": 87,
+        "not-implemented": 85,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
-        "supported": 16,
-        "partial": 76,
+        "supported": 18,
+        "partial": 74,
         "refused": 0,
         "not-implemented": 13,
         "by-design": 0,
@@ -32294,7 +32294,7 @@
       "nodeStability": null,
       "static": {
         "status": "not-applicable",
-        "evidence": "compiler-chapter-policy:deprecations"
+        "evidence": "compiler-feature:deprecations.util.toUSVString"
       },
       "dynamic": {
         "status": "not-applicable",
@@ -111273,11 +111273,16 @@
           "tests/corpus/node24-system-errors.ts",
           "tests/corpus/node24-text-codec-properties.ts",
           "tests/corpus/node24-text-encode-into.ts",
+          "tests/corpus/node24-text-utilities-coercion.js",
+          "tests/corpus/node24-text-utilities-validation.js",
+          "tests/corpus/node24-text-utilities.cjs",
+          "tests/corpus/node24-text-utilities.ts",
           "tests/corpus/text-codec-values/main.ts",
           "tests/fixtures/node-types/env-files.ts",
           "tests/fixtures/node-types/system-errors.ts",
           "tests/fixtures/node-types/text-codecs.mts",
           "tests/fixtures/node-types/text-encoding.ts",
+          "tests/fixtures/node-types/text-utilities.ts",
           "tests/harness/project-config.test.ts"
         ]
       },
@@ -111291,6 +111296,7 @@
           "tests/fixtures/npm/cases/node24-parseargs/main.ts",
           "tests/fixtures/npm/cases/node24-system-errors/main.ts",
           "tests/fixtures/npm/cases/node24-text-encoding/main.ts",
+          "tests/fixtures/npm/cases/node24-text-utilities/main.ts",
           "tests/fixtures/npm/cases/node24-util-adapters/main.ts",
           "tests/fixtures/npm/cases/util-shims/main.ts"
         ]
@@ -113252,14 +113258,21 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.util.stripVTControlCharacters",
+        "tests": [
+          "tests/corpus/node24-text-utilities.ts",
+          "tests/corpus/node24-text-utilities-validation.js",
+          "tests/corpus/node24-text-utilities-coercion.js",
+          "tests/corpus/node24-text-utilities.cjs",
+          "tests/fixtures/node-types/text-utilities.ts"
+        ]
       },
       "dynamic": {
-        "status": "partial",
-        "evidence": "island-export:node:util.stripVTControlCharacters",
+        "status": "supported",
+        "evidence": "island-feature:util.util.stripVTControlCharacters",
         "tests": [
-          "tests/fixtures/npm/cases/util-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-text-utilities/main.ts"
         ]
       },
       "anchorSource": "exact"
@@ -113312,14 +113325,21 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "evidence": "compiler-unmatched:util"
+        "status": "partial",
+        "evidence": "compiler-feature:util.util.toUSVString",
+        "tests": [
+          "tests/corpus/node24-text-utilities.ts",
+          "tests/corpus/node24-text-utilities-validation.js",
+          "tests/corpus/node24-text-utilities-coercion.js",
+          "tests/corpus/node24-text-utilities.cjs",
+          "tests/fixtures/node-types/text-utilities.ts"
+        ]
       },
       "dynamic": {
-        "status": "partial",
-        "evidence": "island-export:node:util.toUSVString",
+        "status": "supported",
+        "evidence": "island-feature:util.util.toUSVString",
         "tests": [
-          "tests/fixtures/npm/cases/util-shims/main.ts"
+          "tests/fixtures/npm/cases/node24-text-utilities/main.ts"
         ]
       },
       "anchorSource": "exact"

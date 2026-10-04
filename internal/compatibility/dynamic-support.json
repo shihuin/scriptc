@@ -19,6 +19,7 @@
     "wasi": "by-design"
   },
   "features": [
+    { "chapter": "util", "symbols": ["util.stripVTControlCharacters", "util.toUSVString"], "status": "supported", "evidence": ["tests/fixtures/npm/cases/node24-text-utilities/main.ts"] },
     { "chapter": "util", "symbols": ["util.getSystemErrorName", "util.getSystemErrorMessage", "util.getSystemErrorMap"], "status": "partial", "evidence": ["tests/fixtures/npm/cases/node24-system-errors/main.ts"] },
     { "chapter": "url", "symbols": ["url.fileURLToPath", "url.fileURLToPathBuffer", "url.pathToFileURL"], "status": "partial", "evidence": ["tests/fixtures/npm/cases/node24-file-url-conversion/main.ts"] },
     { "chapter": "diagnostics_channel", "symbols": ["start", "end", "asyncStart", "asyncEnd", "error", "TracingChannel", "channel.bindStore", "channel.unbindStore", "channel.runStores", "tracingChannel.subscribe", "tracingChannel.unsubscribe", "tracingChannel.traceSync", "tracingChannel.tracePromise", "tracingChannel.traceCallback"], "status": "partial", "evidence": ["tests/fixtures/npm/cases/node24-diagnostics-tracing/main.ts", "tests/fixtures/npm/cases/node24-diagnostics-async/main.ts", "tests/fixtures/npm/cases/node24-diagnostics-subscriber-throw/main.ts", "tests/fixtures/npm/cases/node24-diagnostics-transform-throw/main.ts"] },

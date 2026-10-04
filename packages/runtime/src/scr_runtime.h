@@ -818,6 +818,11 @@ ScrStr *scr_str_pad_end(ScrStr *s, double maxLength, ScrStr *fill);
  * both are no-ops on well-formed input). Borrow s; toWellFormed +1. */
 bool scr_str_is_well_formed(ScrStr *s);
 ScrStr *scr_str_to_well_formed(ScrStr *s);
+/* Node text utilities: borrowed input, +1 result or NULL+pending. The VT
+ * helper lives in the optional regex unit; USV conversion uses native strings. */
+ScrStr *scr_util_strip_vt(const struct ScrDyn *input);
+ScrStr *scr_util_to_usv_string(const struct ScrDyn *input);
+void scr_dyn_install_to_primitive_symbol(struct ScrDyn *key);
 
 /* RegExp.escape(s) — ES2025 EncodeForRegExpEscape per code point: leading
  * ASCII alphanumeric hex-escapes, SyntaxCharacters and '/' take a

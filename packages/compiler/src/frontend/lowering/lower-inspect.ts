@@ -1390,12 +1390,14 @@ export function lowerUtilModuleCall(
       return stmts.length ? { kind: "seqExpr", stmts, result, type: result.type, loc } : result;
     }
     case "getSystemErrorName":
-    case "getSystemErrorMessage": {
+    case "getSystemErrorMessage":
+    case "stripVTControlCharacters":
+    case "toUSVString": {
       if (expr.arguments.some(ts.isSpreadElement)) lowerer.noLowering(`util.${bi.member} with spread arguments`, expr);
       const input = expr.arguments[0] ? lowerer.lowerExprExpecting(expr.arguments[0], DYN)
         : { kind: "dynFrom" as const, value: { kind: "unitLit" as const, unit: "undefined" as const, type: UNDEFINED_T, loc }, type: DYN, loc };
       if (expr.arguments.length <= 1) return { kind: "libCall", fn: `util.${bi.member}`, args: [input], type: STRING, loc };
-      const saved = lowerer.declareHiddenLocal("%systemError", DYN);
+      const saved = lowerer.declareHiddenLocal("%utilInput", DYN);
       return { kind: "seqExpr", stmts: [{ kind: "varDecl", localId: saved.id, init: input, loc },
         ...expr.arguments.slice(1).map((arg): IrStmt => ({ kind: "exprStmt", expr: lowerer.lowerExpr(arg), loc }))],
         result: { kind: "libCall", fn: `util.${bi.member}`, args: [varRef(saved.id, DYN, loc)], type: STRING, loc }, type: STRING, loc };

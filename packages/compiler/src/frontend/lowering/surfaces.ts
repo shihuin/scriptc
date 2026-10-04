@@ -888,6 +888,8 @@ export const BUILTIN_MODULE_FNS: Record<string, Record<string, BuiltinModuleFn |
     getSystemErrorName: { fn: "util.getSystemErrorName", params: [DYN], result: STRING, valueParams: exactValueParams(DYN) },
     getSystemErrorMessage: { fn: "util.getSystemErrorMessage", params: [DYN], result: STRING, valueParams: exactValueParams(DYN) },
     getSystemErrorMap: { fn: "util.systemErrorEntries", params: [], result: DYN },
+    stripVTControlCharacters: { fn: "util.stripVTControlCharacters", params: [DYN], result: STRING, valueParams: exactValueParams(DYN) },
+    toUSVString: { fn: "util.toUSVString", params: [DYN], result: STRING, valueParams: exactValueParams(DYN) },
   },
   buffer: {
     isAscii: { fn: "buffer.isAscii", params: [DYN], result: BOOL },

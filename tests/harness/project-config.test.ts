@@ -250,6 +250,17 @@ test("node-types: URL factories match Node under @types/node", async () => {
   expect(native.stderr).toBe(node.stderr);
 });
 
+test("node-types: text utilities match Node under @types/node", async () => {
+  const outDir = outDirFor("node-text-utilities");
+  const entry = join(nodeTypesDir, "text-utilities.ts");
+  const result = await compile(entry, { outPath: join(outDir, "text-utilities"), outDir, sanitize });
+  expect(result.ok, !result.ok ? JSON.stringify(result.diagnostics, null, 2) : "").toBe(true);
+  if (!result.ok) return;
+  const [native, node] = await Promise.all([execFileAsync(result.binaryPath), execFileAsync(process.execPath, ["--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", entry])]);
+  expect(native.stdout).toBe(node.stdout);
+  expect(native.stderr).toBe(node.stderr);
+});
+
 test("node-types: system error utilities match Node under @types/node", async () => {
   const outDir = outDirFor("node-system-errors");
   const entry = join(nodeTypesDir, "system-errors.ts");

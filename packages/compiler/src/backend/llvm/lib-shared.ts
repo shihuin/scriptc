@@ -60,6 +60,8 @@ export const LIB_FN_SYMS: Record<string, string> = {
   "util.getSystemErrorName": "scr_util_system_error_name",
   "util.getSystemErrorMessage": "scr_util_system_error_message",
   "util.systemErrorEntries": "scr_util_system_error_entries",
+  "util.stripVTControlCharacters": "scr_util_strip_vt",
+  "util.toUSVString": "scr_util_to_usv_string",
   "math.maxArr": "scr_math_max_arr",
   "math.minArr": "scr_math_min_arr",
   "math.hypotArr": "scr_math_hypot_arr",

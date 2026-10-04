@@ -13540,6 +13540,42 @@
     "<repo>/tests/fixtures/node-types/system-errors.ts"
    ],
    "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities.ts": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities.cjs": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities.cjs"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities-validation.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities-validation.js"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/npm/cases/node24-text-utilities/main.ts": {
+   "order": [
+    "<repo>/tests/fixtures/npm/cases/node24-text-utilities/main.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/fixtures/node-types/text-utilities.ts": {
+   "order": [
+    "<repo>/tests/fixtures/node-types/text-utilities.ts"
+   ],
+   "diags": []
+  },
+  "<repo>/tests/corpus/node24-text-utilities-coercion.js": {
+   "order": [
+    "<repo>/tests/corpus/node24-text-utilities-coercion.js"
+   ],
+   "diags": []
   }
  }
 }

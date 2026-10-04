@@ -1202,16 +1202,16 @@
       "apiEntries": 105,
       "static": {
         "supported": 0,
-        "partial": 18,
+        "partial": 20,
         "refused": 0,
-        "not-implemented": 87,
+        "not-implemented": 85,
         "by-design": 0,
         "unreviewed": 0,
         "not-applicable": 0
       },
       "dynamic": {
-        "supported": 16,
-        "partial": 76,
+        "supported": 18,
+        "partial": 74,
         "refused": 0,
         "not-implemented": 13,
         "by-design": 0,
@@ -85570,13 +85570,13 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Removes ANSI control sequences with the Node matcher and validates common non-string argument forms.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "status": "supported",
+        "detail": "Removes ANSI control sequences with the Node matcher and validates non-string arguments.",
         "verification": "test-backed"
       }
     },
@@ -85626,13 +85626,13 @@
         "inherited": true
       },
       "static": {
-        "status": "not-implemented",
-        "detail": "No static compiler lowering is registered for this API yet.",
-        "verification": "registry-gap"
+        "status": "partial",
+        "detail": "Converts native strings, primitives, and tested object conversion hooks to well-formed Unicode strings; native storage replaces unpaired surrogates at creation.",
+        "verification": "test-backed"
       },
       "dynamic": {
-        "status": "partial",
-        "detail": "Available through the embedded Node compatibility shim; exact member and overload coverage may be narrower.",
+        "status": "supported",
+        "detail": "Replaces unpaired surrogate code units and preserves Node string coercion, custom conversion hooks, and conversion errors.",
         "verification": "test-backed"
       }
     },

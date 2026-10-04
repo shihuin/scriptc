@@ -57,6 +57,7 @@ static void scr_json_oom(void) {
 
 static SCR_TL ScrDyn *scr_iterator_symbol;
 static SCR_TL ScrDyn *scr_async_iterator_symbol;
+static SCR_TL ScrDyn *scr_to_primitive_symbol;
 static bool scr_dyn_generator(const ScrDyn *value) {
   return value && value->kind == SCR_DYN_TYPED_REF &&
     (!strncmp(value->v.typed_ref.type_key, "generator<", 10) || !strncmp(value->v.typed_ref.type_key, "async-generator<", 16));
@@ -102,6 +103,17 @@ static void scr_iterator_symbol_cleanup(void) {
 static void scr_async_iterator_symbol_cleanup(void) {
   scr_dyn_release(scr_async_iterator_symbol);
   scr_async_iterator_symbol = NULL;
+}
+
+static void scr_to_primitive_symbol_cleanup(void) {
+  scr_dyn_release(scr_to_primitive_symbol);
+  scr_to_primitive_symbol = NULL;
+}
+
+void scr_dyn_install_to_primitive_symbol(ScrDyn *key) {
+  if (scr_to_primitive_symbol) return;
+  scr_to_primitive_symbol = scr_dyn_retain(key);
+  scr_atexit(scr_to_primitive_symbol_cleanup);
 }
 
 void scr_dyn_install_async_iterator_symbol(ScrDyn *key) {
@@ -2352,7 +2364,9 @@ const char *scr_dyn_specific_type(const ScrDyn *cb, char *detail, size_t cap) {
   }
   case SCR_DYN_NUM: {
     char num[32];
-    size_t n = scr_f64_to_str(cb->v.num, num);
+    size_t n;
+    if (cb->v.num == 0 && signbit(cb->v.num)) { memcpy(num, "-0", 3); n = 2; }
+    else n = scr_f64_to_str(cb->v.num, num);
     snprintf(detail, cap, "type number (%.*s)", (int)n, num);
     break;
   }
@@ -4574,6 +4588,65 @@ ScrStr *scr_dyn_string_coerce_js(const ScrDyn *d) {
     return NULL;
   }
   return scr_dyn_string_coerce(d);
+}
+
+ScrStr *scr_util_to_usv_string(const ScrDyn *input) {
+  const ScrDyn *value = input ? input : scr_dyn_undefined();
+  /* Native string producers already replace unpaired surrogate code units.
+   * Preserve ToString's object protocol before using that storage invariant. */
+  if (scr_to_primitive_symbol && scr_iterator_object(value)) {
+    ScrDyn *method = scr_dyn_reflect_get((ScrDyn *)value, scr_to_primitive_symbol, (ScrDyn *)value);
+    if (!method) return NULL;
+    if (method->kind != SCR_DYN_UNDEF && method->kind != SCR_DYN_NULL) {
+      if (!scr_dyn_is_callable(method)) {
+        ScrJsonBuf buffer;
+        scr_jb_init(&buffer);
+        if (scr_iterator_object(method)) scr_jb_puts(&buffer, "object");
+        else {
+          ScrStr *type = scr_dyn_typeof(method);
+          scr_jb_put_str(&buffer, type);
+          scr_str_release(type);
+          if (method->kind != SCR_DYN_SYMBOL && method->kind != SCR_DYN_BIGINT) scr_jb_puts(&buffer, " ");
+          if (method->kind == SCR_DYN_STR) {
+            scr_jb_puts(&buffer, "\"");
+            scr_jb_put_str(&buffer, method->v.str);
+            scr_jb_puts(&buffer, "\"");
+          }
+          else if (method->kind != SCR_DYN_SYMBOL && method->kind != SCR_DYN_BIGINT) {
+            ScrStr *text = scr_dyn_string_coerce(method);
+            scr_jb_put_str(&buffer, text);
+            scr_str_release(text);
+          }
+        }
+        scr_jb_puts(&buffer, " is not a function");
+        ScrStr *message = scr_jb_finish(&buffer);
+        scr_throw_error_msg(SCR_ERR_TYPE, message->data, message->len);
+        scr_str_release(message);
+        scr_dyn_release(method);
+        return NULL;
+      }
+      ScrStr *hint = scr_str_new("string", 6);
+      ScrDyn *argument = scr_dyn_new_str(hint);
+      scr_str_release(hint);
+      scr_dyn_this_push_dyn(value);
+      ScrDyn *primitive = scr_dyn_call(method, &argument, 1, "Symbol.toPrimitive");
+      scr_dyn_this_pop();
+      scr_dyn_release(argument);
+      scr_dyn_release(method);
+      if (!primitive) return NULL;
+      if (scr_dyn_to_primitive_result_is_object(primitive)) {
+        static const char message[] = "Cannot convert object to primitive value";
+        scr_throw_error_msg(SCR_ERR_TYPE, message, sizeof message - 1);
+        scr_dyn_release(primitive);
+        return NULL;
+      }
+      ScrStr *text = scr_dyn_string_coerce(primitive);
+      scr_dyn_release(primitive);
+      return text;
+    }
+    scr_dyn_release(method);
+  }
+  return scr_dyn_string_coerce_js(value);
 }
 
 /* JS ToNumber over a checked-dynamic value, including OrdinaryToPrimitive's

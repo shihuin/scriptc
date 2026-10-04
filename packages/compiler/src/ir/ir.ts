@@ -2577,6 +2577,8 @@ export type IrLibFn =
   | "util.getSystemErrorName"
   | "util.getSystemErrorMessage"
   | "util.systemErrorEntries"
+  | "util.stripVTControlCharacters"
+  | "util.toUSVString"
   /** ES Symbol values (scr_symbol.c — link-gated by moduleUsesSymbol).
    * sym.new: `Symbol(desc)` — a fresh runtime-unique identity (+1) whose
    * one arg is the description string (borrowed); sym.newAnon is the
@@ -6809,7 +6811,7 @@ function scanRuntimeFeatures(mod: IrModule, stopAt?: keyof RuntimeFeatures): Run
   const expr = (node: IrExpr): boolean => {
     if (node.kind === "libCall") {
       const fn = node.fn;
-      if (fn === "regexp.escape" || fn === "dyn.nativeRegexIs") features.regex = true;
+      if (fn === "regexp.escape" || fn === "dyn.nativeRegexIs" || fn === "util.stripVTControlCharacters") features.regex = true;
       if (fn === "text.decodeLegacy" || fn === "text.decodeLegacyOptions" || fn === "text.decodeStream") features.legacyTextDecoder = true;
       if (fn.startsWith("fetch.")) features.fetch = true;
       if (PROCESS_EVENT_LIB_FNS.has(fn)) features.processEvents = true;
@@ -7782,6 +7784,8 @@ export const MAY_THROW_LIB_FNS: ReadonlySet<IrLibFn> = new Set([
   "util.parseEnv",
   "util.getSystemErrorName",
   "util.getSystemErrorMessage",
+  "util.stripVTControlCharacters",
+  "util.toUSVString",
   // decodeURIComponent throws the spec's URIError on bad hex/invalid
   // UTF-8 octets (encodeURIComponent never throws — see the IrLibFn doc).
   "str.decodeUriComponent",

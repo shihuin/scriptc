@@ -1887,6 +1887,8 @@ declare module "util" {
   export function getSystemErrorName(err: number): string;
   export function getSystemErrorMessage(err: number): string;
   export function getSystemErrorMap(): Map<number, [string, string]>;
+  export function stripVTControlCharacters(str: string): string;
+  export function toUSVString(string: string): string;
   export function parseEnv(content: string): { [key: string]: string | undefined };
   export type TextEncoder = globalThis.TextEncoder;
   export type TextDecoder = globalThis.TextDecoder;

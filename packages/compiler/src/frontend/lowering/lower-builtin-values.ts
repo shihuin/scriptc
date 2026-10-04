@@ -28,6 +28,9 @@ export function builtinPrototypeMethod(lowerer: Lowerer, expr: ts.PropertyAccess
 export function isNativeBuiltinValueInitializer(lowerer: Lowerer, expr: ts.Expression | undefined, seen = new Set<ts.Symbol>()): boolean {
   if (!expr) return false;
   while (ts.isParenthesizedExpression(expr)) expr = expr.expression;
+  const builtin = ts.isIdentifier(expr) ? lowerer.builtinImportOf(expr)
+    : ts.isPropertyAccessExpression(expr) ? lowerer.builtinMemberOf(expr) : null;
+  if (builtin?.module === "util" && ["stripVTControlCharacters", "toUSVString"].includes(builtin.member)) return true;
   // JS global snapshots may use an opaque builtin identity rather than
   // the ambient constructor's callable ABI. Store that actual value in
   // the checked representation, including optional capability probes.

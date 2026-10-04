@@ -1990,6 +1990,18 @@
       "note": "the lowered shapes are const bindings over child_process.execFile and fs.readFile; call the bound function directly"
     },
     {
+      "id": "node-builtin.util.stripVTControlCharacters",
+      "kind": "node-builtin",
+      "name": "util.stripVTControlCharacters",
+      "status": "static"
+    },
+    {
+      "id": "node-builtin.util.toUSVString",
+      "kind": "node-builtin",
+      "name": "util.toUSVString",
+      "status": "static"
+    },
+    {
       "id": "node-builtin.util.types",
       "kind": "node-builtin",
       "name": "util/types",

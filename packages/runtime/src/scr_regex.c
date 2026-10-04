@@ -719,6 +719,60 @@ ScrStr *scr_regex_replace(ScrStr *s, ScrRegex *re, ScrStr *rep) {
   return scr_replace_impl(s, re, rep);
 }
 
+
+/* The pinned Node ANSI matcher derives from ansi-regex, copyright (c)
+ * Sindre Sorhus <sindresorhus@gmail.com>, used under the MIT license:
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ * Keep the pattern equivalent to Node v24.15.0 internal/util/inspect.js. */
+#define SCR_VT_PATTERN "[\\u001B\\u009B][[\\]()#;?]*" \
+  "(?:(?:(?:(?:;[-a-zA-Z\\d\\/\\#&.:=?%@~_]+)*" \
+  "|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/\\#&.:=?%@~_]*)*)?" \
+  "(?:\\u0007|\\u001B\\u005C|\\u009C))" \
+  "|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
+
+ScrStr *scr_util_strip_vt(const ScrDyn *input) {
+  if (!input || input->kind != SCR_DYN_STR) {
+    scr_dyn_arg_type_fail("str", "of type string", input ? input : scr_dyn_undefined());
+    return NULL;
+  }
+  ScrStr *subject = input->v.str;
+  bool escape = false;
+  for (size_t i = 0; i < subject->len; i++) {
+    if (subject->data[i] == '\x1b' || ((unsigned char)subject->data[i] == 0xc2 &&
+        i + 1 < subject->len && (unsigned char)subject->data[i + 1] == 0x9b)) {
+      escape = true;
+      break;
+    }
+  }
+  if (!escape) return scr_str_retain(subject);
+  static const struct { size_t rc, len, cap; char data[sizeof SCR_VT_PATTERN]; }
+    source = { SIZE_MAX, sizeof SCR_VT_PATTERN - 1, sizeof SCR_VT_PATTERN - 1, SCR_VT_PATTERN };
+  static const struct { size_t rc, len, cap; char data[2]; }
+    flags = { SIZE_MAX, 1, 1, "g" };
+  static SCR_TL ScrRegex template = { SIZE_MAX, (ScrStr *)&source, (ScrStr *)&flags, NULL, 0, NULL };
+  ScrRegex *regex = scr_regex_literal(&template);
+  ScrStr *empty = scr_str_new("", 0);
+  ScrStr *result = scr_regex_replace(subject, regex, empty);
+  scr_str_release(empty);
+  scr_regex_release(regex);
+  return result;
+}
+#undef SCR_VT_PATTERN
+
 ScrStr *scr_regex_replace_all(ScrStr *s, ScrRegex *re, ScrStr *rep) {
   if (!(lre_get_flags(scr_regex_bc(re)) & LRE_FLAG_GLOBAL)) {
     /* Node's exact TypeError — a real instance now: catch bindings narrow

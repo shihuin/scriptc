@@ -4,24 +4,24 @@
   "nodeCommit": "848430679556aed0bd073f2bc263331ad84fa119",
   "summary": {
     "taskCount": 3368,
-    "tierItemCount": 6647,
+    "tierItemCount": 6645,
     "tiers": {
       "static": {
         "replace-refusal": 43,
-        "verify-gap": 2512,
-        "audit-partial": 657,
+        "verify-gap": 2510,
+        "audit-partial": 659,
         "classify": 2,
         "implement": 81
       },
       "dynamic": {
-        "audit-partial": 848,
+        "audit-partial": 846,
         "verify-gap": 2178,
         "replace-refusal": 112,
         "implement": 214
       }
     },
     "priorities": {
-      "high": 4484,
+      "high": 4482,
       "normal": 1411,
       "low": 752
     }
@@ -95707,21 +95707,17 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
           "status": "partial",
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:util.stripVTControlCharacters",
+          "source": "compiler-feature:util.util.stripVTControlCharacters",
           "tests": [
-            "tests/fixtures/npm/cases/util-shims/main.ts"
+            "tests/corpus/node24-text-utilities.ts",
+            "tests/corpus/node24-text-utilities-validation.js",
+            "tests/corpus/node24-text-utilities-coercion.js",
+            "tests/corpus/node24-text-utilities.cjs",
+            "tests/fixtures/node-types/text-utilities.ts"
           ]
         }
       }
@@ -95777,21 +95773,17 @@
       "priority": "high",
       "tiers": {
         "static": {
-          "status": "not-implemented",
-          "action": "verify-gap",
-          "verification": "registry-gap",
-          "confidence": "low",
-          "source": "compiler-unmatched:util",
-          "tests": []
-        },
-        "dynamic": {
           "status": "partial",
           "action": "audit-partial",
           "verification": "test-backed",
           "confidence": "high",
-          "source": "island-export:node:util.toUSVString",
+          "source": "compiler-feature:util.util.toUSVString",
           "tests": [
-            "tests/fixtures/npm/cases/util-shims/main.ts"
+            "tests/corpus/node24-text-utilities.ts",
+            "tests/corpus/node24-text-utilities-validation.js",
+            "tests/corpus/node24-text-utilities-coercion.js",
+            "tests/corpus/node24-text-utilities.cjs",
+            "tests/fixtures/node-types/text-utilities.ts"
           ]
         }
       }
