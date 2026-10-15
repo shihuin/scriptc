@@ -29,6 +29,34 @@ const SCR_ARR_VALUE = 1;
  * array header loads out of loops whose only calls are these cold paths. */
 const READ_FALLBACK = " cold memory(read, inaccessiblemem: readwrite)";
 
+/** Guard-fallback kinds, as the runtime's counter table indexes them. A
+ * fallback is a site where the inlined dense fast path gave up and called
+ * the runtime, so these counts answer "how often does the fast path miss",
+ * per operation, for a real program run. */
+export const GUARD_FALLBACK = {
+  /** `a[i]` read. */
+  read: 0,
+  /** `a[i]` state / `i in a` query. */
+  state: 1,
+  /** `a[i] = v`. */
+  write: 2,
+  /** `a.push(v)`. */
+  push: 3,
+} as const;
+
+/** Count one guard fallback in the measured lane.
+ *
+ * `host.objectAudit` is the `--sanitize` lane's flag, so this is compiled
+ * out of production builds entirely (the emitted call would otherwise cost a
+ * call at every cold path). The runtime defines `scr_check_note` only in its
+ * `SCR_RC_AUDIT` form and no-ops it elsewhere, so a stale emitter cannot
+ * produce an undefined symbol. */
+function noteGuardFallback(host: LlvmEmitterContext, kind: number): void {
+  if (!host.objectAudit) return;
+  host.declare("declare void @scr_check_note(i32)");
+  host.B.line(`call void @scr_check_note(i32 ${kind})`);
+}
+
 interface DenseGuard {
   /** The checked dense offset, in the target's size type. */
   offset: string;
@@ -274,6 +302,7 @@ export function emitDenseArrayGet(
   }
   B.br(join);
   B.startBlock(slow);
+  noteGuardFallback(host, GUARD_FALLBACK.read);
   const slowValue = B.tmp();
   const attrs = acc === "ref" && retain ? " cold" : READ_FALLBACK;
   B.line(`${slowValue} = call ${ty} @${getter}(ptr ${array}, double ${index.name})${attrs}`);
@@ -334,6 +363,7 @@ export function emitDenseArrayState(
   B.startBlock(filledLabel);
   B.br(join);
   B.startBlock(slow);
+  noteGuardFallback(host, GUARD_FALLBACK.state);
   const slowValue = B.tmp();
   B.line(`${slowValue} = call ${ty} @${fn}(ptr ${array}, double ${index.name})${READ_FALLBACK}`);
   B.br(join);
@@ -463,6 +493,7 @@ export function emitDenseArraySet(
   if (filledOld) host.releaseValue(filledOld, element);
   B.br(join);
   B.startBlock(slow);
+  noteGuardFallback(host, GUARD_FALLBACK.write);
   call(" cold");
   B.br(join);
   B.startBlock(join);
@@ -541,6 +572,7 @@ export function emitDenseArrayPush(
   B.line(`${fastValue} = sitofp ${size} ${next} to double`);
   B.br(join);
   B.startBlock(slow);
+  noteGuardFallback(host, GUARD_FALLBACK.push);
   const slowValue = B.tmp();
   B.line(`${slowValue} = call double @${pusher}(ptr ${array}, ${ty} ${value}) cold`);
   B.br(join);

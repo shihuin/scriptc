@@ -509,6 +509,11 @@ export class LlEmitter {
   private localUnionStorageProofs = new Map<string, LocalUnionStorageProof>();
   private localUnionStorage = new Map<string, LocalUnionStorage>();
   integerArrayBindings = new Set<string>();
+  /** Emit the runtime measurement notes — live-object audit notes in the
+   * emitted new/free helpers and guard-fallback counts at the cold paths of
+   * the inlined element guards. Only the sanitized lane's `SCR_RC_AUDIT`
+   * runtime answers them; see `EmitterOptions.objectAudit`. */
+  readonly objectAudit: boolean;
   private readonly fieldAliasTags = new Map<string, number>();
   private readonly fieldPointerTags = new Map<string, number>();
 
@@ -963,6 +968,7 @@ export class LlEmitter {
     this.immortalGlobals = new Set(mod.contracts?.immortalGlobals ?? []);
     this.programLifetime = new Set(mod.contracts?.programLifetime ?? []);
     this.finalFields = analyzeFinalFields(mod);
+    this.objectAudit = options.objectAudit !== false;
     this.sizeType = options.pointerBits === 32 ? "i32" : "i64";
     this.ffiExtendNarrowIntegers =
       options.wasi === true || ffiExtendsNarrowIntegers(options.targetTriple);
@@ -1128,7 +1134,7 @@ export class LlEmitter {
       unionNoneRef: () => this.unionNoneRef(),
       recordsById: this.recordsById,
       recordCloneShapes: this.recordCloneShapes,
-      objectAudit: options.objectAudit !== false,
+      objectAudit: this.objectAudit,
       inlineAlloc: inlineAllocSupported({
         pointerBits: options.pointerBits,
         wasi: options.wasi,

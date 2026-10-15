@@ -87,6 +87,21 @@ static void scr_rc_audit_at_exit(void) {
     _Exit(99);
   }
 }
+
+/** SCRIPTC_CHECK_STATS=1: report how often each inlined element guard gave up
+ * and called the runtime. Off by default — a measured binary's stderr must
+ * stay byte-for-byte comparable with Node, since the differential lanes
+ * compare it — and printed after the leak audit, so a failing audit still
+ * exits first. */
+static void scr_check_stats_at_exit(void) {
+  const char *env = scr_getenv("SCRIPTC_CHECK_STATS");
+  if (env == NULL || env[0] == '\0' || env[0] == '0') return;
+  static const char *const names[] = {"read", "state", "write", "push"};
+  fflush(stdout);
+  fprintf(stderr, "scriptc guard fallbacks:");
+  for (int i = 0; i < 4; i++) fprintf(stderr, " %s=%ld", names[i], scr_check_count(i));
+  fprintf(stderr, "\n");
+}
 #endif
 
 static void scr_flush_at_exit(void) { fflush(stdout); }
@@ -168,6 +183,7 @@ void scr_init(void) {
   scr_atexit(scr_flush_at_exit);
 #ifdef SCR_RC_AUDIT
   scr_atexit(scr_rc_audit_at_exit);
+  scr_atexit(scr_check_stats_at_exit);
 #endif
   scr_atexit(scr_collect_cycles_at_exit);
 }

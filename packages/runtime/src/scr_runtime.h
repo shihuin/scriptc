@@ -6229,6 +6229,25 @@ long scr_obj_lifetime_count(void);
 void scr_obj_lifetime_forget(long n);
 #endif
 
+/* ── guard-fallback counters ──────────────────────────────────────────
+ * The compiler's inlined element guards branch to their runtime entry when
+ * the dense fast path does not apply. In the measured lane every such branch
+ * counts itself first, so a run can answer "how often did the fast path
+ * miss", per operation. `kind` indexes GUARD_FALLBACK in
+ * packages/compiler/src/backend/llvm/dense-array-access.ts.
+ *
+ * Like the live-object notes above, the symbol exists in every runtime (the
+ * plain one defines an empty function) because directly emitted code may
+ * still call it; only the SCR_RC_AUDIT form counts. The summary prints from
+ * scr_console.c and only when SCRIPTC_CHECK_STATS=1, so a measured binary
+ * stays byte-for-byte comparable with Node unless the operator asks. */
+void scr_check_note(int kind);
+#ifdef SCR_RC_AUDIT
+long scr_check_count(int kind);
+#else
+#define scr_check_note(kind) ((void)0)
+#endif
+
 /* ── counted lifetime regions (scr_region.c) ───────────────────────────
  * Programs that construct a LifetimeRegion (@scriptc/experimental) allocate
  * every ProgramLifetime instance in the thread's CURRENT region instead of

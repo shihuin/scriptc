@@ -368,3 +368,16 @@ test("an empty literal's capacity hint sizes its first dense storage", () => {
   );
   expect(body(llvm, "fresh")).toMatch(/call ptr @scr_arr_new\(.*, i64 3\)/);
 });
+
+test("the measured lane counts guard fallbacks and the plain lane emits none", () => {
+  const read: IrExpr = { kind: "arrayGet", arr: ref("a", nums), index, type: F64, loc };
+  const ir = module("get", F64, [{ kind: "return", value: read, loc }]);
+
+  // The fallback block counts one read miss before calling the runtime.
+  const measured = body(emitLlvmModule(ir, { pointerBits: 64 }), "get");
+  expect(measured).toContain("call void @scr_check_note(i32 0)");
+
+  // A plain build carries neither the call nor its declaration.
+  const plain = emitLlvmModule(ir, { pointerBits: 64, objectAudit: false });
+  expect(plain).not.toContain("scr_check_note");
+});

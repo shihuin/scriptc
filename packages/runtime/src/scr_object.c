@@ -102,10 +102,25 @@ void scr_obj_lifetime_note(const void *obj) {
   scr_lsan_immortal(obj);
 }
 void scr_obj_lifetime_forget(long n) { scr_lifetime_objects -= n; }
+/* Guard-fallback counters (scr_runtime.h): one bucket per operation whose
+ * inlined dense fast path can miss. Thread-local like the live counts, so a
+ * worker program reports the script thread's own misses. */
+#define SCR_CHECK_KINDS 4
+static SCR_TL long scr_check_counts[SCR_CHECK_KINDS];
+long scr_check_count(int kind) {
+  return (kind >= 0 && kind < SCR_CHECK_KINDS) ? scr_check_counts[kind] : 0;
+}
+void scr_check_note(int kind) {
+  if (kind >= 0 && kind < SCR_CHECK_KINDS) scr_check_counts[kind]++;
+}
 #else
 #undef scr_obj_alloc_note
 #undef scr_obj_free_note
+#undef scr_check_note
 void scr_obj_alloc_note(void) {}
 void scr_obj_free_note(void) {}
 void scr_obj_lifetime_note(const void *obj) { (void)obj; }
+/* Directly emitted code may call the note; the plain runtime keeps the
+ * symbol and drops the count. */
+void scr_check_note(int kind) { (void)kind; }
 #endif
