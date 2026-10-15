@@ -6242,6 +6242,9 @@ void scr_obj_lifetime_forget(long n);
  * scr_console.c and only when SCRIPTC_CHECK_STATS=1, so a measured binary
  * stays byte-for-byte comparable with Node unless the operator asks. */
 void scr_check_note(int kind);
+/** Buckets the table holds; kinds outside it are ignored. Both the store
+ * (scr_object.c) and the report (scr_console.c) read this. */
+#define SCR_CHECK_KINDS 4
 #ifdef SCR_RC_AUDIT
 long scr_check_count(int kind);
 #else

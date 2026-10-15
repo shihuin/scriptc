@@ -104,8 +104,8 @@ void scr_obj_lifetime_note(const void *obj) {
 void scr_obj_lifetime_forget(long n) { scr_lifetime_objects -= n; }
 /* Guard-fallback counters (scr_runtime.h): one bucket per operation whose
  * inlined dense fast path can miss. Thread-local like the live counts, so a
- * worker program reports the script thread's own misses. */
-#define SCR_CHECK_KINDS 4
+ * worker program reports the script thread's own misses. The bucket count is
+ * SCR_CHECK_KINDS, declared beside the note in scr_runtime.h. */
 static SCR_TL long scr_check_counts[SCR_CHECK_KINDS];
 long scr_check_count(int kind) {
   return (kind >= 0 && kind < SCR_CHECK_KINDS) ? scr_check_counts[kind] : 0;

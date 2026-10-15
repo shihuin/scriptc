@@ -96,10 +96,13 @@ static void scr_rc_audit_at_exit(void) {
 static void scr_check_stats_at_exit(void) {
   const char *env = scr_getenv("SCRIPTC_CHECK_STATS");
   if (env == NULL || env[0] == '\0' || env[0] == '0') return;
-  static const char *const names[] = {"read", "state", "write", "push"};
+  static const char *const names[SCR_CHECK_KINDS] = {"read", "state", "write", "push"};
+  _Static_assert(sizeof(names) / sizeof(names[0]) == SCR_CHECK_KINDS,
+                 "every guard-fallback bucket needs a name here and in GUARD_FALLBACK");
   fflush(stdout);
   fprintf(stderr, "scriptc guard fallbacks:");
-  for (int i = 0; i < 4; i++) fprintf(stderr, " %s=%ld", names[i], scr_check_count(i));
+  for (int i = 0; i < SCR_CHECK_KINDS; i++)
+    fprintf(stderr, " %s=%ld", names[i], scr_check_count(i));
   fprintf(stderr, "\n");
 }
 #endif
