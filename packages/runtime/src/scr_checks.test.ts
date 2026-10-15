@@ -9,7 +9,7 @@ import { EXECUTABLE_RUNTIME_SOURCES } from "../../compiler/src/backend/native-to
 const exec = promisify(execFile);
 
 /** What the driver counted, in the report's own order. */
-const REPORTED = "scriptc guard fallbacks: read=2 state=1 write=0 push=1";
+const REPORTED = "scriptc guard fallbacks: read=2 state=1 write=0 push=1 local=1";
 
 /* The counters only exist in the RC-audit runtime, and the report only fires
  * with the variable set, so one lane is enough — but it has to be the

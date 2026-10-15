@@ -165,6 +165,9 @@ test("private optional array results use local tags and borrowed payloads on bot
     const body = workBody(mod, pointerBits);
     expect(body).toContain("alloca %ScrUnion");
     expect(body).toContain("@scr_arr_peek_ref");
+    // The measured lane counts the runtime fallback of this guard (kind 4: a
+    // local/projected array read) in front of the runtime entry.
+    expect(body).toContain("call void @scr_check_note(i32 4)");
     expect(body).not.toContain("@sc_bf_read(");
     expect(body).not.toContain("@scr_union_release");
     expect(body).not.toContain("@sc_rretain_");

@@ -42,6 +42,11 @@ export const GUARD_FALLBACK = {
   write: 2,
   /** `a.push(v)`. */
   push: 3,
+  /** A read of a local/projected array (local-array-reads.ts). Only counted
+   * where the dense guard is actually inlined; a build that does not inline
+   * that path sends every read to the runtime, which would report a 100%
+   * miss rate for a path that was never emitted. */
+  localRead: 4,
 } as const;
 
 /** Count one guard fallback in the measured lane.
@@ -51,7 +56,7 @@ export const GUARD_FALLBACK = {
  * call at every cold path). The runtime defines `scr_check_note` only in its
  * `SCR_RC_AUDIT` form and no-ops it elsewhere, so a stale emitter cannot
  * produce an undefined symbol. */
-function noteGuardFallback(host: LlvmEmitterContext, kind: number): void {
+export function noteGuardFallback(host: LlvmEmitterContext, kind: number): void {
   if (!host.objectAudit) return;
   host.declare("declare void @scr_check_note(i32)");
   host.B.line(`call void @scr_check_note(i32 ${kind})`);

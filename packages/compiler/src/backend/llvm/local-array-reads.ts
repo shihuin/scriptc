@@ -13,6 +13,7 @@ import { analyzeCallLifetimes, type CallLifetimes } from "./call-lifetimes.js";
 import type { LlValue, LlvmEmitterContext } from "./expr-context.js";
 import { ReferenceEffects } from "./reference-effects.js";
 import { SCR_ARR_FIELD, exactIndexLines } from "./common.js";
+import { GUARD_FALLBACK, noteGuardFallback } from "./dense-array-access.js";
 import { exactInteger, widenInteger } from "./integer-values.js";
 
 export interface LocalArrayRead {
@@ -593,6 +594,7 @@ export function emitBorrowedArrayRead(
     join,
   );
   B.startBlock(slow);
+  noteGuardFallback(host, GUARD_FALLBACK.localRead);
   host.declare("declare ptr @scr_arr_borrow_ref(ptr, double)");
   const value = B.tmp();
   B.line(`${value} = call ptr @scr_arr_borrow_ref(ptr ${array.name}, double ${index.name})`);
@@ -632,6 +634,7 @@ export function emitLocalArrayRead(
       emitDenseReferenceArrayRead(host, array, index, integerIndex, store, no, slow, join, "ptr");
     else B.br(slow);
     B.startBlock(slow);
+    if (inline) noteGuardFallback(host, GUARD_FALLBACK.localRead);
     const present = B.newLabel("local.array.slow.value");
     host.declare("declare ptr @scr_arr_peek_ref(ptr, double) memory(read)");
     const value = B.tmp(),
@@ -692,6 +695,7 @@ export function emitLocalArrayRead(
     );
   else B.br(slow);
   B.startBlock(slow);
+  if (inline) noteGuardFallback(host, GUARD_FALLBACK.localRead);
   const slowValue = B.newLabel("local.array.slow.value");
   if (scalar) {
     // Holes, present undefined, sparse and noncanonical indices: the

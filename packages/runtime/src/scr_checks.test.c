@@ -17,19 +17,21 @@ int main(void) {
   /* An out-of-range kind is ignored rather than written out of bounds: the
    * emitter and this table must never be able to corrupt memory. */
   scr_check_note(-1);
-  scr_check_note(4);
+  scr_check_note(SCR_CHECK_KINDS);
   scr_check_note(999);
   assert(scr_check_count(-1) == 0);
-  assert(scr_check_count(4) == 0);
+  assert(scr_check_count(SCR_CHECK_KINDS) == 0);
 
   scr_check_note(0); /* read  */
   scr_check_note(0); /* read  */
   scr_check_note(1); /* state */
   scr_check_note(3); /* push  */
+  scr_check_note(4); /* local read */
   assert(scr_check_count(0) == 2);
   assert(scr_check_count(1) == 1);
   assert(scr_check_count(2) == 0);
   assert(scr_check_count(3) == 1);
+  assert(scr_check_count(4) == 1);
 
   printf("counted\n");
   return 0;
