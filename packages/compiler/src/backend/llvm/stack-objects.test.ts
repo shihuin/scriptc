@@ -82,6 +82,24 @@ test("projection-only records live in frame storage and producers fill it", asyn
   expect(escaping).not.toMatch(/alloca %sc_rs_/);
 });
 
+test("a result-slot entry's dst parameter is noalias, and nothing else is", async () => {
+  const ir = emitLlvmModule(await moduleFor(VECTORS));
+  const defines = [...ir.matchAll(/^define [^\n]*$/gm)].map((match) => match[0]);
+  const entries = defines.filter((line) => /into_\w+\(/.test(line));
+  expect(entries.length).toBeGreaterThan(0);
+  for (const line of entries) {
+    const params = line.slice(line.indexOf("(") + 1, line.lastIndexOf(")"));
+    const last = params.slice(params.lastIndexOf(",") + 1).trim();
+    // The scalar result slot holds no pointers and is reachable from no
+    // other pointer, so the callee may promise LLVM it does not alias.
+    expect(last, line).toMatch(/^ptr noalias /);
+  }
+  for (const line of defines) {
+    if (/into_\w+\(/.test(line)) continue;
+    expect(line).not.toContain("noalias");
+  }
+});
+
 test("reassigned bindings build each value apart and copy it into their slot", async () => {
   const ir = emitLlvmModule(await moduleFor(VECTORS));
   const reassigned = body(ir, "reassigned");

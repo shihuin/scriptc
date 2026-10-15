@@ -76,7 +76,7 @@ import {
   type StringSplit,
 } from "./split-loops.js";
 import { scalarizeNumericRecords } from "../../ir/scalar-records.js";
-import { addRecordResultEntries } from "./record-results.js";
+import { addRecordResultEntries, RESULT_ENTRY_PREFIX } from "./record-results.js";
 import { specializeNumericCalls } from "../../ir/numeric-call-specialization.js";
 import { everyExpr, everyExprChild, everyStmtChild, everyStmtList } from "../../ir/traverse.js";
 import { analyzeIntegerRanges, INT32_RANGE, type IntegerRanges } from "../../ir/integer-ranges.js";
@@ -462,6 +462,26 @@ function llStrBytes(text: string): string {
 }
 
 const NO_BORROWED: ReadonlySet<number> = new Set();
+
+/** Whether `fn` is a result-slot entry (`%into.<name>`) whose trailing `dst`
+ * parameter receives a caller-provided scalar record.
+ *
+ * `record-results.ts` gives such a function one extra parameter and the
+ * callers that use it (`stack-objects.ts`) always pass a private frame slot
+ * holding a scalar record or scalar standalone class. Those shapes hold only
+ * numbers, booleans and inline scalar unions — no pointers — and no other
+ * pointer can name the fresh slot, so the entry and the owned-ABI adapter
+ * that forwards it may both promise LLVM `noalias`. The reward is that the
+ * caller's own values stay in registers across the filling stores instead of
+ * being reloaded after the call. */
+function resultSlotDst(fn: IrFunction): boolean {
+  const last = fn.params[fn.params.length - 1];
+  return (
+    fn.name.startsWith(RESULT_ENTRY_PREFIX) &&
+    last !== undefined &&
+    (last.type.kind === "record" || last.type.kind === "object")
+  );
+}
 
 /** Whether any node of `e` names the local (reads, writes, declarations,
  * captures). */
@@ -5974,10 +5994,19 @@ export class LlEmitter {
     if (this.logArgSlots > 0) {
       B.entryAllocas.push(`%logargs = alloca [${this.logArgSlots} x %ScrLogArg]`);
     }
+    // A result-slot entry (`record-results.ts`) writes its fresh result into
+    // the trailing `dst` parameter, which the caller always supplies as a
+    // private frame slot (stack-objects.ts) holding a scalar record or scalar
+    // standalone class: numbers, booleans and inline scalar unions, so it has
+    // no pointer fields and no other pointer can name it. Marking it
+    // `noalias` lets LLVM keep the caller's memory that it reads live in
+    // registers across the filling stores instead of reloading after the
+    // call.
+    const noaliasDst = resultSlotDst(fn);
     const params = fn.params.map((p, index) =>
       int32Abi?.params[index]
         ? `i32 %p_${mangleLocal(p.localId)}${INT32_ABI_SUFFIX}`
-        : `${this.llType(p.type)} %p_${mangleLocal(p.localId)}`,
+        : `${this.llType(p.type)} ${noaliasDst && index === fn.params.length - 1 ? "noalias " : ""}%p_${mangleLocal(p.localId)}`,
     );
     // The i32 entry widens its i32 parameters once; the proof makes the
     // double exact, so readers of the incoming number see the same value.
@@ -6189,7 +6218,13 @@ export class LlEmitter {
   ): string {
     const B = new BlockBuilder();
     this.B = B;
-    const params = fn.params.map((param, index) => `${this.llType(param.type)} %p${index}`);
+    // The adapter forwards a result-slot entry's `dst` unchanged, so it
+    // carries the same `noalias` promise as the borrowing body it calls.
+    const noaliasDst = resultSlotDst(fn);
+    const params = fn.params.map(
+      (param, index) =>
+        `${this.llType(param.type)} ${noaliasDst && index === fn.params.length - 1 ? "noalias " : ""}%p${index}`,
+    );
     // Lifted bodies receive their closure first (the callValue ABI).
     if (fn.captures !== undefined) params.unshift("ptr %sc_env");
     const ret = this.llType(fn.returnType);
