@@ -1,0 +1,6 @@
+{
+ "order": [
+  "<repo>/tests/corpus/2709-counted-loop-sparse-fallback.ts"
+ ],
+ "diags": []
+}
