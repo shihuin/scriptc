@@ -100,6 +100,31 @@ test("a result-slot entry's dst parameter is noalias, and nothing else is", asyn
   }
 });
 
+test("a scalar class constructor's this is noalias, and an escaping one is not", async () => {
+  const ir = emitLlvmModule(
+    await moduleFor(`
+const seen: Tracked[] = [];
+class Plain { a: number; b: number; constructor(a: number, b: number) { this.a = a; this.b = b; } }
+class Tracked { id: number; constructor(id: number) { this.id = id; seen.push(this); } }
+export function use(n: number): number {
+  let acc = 0;
+  for (let i = 0; i < n; i++) { const p = new Plain(i, acc); const t = new Tracked(i); acc += p.a + p.b + t.id; }
+  return acc;
+}
+console.log(use(3), seen.length);
+`),
+  );
+  // Every constructor entry of the scalar class promises noalias on `this`;
+  // the class whose constructor lets `this` escape must not.
+  const selfOf = (line: string) => line.slice(line.indexOf("(") + 1, line.indexOf(",")).trim();
+  const plain = [...ir.matchAll(/^define internal void @\w*Plain_constructor[^(]*\([^\n]*$/gm)].map((m) => m[0]);
+  const tracked = [...ir.matchAll(/^define internal void @\w*Tracked_constructor[^(]*\([^\n]*$/gm)].map((m) => m[0]);
+  expect(plain.length).toBeGreaterThan(0);
+  expect(tracked.length).toBeGreaterThan(0);
+  for (const line of plain) expect(selfOf(line), line).toMatch(/^ptr noalias /);
+  for (const line of tracked) expect(selfOf(line), line).not.toContain("noalias");
+});
+
 test("reassigned bindings build each value apart and copy it into their slot", async () => {
   const ir = emitLlvmModule(await moduleFor(VECTORS));
   const reassigned = body(ir, "reassigned");

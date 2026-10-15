@@ -76,7 +76,11 @@ import {
   type StringSplit,
 } from "./split-loops.js";
 import { scalarizeNumericRecords } from "../../ir/scalar-records.js";
-import { addRecordResultEntries, RESULT_ENTRY_PREFIX } from "./record-results.js";
+import {
+  addRecordResultEntries,
+  RESULT_ENTRY_PREFIX,
+  scalarStandaloneClass,
+} from "./record-results.js";
 import { specializeNumericCalls } from "../../ir/numeric-call-specialization.js";
 import { everyExpr, everyExprChild, everyStmtChild, everyStmtList } from "../../ir/traverse.js";
 import { analyzeIntegerRanges, INT32_RANGE, type IntegerRanges } from "../../ir/integer-ranges.js";
@@ -482,6 +486,9 @@ function resultSlotDst(fn: IrFunction): boolean {
     (last.type.kind === "record" || last.type.kind === "object")
   );
 }
+
+/** The suffix of a class constructor's IR name (`%<Class>.constructor`). */
+const CONSTRUCTOR_SUFFIX = ".constructor";
 
 /** Whether any node of `e` names the local (reads, writes, declarations,
  * captures). */
@@ -5600,6 +5607,41 @@ export class LlEmitter {
     }
   }
 
+  /** The index of the one parameter that may be marked `noalias`, or null.
+   *
+   * Two sites prove disjointness by construction:
+   *
+   *  - a result-slot entry's trailing `dst` (`record-results.ts`), which the
+   *    only callers that use it (`stack-objects.ts`) always fill from a
+   *    private frame slot holding a scalar record;
+   *  - the `this` parameter of a class constructor whose instance is a plain
+   *    scalar record that `this` never escapes (`scalarStandaloneClass`):
+   *    every caller — the stack path, the heap `new` path and the constructor
+   *    thunk — passes a freshly allocated object, and the class's fields are
+   *    numbers, booleans and inline scalar unions only, so the object holds
+   *    no pointers at all and no other pointer can name it.
+   *
+   * Without the promise LLVM must assume the call clobbers anything
+   * reachable and reloads values the caller already had in registers. */
+  private noaliasParam(fn: IrFunction): number | null {
+    if (resultSlotDst(fn)) return fn.params.length - 1;
+    if (!fn.name.endsWith(CONSTRUCTOR_SUFFIX)) return null;
+    const className = fn.name.slice(1, -CONSTRUCTOR_SUFFIX.length);
+    const meta = this.classMeta.get(className);
+    if (meta === undefined) return null;
+    const self = fn.params[0];
+    if (self === undefined || self.type.kind !== "object") return null;
+    return scalarStandaloneClass(
+      meta.def,
+      this.fnByName.get(fn.name),
+      meta.hierarchy,
+      this.programLifetime.has(className),
+      this.inlineUnions,
+    )
+      ? 0
+      : null;
+  }
+
   private emitFunction(fn: IrFunction): string {
     const B = new BlockBuilder();
     this.B = B;
@@ -5994,19 +6036,14 @@ export class LlEmitter {
     if (this.logArgSlots > 0) {
       B.entryAllocas.push(`%logargs = alloca [${this.logArgSlots} x %ScrLogArg]`);
     }
-    // A result-slot entry (`record-results.ts`) writes its fresh result into
-    // the trailing `dst` parameter, which the caller always supplies as a
-    // private frame slot (stack-objects.ts) holding a scalar record or scalar
-    // standalone class: numbers, booleans and inline scalar unions, so it has
-    // no pointer fields and no other pointer can name it. Marking it
-    // `noalias` lets LLVM keep the caller's memory that it reads live in
-    // registers across the filling stores instead of reloading after the
-    // call.
-    const noaliasDst = resultSlotDst(fn);
+    // See `noaliasParam`: a proven-disjoint parameter — a result slot's
+    // `dst`, or a scalar class constructor's `this` — may promise LLVM it
+    // does not alias anything else the callee can reach.
+    const noaliasIndex = this.noaliasParam(fn);
     const params = fn.params.map((p, index) =>
       int32Abi?.params[index]
         ? `i32 %p_${mangleLocal(p.localId)}${INT32_ABI_SUFFIX}`
-        : `${this.llType(p.type)} ${noaliasDst && index === fn.params.length - 1 ? "noalias " : ""}%p_${mangleLocal(p.localId)}`,
+        : `${this.llType(p.type)} ${index === noaliasIndex ? "noalias " : ""}%p_${mangleLocal(p.localId)}`,
     );
     // The i32 entry widens its i32 parameters once; the proof makes the
     // double exact, so readers of the incoming number see the same value.
@@ -6055,9 +6092,10 @@ export class LlEmitter {
     const lines: string[] = [];
     const params: string[] = [];
     const args: string[] = [];
+    const noaliasIndex = this.noaliasParam(fn);
     fn.params.forEach((param, index) => {
       const type = this.llType(param.type);
-      params.push(`${type} %p${index}`);
+      params.push(`${type} ${index === noaliasIndex ? "noalias " : ""}%p${index}`);
       if (abi.params[index]) {
         lines.push(`  %a${index} = fptosi double %p${index} to i32`);
         args.push(`i32 %a${index}`);
@@ -6218,12 +6256,13 @@ export class LlEmitter {
   ): string {
     const B = new BlockBuilder();
     this.B = B;
-    // The adapter forwards a result-slot entry's `dst` unchanged, so it
-    // carries the same `noalias` promise as the borrowing body it calls.
-    const noaliasDst = resultSlotDst(fn);
+    // The adapter forwards a result-slot entry's `dst` and a scalar class
+    // constructor's `this` unchanged, so it carries the same `noalias`
+    // promise as the borrowing body it calls.
+    const noaliasIndex = this.noaliasParam(fn);
     const params = fn.params.map(
       (param, index) =>
-        `${this.llType(param.type)} ${noaliasDst && index === fn.params.length - 1 ? "noalias " : ""}%p${index}`,
+        `${this.llType(param.type)} ${index === noaliasIndex ? "noalias " : ""}%p${index}`,
     );
     // Lifted bodies receive their closure first (the callValue ABI).
     if (fn.captures !== undefined) params.unshift("ptr %sc_env");
