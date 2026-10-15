@@ -7598,7 +7598,21 @@ export class Lowerer {
     // dyn→static edge, trust-but-verify: a lying `any` throws a catchable
     // TypeError instead of corrupting memory (SEMANTICS.md). Unmarshalable
     // and unextractable types fall through to requireExactShape's fences.
-
+    // A seqExpr whose RESULT is a bare unit (`return (effect, null)`, whose
+    // comma has contextual type `none`, so nothing wrapped it where it was
+    // built). Wrapping the WHOLE seqExpr would put the unit INSIDE the wrap,
+    // which the validator rejects: a unionWrap's unit arm is validated as its
+    // direct value. Coerce the result in place instead — the effects still
+    // run, and the unit takes the destination arm where the destination is
+    // known.
+    if (
+      expr.kind === "seqExpr" &&
+      expr.result.kind === "unitLit" &&
+      expected.kind !== expr.result.type.kind
+    ) {
+      const inner = this.coerceToExpected(expr.result, expected);
+      if (inner !== expr.result) return { ...expr, result: inner, type: inner.type };
+    }
     // A TYPED value flowing into an 'unknown' slot (`const u: unknown = 5`,
     // an unknown-typed param/return, a dyn-valued index slot): the
     // static→dyn conversion — dynFrom, a DEEP COPY (the jsMarshal aliasing
