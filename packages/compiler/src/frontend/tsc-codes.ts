@@ -82,6 +82,20 @@ export const JS_RELAXED_TSC_CODES: ReadonlySet<number> = new Set([
   // never declared)
   2353,
   2561,
+  // "no properties in common" into a weak type (every property optional):
+  // an unannotated variable is reused across scopes for unrelated values —
+  // the shape a minified or flow-compiled library produces (one name is a
+  // PropertyDescriptor on one line and a loop index on the next). tsc flags
+  // it TS2559, a strictness family that exists to demand annotations a
+  // JavaScript author cannot write. The value stays loose: the object keeps
+  // its own shape and identity, and every use meets the lowerer's per-site
+  // fences.
+  2559,
+  // SWITCH FALLTHROUGH (7029): legal, ordinary JavaScript, and the shape a
+  // compiled state machine takes (React's work loops switch on a tag and
+  // fall through deliberately). It is a lint-grade style check, not a
+  // soundness one — nothing about a fallthrough is unrepresentable.
+  7029,
   // JSDoc TYPE-SPACE claims that fail to check: a value name in a type
   // position (2749/2702), generic constraints and index types spelled in
   // typedefs (2344/2536/2538), an async @returns that is not Promise
