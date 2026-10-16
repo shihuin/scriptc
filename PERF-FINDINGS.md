@@ -157,9 +157,9 @@ turn that into a loop: the function contains exactly one self-`call` and no self
 
 **Update: this hypothesis was tested in section 9 and partly refuted — the dead check is free
 (LLVM already deletes it), and the marker alone is what pays (-7.0%). Read section 9 before acting
-on this one.** The mechanism stands as described:
+on this one.**
 
-So the candidate is to mark that call (a plain `tail`, or a hard `musttail`) when the emitter can
+The candidate is to mark that call (a plain `tail`, or a hard `musttail`) when the emitter can
 see that a result-slot entry's body ends in a call to itself followed by `return`. That is a
 statement-level pattern the IR makes visible: `record-results.fill` rewrites `return f(...)` into
 `[exprStmt(call %into.f), return null]`, so a result-slot entry whose last two body statements are
