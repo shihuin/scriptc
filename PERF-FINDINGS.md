@@ -171,6 +171,58 @@ today (the one file matching "Maximum call stack" is about an array used as a wo
 is a real behavioural difference and the reason this is written up rather than landed in the same
 round as the inline hint.
 
+## 7. A profile sweep for the next win (negative results)
+
+After the inline hint, `perf record` on eleven self-contained workloads, top non-`main` symbols.
+The point was to look for more direct calls LLVM left out of line, since that is what the hint
+fixed. There are none:
+
+| workload | hot emitted function | share | why a hint cannot help |
+| --- | --- | ---: | --- |
+| records-sort | `sc_bf__x25_fn5` | 49.2% | a comparator reached through `sort` — an indirect call |
+| alloc-trees | `sc_f_build.i32` | 39.7% | `build` is recursive |
+| template-render | `sc_bf_renderProduct` | 29.8% | reached through `map` |
+| ast-interp | `sc_bf__x25_Binary_evaluate` | 25.1% | a method reached through its object |
+| optional-fields | `sc_bf__x25_fn4` | 21.4% | a callback reached through the runtime |
+| functional-pipeline | `sc_bf__x25_fn22` | 19.1% | a callback reached through the runtime |
+| alloc-trees | `sc_bf__x25_TreeNode_check` | 19.7% | a recursive tree walk |
+
+Every remaining hot emitted function is either a callback/virtual target (no static call site to
+hint) or recursive (the inliner cannot remove the call). `value-objects` and `numeric-kernels` are
+99% and 89% `main` — fully inlined, nothing left. The `inlinehint` lever was specific to `%into.`
+entries precisely because those are direct calls with one static call site each.
+
+One experiment from this sweep failed and is recorded so it is not repeated: `scr_map_entry_str_bytes`
+is `__attribute__((noinline))` yet takes 9.8% of `word-graph`, so removing the attribute looked
+promising. Measured: `word-graph +0.5%` (CI -1.0% .. +1.4%), `json-records +0.7%` — neutral. LLVM
+either does not inline it or the inlining does not pay.
+
+## 8. Memory: scriptc is already 10-40x under Node, and the harness cannot measure it here
+
+Peak RSS of the compiled binary vs Node, sampled from `/proc/<pid>/status` `VmHWM`:
+
+| workload | scriptc | node |
+| --- | ---: | ---: |
+| value-objects | 2.6 MiB | 112.8 MiB |
+| alloc-trees | 3.4 MiB | 88.5 MiB |
+| optional-fields | 4.5 MiB | 146.6 MiB |
+| json-records | 32.4 MiB | 184.3 MiB |
+| csv-numbers | 41.0 MiB | 260.9 MiB |
+| word-graph | 46.9 MiB | 168.7 MiB |
+
+The largest figures are data-driven (a 300k-element text array, a large string-keyed map), the leak
+oracle (`--sanitize`, which aborts unless every family's live count is zero at exit) passes across
+the corpus, and there is no workload where memory is disproportionate to what the program holds.
+Memory is therefore not where this suite has headroom.
+
+Worth knowing when reading the harness's output: its RSS columns come from `/usr/bin/time`, which
+is **not installed on this host**, so every `peak RSS MiB` cell prints `-` and every
+`peak_rss_bytes` field in the JSON is null — including the server table, which is the only place
+the harness prints RSS at all. Process workloads are never asked for it. The numbers above came
+from a `/proc` poll instead. Installing GNU `time` (or teaching the runner to read
+`/proc/<pid>/status` itself) would make memory regressions visible in the normal flow; until then
+a memory claim needs its own measurement.
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
