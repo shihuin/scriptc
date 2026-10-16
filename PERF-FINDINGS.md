@@ -139,10 +139,11 @@ Every `size` column is `+0.0%`, `http-api` throughput and peak RSS are unchanged
 geomean is -1.2%. The object for `record-boundaries` grows 11088 -> 11584 bytes; one of the two
 producers is inlined and the other (the recursive `widen`) is not.
 
-Correctness: the full differential corpus passes 2554/2554 (compiled binaries byte-identical to
-Node on stdout, stderr and exit status), the harness exits 0 — no workload failed to build or
-diverged — and `emitter.test.ts` pins the attribute on a result-slot entry and its absence on an
-ordinary function.
+Correctness, both lanes: the full differential corpus passes **2554/2554** in the plain lane and
+**2554/2554 in the sanitized lane** (ASan plus the runtime RC audit, which aborts unless every
+object family's live count is zero at exit — so the extra inlining leaks nothing). The harness
+exits 0, meaning no workload failed to build or diverged, and `emitter.test.ts` pins the attribute
+on a result-slot entry and its absence on an ordinary function.
 
 ## 6. What is left in record-boundaries (next candidate, not implemented)
 
