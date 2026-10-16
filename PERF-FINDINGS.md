@@ -311,6 +311,99 @@ flavor's size-for-speed layout.
 (The local runtime pack does contain the `speed` flavor and its 152 `.bc` files, so bitcode import
 was available for this measurement rather than silently disabled.)
 
+## 11. Splitting the `speed` posture: the flavor causes the regressions
+
+The posture bundles three things: a size-for-speed runtime flavor, runtime bitcode import
+(`--import-bitcode`, inlining runtime helpers into program code) and inline reference counting.
+Since the regressions are what make the posture unusable as a default, the question is which
+feature causes them. Measured with inline RC disabled, everything else unchanged (a throwaway
+checkout, both contenders built from it, 11 runs):
+
+| workload | `speed` (all three) | `speed` without inline RC |
+| --- | ---: | ---: |
+| ast-interp | -12.1% | **-5.8%** |
+| async-pipeline | -9.6% | -7.4% |
+| csv-numbers | -3.0% | **-4.4%** |
+| alloc-trees | -3.5% | -3.0% |
+| template-render | -3.2% | -2.3% |
+| log-summary | -2.9% | -2.5% |
+| word-graph | -3.1% | -1.0% (neutral) |
+| inventory-report | -2.9% | -0.7% (neutral) |
+| **record-boundaries** | **+6.0%** | **+5.2%** |
+| numeric-kernels | +2.9% | +3.3% |
+| optional-fields | +2.9% | +3.0% |
+| geomean | -1.5% | -1.3% |
+
+Two conclusions, and the second is the useful one:
+
+1. **The regressions are not inline RC.** They persist with it disabled — record-boundaries is
+   +5.2% instead of +6.0%, numeric-kernels and optional-fields unchanged. Whatever the
+   size-for-speed runtime flavor changes (layout, aligned runtime code, per-object size classes)
+   is what costs the record/array workloads.
+2. **Inline RC is where a large part of the interpreter win lives.** Disabling it halves
+   ast-interp (-12.1% -> -5.8%) and removes the word-graph and inventory-report gains entirely,
+   while bitcode import and the flavor keep the async/csv/template wins.
+
+That points at a narrower lever than "switch the posture": inline RC on the *release* flavor.
+Whether it pays on its own is measured in section 12.
+
+## 12. Inline RC on the release flavor: the narrower lever, and it wins
+
+Section 11 showed the posture's regressions come from the runtime flavor while a large part of its
+interpreter win comes from inline reference counting. So: keep the release flavor and the release
+runtime, and enable inline RC alone. Both contenders are the same checkout with the inline hint
+landed, 11 runs:
+
+| workload | change | verdict |
+| --- | ---: | --- |
+| ast-interp | **-9.6%** | faster (CI -10.4% .. -8.9%) |
+| alloc-trees | **-4.9%** | faster |
+| records-sort | **-3.9%** | faster |
+| log-summary | -2.4% | faster |
+| record-boundaries | **-2.3%** | faster |
+| word-graph | -2.2% | faster |
+| **optional-fields** | **+2.3%** | **slower** (CI +1.6% .. +3.5%) |
+| csv-numbers | +1.0% | slower (CI +0.1% .. +1.5%) |
+| the other 12 workloads | — | neutral |
+| geomean | **-1.5%** | |
+
+Binary sizes are `+0.0%` on every row except csv-numbers (+2.3%) and http-api (+0.8%) —
+inline RC duplicates a few instructions per retain/release rather than importing runtime code.
+
+Compare with the whole `speed` posture (section 10), which reaches the same -1.5% geomean but takes
+record-boundaries **+6.0%**, numeric-kernels +2.9%, optional-fields +2.9% and grows every binary
+4-9%. Inline RC alone is better on the workloads that matter here: it *improves* the two record
+workloads the posture hurt, and it costs only optional-fields (+2.3%) and csv-numbers (+1.0%).
+
+That makes it a real candidate to enable for the default posture — which is what
+`perf/inline-rc-release` does, gated to the optimized postures so `dev` keeps its readable
+un-inlined code. It is not a uniform win (two workloads regress), so it is a judgement call rather
+than a free change; but it is the first lever in this work that improves the suite's aggregate
+without a large regression anywhere.
+
+Measured again **standalone against `main`** (the branch is based on `main`, so this is the number
+a reviewer would reproduce):
+
+| workload | vs main | vs the inline-hint base |
+| --- | ---: | ---: |
+| ast-interp | **-10.9%** (CI -14.1% .. -6.4%) | -9.6% |
+| alloc-trees | **-3.8%** (CI -6.5% .. -1.2%) | -4.9% |
+| http-api (server) | **-2.2%** (CI -3.1% .. -1.4%) | +0.1% |
+| records-sort | -3.8% (neutral interval) | -3.9% |
+| word-graph | -2.5% (neutral interval) | -2.2% |
+| log-summary | -1.5% (neutral interval) | -2.4% |
+| record-boundaries | -1.2% (neutral interval) | -2.3% |
+| optional-fields | **+1.8%** (CI +1.1% .. +3.4%) | +2.3% |
+| csv-numbers | +0.6% (neutral interval) | +1.0% |
+| geomean | **-1.2%** | -1.5% |
+
+Verification for the branch: plain corpus 2554/2554, sanitized corpus 2554/2554 (the RC-audit lane
+is the gate that matters here), backend suite 60 files. One test needed updating rather than the
+code: `serialized-ir-emission.test.ts` mirrors the backend options `compile` derives, and did not
+know about the new one, so it compared an inlined emission against a non-inlined one. With
+`inlineRc` mirrored, the two paths produce identical text — which is also the check that the
+inlined declarations are ordered deterministically enough for cache identity.
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
