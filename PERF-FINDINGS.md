@@ -404,6 +404,27 @@ know about the new one, so it compared an inlined emission against a non-inlined
 `inlineRc` mirrored, the two paths produce identical text — which is also the check that the
 inlined declarations are ordered deterministically enough for cache identity.
 
+**The one regression is layout, not work.** optional-fields was re-measured at 31 runs (+1.7%,
+CI +1.5% .. +2.3%) and profiled with `perf stat`: the two binaries execute the *same* dynamic
+instruction count (4,578,846,902 against 4,578,849,207 — a 0.00005% difference) and the same
+branch count. The inline fast path mirrors the runtime's own fast path, so replacing a call with
+it moves the same work into the caller; what changes is code placement and i-cache behaviour.
+Narrowing the feature for that workload would therefore be chasing layout luck, and would likely
+move the cost somewhere else — so it is left as a known, small, workload-specific layout cost.
+
+**Build time cost: +1.5%.** Fresh-cache `release` builds of `optional-fields` on the same host:
+1065 ms median on `main`, 1081 ms on the branch (three runs each). Inline RC emits a few small
+internal helpers per module, so the optimizer has slightly more to do; that is the whole cost.
+
+**What was ruled out as a further lever.** Array growth is already geometric (doubling below
+`SCR_ARR_DENSE_LIMIT`, then +50%), and capacity hints have little to buy: the guard counters report
+16 push fallbacks in functional-pipeline and 6323 in word-graph — the latter being roughly 1% of a
+130 ms run even though those pushes are exactly the ones that reallocate. The runtime pack's
+`speed` flavor really is a different compilation (its `scr_string.o` is 135,832 bytes against
+release's 137,184), so the section 10/11 splits stand; isolating bitcode import on the *release*
+flavor would need the runtime build to emit release bitcode, which is a packaging change and a
+policy decision rather than a measurement.
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
