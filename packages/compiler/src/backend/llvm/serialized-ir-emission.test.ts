@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { compile, deserializeModule } from "../../index.js";
+import type { NativeOptimization } from "../optimization.js";
 import { emitLlvmModuleSource } from "./emitter.js";
 
 const root = join(import.meta.dirname, "../../../../..");
@@ -23,10 +24,15 @@ test("sort-heavy programs emit equal LLVM from memory and from serialized IR", a
       ]) {
         const label = `${name}${sanitize ? " (sanitize)" : ""}`;
         const entry = join(root, "tests/corpus", name);
-        const options = {
+        const options: {
+          outDir: string;
+          backend: "llvm";
+          optimization: NativeOptimization;
+          sanitize: boolean;
+        } = {
           outDir: directory,
-          backend: "llvm" as const,
-          optimization: "release" as const,
+          backend: "llvm",
+          optimization: "release",
           sanitize,
         };
         const llvmPath = join(directory, name + ".ll");
@@ -41,6 +47,11 @@ test("sort-heavy programs emit equal LLVM from memory and from serialized IR", a
           wasi: false,
           runtimeAbiMarker: false,
           objectAudit: sanitize,
+          // `compile` derives this from the posture: every optimized posture
+          // inlines retain/release, `dev` does not. The options object is
+          // annotated so `optimization` keeps its union type here — a literal
+          // would make this comparison a type error.
+          inlineRc: options.optimization !== "dev",
         });
         const text = typeof emitted === "string" ? emitted : emitted.join("");
         expect(text === readFileSync(llvmPath, "utf8"), label).toBe(true);

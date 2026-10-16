@@ -414,8 +414,9 @@ export interface LlvmTargetOptions {
    * builds pass false so release/dev objects carry no empty calls.
    * Defaults to true for direct emission. */
   objectAudit?: boolean;
-  /** Emit retain/release fast paths inline (the `speed` posture). Off, every
-   * retain and release is a runtime call. */
+  /** Emit retain/release fast paths inline (the optimized postures, `release`
+   * and `speed`). Off — `dev` — every retain and release is a runtime call,
+   * which keeps unoptimized builds readable. */
   inlineRc?: boolean;
   /** Define `scr_detached_exit` so the Linux runtime hands the address-space
    * teardown after `process.exit` to a helper process (`--detached-exit`).

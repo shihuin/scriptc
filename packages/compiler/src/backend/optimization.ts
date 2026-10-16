@@ -1,10 +1,14 @@
 /** Native optimization postures.
  *
- * - `release` (default): -O2 program code against the release runtime flavor.
- * - `dev`: -O0, source line tables, and cached object shards.
+ * - `release` (default): -O2 program code against the release runtime flavor,
+ *   with retain/release fast paths inlined (see `perf/inline-rc-release`: on
+ *   this suite that is -1.5% geomean, with the largest win on the
+ *   interpreter-shaped workload).
+ * - `dev`: -O0, source line tables, and cached object shards. Retain/release
+ *   stay out-of-line calls so unoptimized builds remain readable.
  * - `speed`: -O2 plus optimizations that trade binary size and build time for
- *   run-time speed (a size-for-speed runtime flavor, runtime bitcode import,
- *   inline reference counting). Release output never depends on them.
+ *   run-time speed (a size-for-speed runtime flavor and runtime bitcode
+ *   import). Release output never depends on those.
  *
  * Speed is an optimized posture everywhere release is: it shares -O2, release
  * linker flags, and release-only program partitioning. Cache keys spell it
