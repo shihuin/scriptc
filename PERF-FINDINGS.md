@@ -144,6 +144,33 @@ Node on stdout, stderr and exit status), the harness exits 0 — no workload fai
 diverged — and `emitter.test.ts` pins the attribute on a result-slot entry and its absence on an
 ordinary function.
 
+## 6. What is left in record-boundaries (next candidate, not implemented)
+
+Re-profiling after the inline hint (`perf record -F 2000 -g`, 8 scale): `main` 71.6%,
+`sc_bf__x25_into_widen.i32` **28.0%**, everything else noise. The remaining hot producer is the
+recursive `widen`, which cannot be fully inlined.
+
+Its recursion is in tail position — `return widen(newSpan, values, from + 1, to)` — and the
+result-slot transform already passes the caller's `dst` straight down instead of copying, so the
+lowered body ends in a call followed only by `ret void`. Disassembly shows the compiler did **not**
+turn that into a loop: the function contains exactly one self-`call` and no self-`jmp`.
+
+So the candidate is to mark that call (a plain `tail`, or a hard `musttail`) when the emitter can
+see that a result-slot entry's body ends in a call to itself followed by `return`. That is a
+statement-level pattern the IR makes visible: `record-results.fill` rewrites `return f(...)` into
+`[exprStmt(call %into.f), return null]`, so a result-slot entry whose last two body statements are
+`exprStmt(call to itself)` and `return null` is exactly the shape. The measured depth here is 15
+levels per span, and there are ~1.15M such calls in the workload.
+
+Two things to settle before writing it. `musttail` is a hard requirement: if the signatures do not
+match exactly — notably the i32-ABI variant calling the same variant — LLVM rejects the module, so
+it would fail loudly rather than miscompile, but it must be gated on an exact signature match. And
+turning recursion into iteration changes what happens when a program would exhaust the stack: Node
+raises a `RangeError`, a loop would keep going. No corpus program pins call-stack exhaustion
+today (the one file matching "Maximum call stack" is about an array used as a work stack), but that
+is a real behavioural difference and the reason this is written up rather than landed in the same
+round as the inline hint.
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
