@@ -497,6 +497,56 @@ errors while still emitting the correct guarded JavaScript — tsc emits despite
 so the numbers come from the intended build. Proof it took effect: with bitcode disabled, the
 binary sizes fall back to the object-size range and record-boundaries returns to -1.3%.)
 
+## 14. NEXT.md item 5, for real: `s = s + "x" + "y"` was quadratic
+
+NEXT.md's item 5 is "String concatenation creates new objects" — it proposes ConsString/ropes. The
+repo's own notes recorded a much sharper defect in that territory, and it was live on `main`:
+
+```js
+let s = "";
+for (let i = 0; i < n; i++) s = s + "x" + "y";   // quadratic
+for (let i = 0; i < n; i++) s = s + "xy";        // linear
+```
+
+| n | chain (before) | simple |
+| ---: | ---: | ---: |
+| 20,000 | 0.01 s | 0.00 s |
+| 80,000 | 0.45 s | 0.00 s |
+| 320,000 | 2.50 s (global) / **12.13 s** (local) | 0.00 s |
+
+**Node is linear on both forms**, so this is a parity defect as much as a perf one: scriptc was
+asymptotically worse than Node on a completely ordinary accumulator loop.
+
+The cause is in the self-assignment handoff (`emitter.ts` `emitMovedSelfConcat` /
+`emitStringSelfConcatAssign`, `ir/analysis.ts` `matchStringSelfConcat`), not in string
+representation at all. The runtime already appends in place when the left operand is uniquely
+owned (`scr_str_concat`: "Fires on concat chains… where each intermediate result reaches the next
+concat as a sole-reference temp"). The handoff that arranges that only matched `local` as the
+**outer** concatenation's left operand, so `s = s + "x" + "y"` — which lowers as
+`((s + "x") + "y")` — fell through to a path that first built `s + "x"` as a fresh copy and then
+appended, i.e. one full copy of the accumulated string per operand.
+
+Fix: flatten the concatenation and recognize the local as the **leftmost** operand of the chain,
+so the whole tail appends into the uniquely-owned snapshot in place. Both handoff paths are
+covered (the local moved path, and the general path used for globals and captured bindings). The
+existing safety conditions are unchanged and applied to the whole tail: a tail that names the
+local keeps the general path, an alias keeps its value, and for a global the local is read *first*
+so a tail that runs arbitrary code cannot be reordered around it.
+
+| n | chain (after) | |
+| ---: | ---: | --- |
+| 320,000 (global) | 2.50 s → **0.01 s** | 250x |
+| 320,000 (local) | 12.13 s → **0.01 s** | ~1200x |
+
+Verified: plain corpus **2554/2554**, sanitized corpus **2554/2554** (the RC audit is the gate that
+matters for a change that moves string ownership around), the string emitter tests 46/46, and the
+existing `4562-string-self-concat-move.ts` extended to pin the chain form — aliases, tails that
+read the local, and lone-surrogate seams across chain parts and across an empty part. Those seams
+were compared against Node as raw UTF-16 code units, because the obvious `Array.from` encoding
+hides the difference between a real pair and a lone high surrogate. The 20-workload suite is
+**neutral everywhere** (every CI spans zero, every `size` `+0.0%`) — it contains no self-concat
+chains, so the change is a no-op there.
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
