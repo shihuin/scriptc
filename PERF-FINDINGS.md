@@ -416,6 +416,20 @@ move the cost somewhere else — so it is left as a known, small, workload-speci
 1065 ms median on `main`, 1081 ms on the branch (three runs each). Inline RC emits a few small
 internal helpers per module, so the optimizer has slightly more to do; that is the whole cost.
 
+**Memory is unchanged.** Peak RSS (sampled from `/proc/<pid>/status` `VmHWM`, medians of a short
+poll loop) for the branch against `main`, on the workloads it moves most:
+
+| workload | main | inline RC | change |
+| --- | ---: | ---: | ---: |
+| ast-interp (scale 5) | 3.1 MiB | 3.1 MiB | -0.5% |
+| alloc-trees | 3.4 MiB | 3.4 MiB | -0.1% |
+| optional-fields (10) | 4.5 MiB | 4.5 MiB | +0.3% |
+| record-boundaries (8) | 2.5 MiB | 2.4 MiB | -0.2% |
+
+All within noise, which is what the change should do: it duplicates instructions per retain and
+release, not data. The two perf branches also compose cleanly — merging `inlinehint`, `inline-rc`
+and `guard-fallback-stats` onto `main` in sequence is conflict-free.
+
 **What was ruled out as a further lever.** Array growth is already geometric (doubling below
 `SCR_ARR_DENSE_LIMIT`, then +50%), and capacity hints have little to buy: the guard counters report
 16 push fallbacks in functional-pipeline and 6323 in word-graph — the latter being roughly 1% of a
@@ -424,6 +438,12 @@ internal helpers per module, so the optimizer has slightly more to do; that is t
 release's 137,184), so the section 10/11 splits stand; isolating bitcode import on the *release*
 flavor would need the runtime build to emit release bitcode, which is a packaging change and a
 policy decision rather than a measurement.
+
+Sort comparators are already on their fast path. `scr_sort_greater` reads
+`c->borrowing = f->fn_borrowed != NULL` and, when the comparator has a borrowed entry, enters it
+without retaining either argument — otherwise every comparison would pay two retains and two
+releases. The emitted comparator closures do carry that entry (the IR stores `sc_bf__x25_fn5` into
+the closure's borrowed-function slot), so there is nothing to reclaim there.
 
 ## The trap that produced the first (wrong) table
 
