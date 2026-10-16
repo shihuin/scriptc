@@ -547,6 +547,52 @@ hides the difference between a real pair and a lone high surrogate. The 20-workl
 **neutral everywhere** (every CI spans zero, every `size` `+0.0%`) — it contains no self-concat
 chains, so the change is a no-op there.
 
+## 15. Verification lesson: vitest does not type-check
+
+Combining the three improvements (`perf/inlinehint-result-entries`, `perf/inline-rc-release`,
+`perf/string-chain-handoff`) caught a real defect that the earlier per-branch verification missed:
+`perf/inline-rc-release` did not type-check.
+
+The cause was a test fix I made after the corpus runs: `serialized-ir-emission.test.ts` mirrors the
+backend options `compile` derives, and I added `inlineRc: options.optimization !== "dev"` to it.
+`options.optimization` was the literal `"release"` (a `const` object literal narrows), so the
+comparison was a `TS2367` type error. I had run the corpus and the backend suite on that branch and
+reported them green — but **vitest transpiles without type-checking**, so a broken test file compiles
+and runs fine. I never re-ran `tsc -p packages/compiler` after editing the test.
+
+The fix is to annotate the options object with its real type so `optimization` keeps its union type
+(`NativeOptimization`), which is also what makes the comparison express the intended policy. Pushed
+as `08bb860a`, superseding `ff5f61d8`.
+
+Process rule this establishes: a branch is not verified until `tsc -p packages/compiler/tsconfig.json`
+passes on it, separately from any test run. Every branch on the fork was re-checked after this —
+`inlinehint`, `string-chain-handoff`, `guard-fallback-stats`, `linter`, `c-embed`, `js-void-ternary`
+and `pure-call-declares` all type-check clean, so this was the only instance.
+
+## 16. The three improvements combined
+
+`perf/inlinehint-result-entries` + `perf/inline-rc-release` + `perf/string-chain-handoff` merge
+onto `main` cleanly in any order. Measured together against `main`, 11 runs:
+
+| workload | change | |
+| --- | ---: | --- |
+| record-boundaries | **-25.5%** (CI -27.4% .. -23.7%) | inline hint |
+| ast-interp | **-12.0%** (CI -15.7% .. -5.0%) | inline RC |
+| alloc-trees | **-4.3%** (CI -9.6% .. -0.5%) | inline RC |
+| log-summary | **-3.3%** (CI -4.7% .. -1.1%) | inline RC |
+| optional-fields | +3.0% (CI -1.0% .. +4.4%) | neutral in this run |
+| the other 13 workloads | — | every CI spans zero |
+| **geomean** | **-2.5%** | |
+
+Binary sizes `+0.0%` on every row except csv-numbers (+2.3%) and http-api (+0.8%). The session's
+total is the sum of two independently measured levers: the inline hint (section 5) and inline
+reference counting (section 12). The string-chain fix (section 14) is a no-op on this suite by
+construction — it contains no self-concat chains — and is instead a 250-1200x fix for a pattern
+scriptc was asymptotically worse at than Node.
+
+This run happened under load (Node's own times were ~25% higher than in earlier runs), which widens
+every interval; the interleaved candidate-vs-baseline ratios are still the valid part.
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
