@@ -76,7 +76,7 @@ import {
   type StringSplit,
 } from "./split-loops.js";
 import { scalarizeNumericRecords } from "../../ir/scalar-records.js";
-import { addRecordResultEntries } from "./record-results.js";
+import { addRecordResultEntries, RESULT_ENTRY_PREFIX } from "./record-results.js";
 import { specializeNumericCalls } from "../../ir/numeric-call-specialization.js";
 import { everyExpr, everyExprChild, everyStmtChild, everyStmtList } from "../../ir/traverse.js";
 import { analyzeIntegerRanges, INT32_RANGE, type IntegerRanges } from "../../ir/integer-ranges.js";
@@ -6001,6 +6001,13 @@ export class LlEmitter {
     // hot instances out of line once they have many callers: every read pays
     // a call, and an integer index converts to a double and back across it.
     if (fn.name.startsWith("%arr.idxOr.")) attrs = `inlinehint ${attrs}`;
+    // A result-slot entry (`record-results.ts`) is the callee behind every
+    // `makePoint(...)`-shaped call: the hot ones sit inside counted loops and
+    // are called once or twice per iteration. Measured on the record-boundaries
+    // workload, two of them that LLVM left out of line took 40% of the run.
+    // The same reason as %arr.idxOr above: without the hint the call keeps its
+    // own frame and the slot writes cannot be promoted into the caller.
+    if (fn.name.startsWith(RESULT_ENTRY_PREFIX)) attrs = `inlinehint ${attrs}`;
     // Interface dispatch is a few key tests and direct calls ahead of the
     // checked dynamic call. Keeping that fallback out of line leaves the
     // tests small enough to inline at each call site.
