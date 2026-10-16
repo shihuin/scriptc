@@ -8275,14 +8275,22 @@ export class LlEmitter {
   ): LlValue {
     const moved = this.emitMovedSelfConcat(localId, left, suffix, retainForYield);
     if (moved) return moved;
-    const snapshot = this.emitExpr(left);
-    // A suffix of several parts, or a number, appends each operand to the
+    // `target = target + a + b` lowers as ((target + a) + b). Flatten the
+    // whole thing so the snapshot is the TARGET's value rather than a copy of
+    // target + a: the tail then appends into that snapshot in place once the
+    // destination lets go of it, instead of copying the accumulated string
+    // once per operand. The target is read first, which is JavaScript order
+    // for the left operand, so a global whose tail runs arbitrary code stays
+    // correct.
+    const parts = [...stringParts(left), ...stringParts(suffix)];
+    const snapshot = this.emitExpr(parts[0]!);
+    const tail = parts.slice(1);
+    // A tail of several parts, or a number, appends each operand to the
     // snapshot directly (in place once the binding lets go of it) instead
-    // of first building the suffix as a separate string.
-    const parts = stringParts(suffix);
-    const mixed = parts.length > 1 || numberPart(parts[0]!) !== null;
-    const inputs = mixed ? emitConcatInputs(this, parts) : [];
-    const right = mixed ? null : this.emitExpr(suffix);
+    // of first building the tail as a separate string.
+    const mixed = tail.length > 1 || numberPart(tail[0]!) !== null;
+    const inputs = mixed ? emitConcatInputs(this, tail) : [];
+    const right = mixed ? null : this.emitExpr(tail[0]!);
     const b = this.binding(localId);
     const B = this.B;
     if (b.kind === "boxed") {
@@ -8327,6 +8335,15 @@ export class LlEmitter {
     retainForYield: boolean,
   ): LlValue | null {
     const b = this.binding(localId);
+    // `local = local + a + b` lowers as ((local + a) + b), so the local is
+    // the LEFTMOST operand of a chain rather than the outer concatenation's
+    // left operand. Flatten both sides to one head and one tail: the tail is
+    // what the runtime appends, and it may be several parts. The tail must
+    // name the local nowhere, which is what makes reading the binding AFTER
+    // evaluating it give the value the left side had.
+    const leftParts = stringParts(left);
+    const headExpr = leftParts[0]!;
+    const parts = [...leftParts.slice(1), ...stringParts(suffix)];
     if (
       retainForYield ||
       b.kind !== "local" ||
@@ -8334,15 +8351,14 @@ export class LlEmitter {
       b.local.boxed ||
       b.local.tdz ||
       b.type.kind !== "string" ||
-      left.kind !== "varRef" ||
-      left.localId !== localId ||
-      mentionsLocal(suffix, localId)
+      headExpr.kind !== "varRef" ||
+      headExpr.localId !== localId ||
+      parts.some((part) => mentionsLocal(part, localId))
     )
       return null;
-    const parts = stringParts(suffix);
     const mixed = parts.length > 1 || numberPart(parts[0]!) !== null;
     const inputs = mixed ? emitConcatInputs(this, parts) : [];
-    const right = mixed ? null : this.emitExpr(suffix);
+    const right = mixed ? null : this.emitExpr(parts[0]!);
     this.materializeSplitLocal(localId);
     const B = this.B;
     const head = B.tmp();

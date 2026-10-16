@@ -33,19 +33,28 @@ export function unionWideningTags(from: readonly IrType[], to: readonly IrType[]
  *     target = target + suffix
  *
  * Both native emitters use this rather than attempting a wider purity or
- * alias analysis.  In particular, fields, nested concat trees, dynamic
- * operations, and a different destination all retain the ordinary borrowed
- * concat lowering.
+ * alias analysis.  In particular, fields, dynamic operations, and a different
+ * destination all retain the ordinary borrowed concat lowering.
+ *
+ * A chain qualifies: `target = target + a + b` lowers as ((target + a) + b),
+ * whose left operand is itself a concatenation. The handoff still applies
+ * because the local is the LEFTMOST operand of that chain, and the caller
+ * flattens the tail and rejects it when any tail part names the target. The
+ * tail's own nesting is irrelevant to the handoff — string concatenation is
+ * associative in the runtime's canonical storage, and the general lowering
+ * already flattens the same way (see `stringParts`).
  */
 export function matchStringSelfConcat(targetLocalId: string, value: IrExpr): IrExpr | null {
   if (
     value.kind !== "strConcat" ||
     value.type.kind !== "string" ||
-    value.left.kind !== "varRef" ||
-    value.left.type.kind !== "string" ||
-    value.left.localId !== targetLocalId ||
     value.right.type.kind !== "string"
   ) {
+    return null;
+  }
+  let head: IrExpr = value.left;
+  while (head.kind === "strConcat" && head.left.type.kind === "string") head = head.left;
+  if (head.kind !== "varRef" || head.type.kind !== "string" || head.localId !== targetLocalId) {
     return null;
   }
   return value.right;
