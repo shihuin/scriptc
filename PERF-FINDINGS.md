@@ -274,6 +274,42 @@ the caller's exactly — `musttail` is a hard requirement, so a mismatch is an L
 makes the sanitized RC-audit lane the right gate, since a skipped release shows up there as a
 nonzero live count at exit.
 
+## 10. The `speed` posture: measured, and not a free win
+
+`--optimization=speed` bundles a size-for-speed runtime flavor, runtime bitcode import and inline
+reference counting. Measured against the default `release` on the same checkout (the
+`perf/inlinehint-result-entries` one, so it stacks on the landed win), 11 runs each:
+
+| workload | change | verdict |
+| --- | ---: | --- |
+| ast-interp | **-12.1%** | faster |
+| async-pipeline | **-9.6%** | faster |
+| alloc-trees | -3.5% | faster |
+| template-render | -3.2% | faster |
+| word-graph | -3.1% | faster |
+| log-summary | -2.9% | faster |
+| inventory-report | -2.9% | faster |
+| records-sort | -1.9% | neutral |
+| validate-errors | -1.1% | faster |
+| **record-boundaries** | **+6.0%** | **slower** (CI +5.2% .. +6.6%) |
+| numeric-kernels | +2.9% | slower |
+| optional-fields | +2.9% | slower |
+| log-lines | +1.9% | slower |
+| functional-pipeline | +2.1% | neutral (CI spans 0) |
+| the rest | — | neutral |
+
+Geomean **-1.5%**, binary sizes **+4% .. +9%**. So the posture is a real lever with real wins, but
+it is not a uniform improvement: the workload this work just optimized is the one that loses most.
+Making it the default is a policy decision, and on this evidence it would trade a small geomean
+gain for a 6% regression on record-boundaries and a size increase everywhere. Worth revisiting only
+after understanding *which* of the three bundled features causes the regressions — the wins
+concentrate in interpreter/async-shaped code, which points at runtime bitcode import, while the
+losses concentrate in record/array code, which points at inline reference counting or the runtime
+flavor's size-for-speed layout.
+
+(The local runtime pack does contain the `speed` flavor and its 152 `.bc` files, so bitcode import
+was available for this measurement rather than silently disabled.)
+
 ## The trap that produced the first (wrong) table
 
 The first full run compared a candidate whose runtime pack had been rebuilt from source against a
