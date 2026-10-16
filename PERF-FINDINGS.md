@@ -439,11 +439,63 @@ release's 137,184), so the section 10/11 splits stand; isolating bitcode import 
 flavor would need the runtime build to emit release bitcode, which is a packaging change and a
 policy decision rather than a measurement.
 
+The `speed` flavor is not a different compilation of different sources: the runtime build adds it as
+`["speed", matrix.flavors.release]` — the release spec, compiled through the host LLVM helper so one
+promoted module yields both the object and its `.bc`. Its objects are still different bytes
+(`scr_string.o` 135,832 against release's 137,184) because of the build path, not the flags. So
+section 11's "speed without inline RC" measurement already *is* "helper-built objects plus bitcode
+import", and recommending that release adopt bitcode import would be recommending a lever that has
+already been measured — mixed, with record-boundaries +5.2%. What is genuinely unmeasured is how
+much of that comes from the objects versus the import, which section 13 tests.
+
 Sort comparators are already on their fast path. `scr_sort_greater` reads
 `c->borrowing = f->fn_borrowed != NULL` and, when the comparator has a borrowed entry, enters it
 without retaining either argument — otherwise every comparison would pay two retains and two
 releases. The emitted comparator closures do carry that entry (the IR stores `sc_bf__x25_fn5` into
 the closure's borrowed-function slot), so there is nothing to reclaim there.
+
+## 13. The `speed` flavor, split three ways: bitcode import is the trade
+
+Section 11 left "helper-built objects" and "bitcode import" measured only together. Disabling both
+(keeping the speed flavor's objects) separates them. All rows are against `main`'s `release`,
+11 runs, with inline RC off in every column so it cannot mask the comparison:
+
+| workload | objects only | objects + bitcode | release + inline RC (landed) |
+| --- | ---: | ---: | ---: |
+| record-boundaries | **-1.3%** | **+5.2%** | -2.3% |
+| async-pipeline | -3.7% | -7.4% | -2.1% (neutral) |
+| csv-numbers | -2.7% | -4.4% | +1.0% |
+| inventory-report | -3.6% | -0.7% (neutral) | -0.1% (neutral) |
+| alloc-trees | -1.9% | -3.0% | -4.9% |
+| log-summary | -1.6% | -2.5% | -2.4% |
+| ast-interp | — | -5.8% | -9.6% |
+| optional-fields | +1.8% | +3.0% | +2.3% |
+| **geomean** | **-0.6%** | **-1.3%** | **-1.2%** |
+| binary size | +4.2% .. +7.1% | +4% .. +9% | +0.0% |
+
+Three things fall out:
+
+1. **The helper-built objects are not what hurt the record workloads.** On their own they are
+   *slightly better* than release there (-1.3%). The engine that turns record-boundaries from -1.3%
+   into +5.2% — a 6.5 point swing — is **bitcode import**.
+2. **Bitcode import is a real trade, not a free win.** It roughly doubles the async and csv gains
+   (-3.7% -> -7.4%, -2.7% -> -4.4%) and costs ~6 points on record-shaped code. Since the whole
+   suite's geomean barely moves (-0.6% -> -1.3%), taking it means choosing whose workload gets
+   faster.
+3. **The landed inline RC is still the best of the three**: same geomean as the two features
+   combined, no binary-size cost at all, and it *improves* the record workloads instead of
+   regressing them.
+
+So section 12's suggestion to pursue "enable bitcode import for release" is **withdrawn**: it is not
+an unmeasured lever, it is this column, and it is the one that costs record-boundaries. The honest
+summary is that the `speed` posture's ingredients have now each been measured alone and in
+combination, and none of them beats inline RC on the terms this suite cares about.
+
+(`objects only` and `objects + bitcode` were produced by disabling the features in a throwaway
+checkout. The TypeScript for the first one types `runtimeBitcode` as `never` and therefore reports
+errors while still emitting the correct guarded JavaScript — tsc emits despite type errors here —
+so the numbers come from the intended build. Proof it took effect: with bitcode disabled, the
+binary sizes fall back to the object-size range and record-boundaries returns to -1.3%.)
 
 ## The trap that produced the first (wrong) table
 
