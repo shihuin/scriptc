@@ -50,3 +50,29 @@ Server workloads (`"kind": "server"`) run a listening program and a load client:
 - Server sessions already warm up in-process, so the runner uses at most one extra warmup session per contender.
 
 `http-api` uses 64 connections, 2 client threads, 4,000 warmup and 40,000 measured requests (about one second per session).
+
+## Measuring safely
+
+A comparison is only valid when both checkouts link the **same runtime**. The precompiled pack is
+a build artifact under `packages/runtime-<host>/`, and the published pack lags this repository, so
+a checkout can link a runtime older than its own sources — or older than the other contender's.
+Nothing in the pack's metadata reveals it: `version` and `runtime_abi` can match while the archives
+are stale.
+
+That failure mode produced a complete table of phantom deltas (measured 2026-10-15, `release`,
+11 runs): one contender linked the published pack, the other a pack rebuilt from source, and the
+table read -37.6% .. +11.6% — while three workloads failed to link and the rest produced
+**byte-identical object code**. Rebuilt from source on both sides, every workload was neutral.
+
+So:
+
+- Build the runtime pack from source in **every** contender before timing:
+  `pnpm --filter @scriptc/runtime-<host> build:native` (for example `runtime-linux-x64-gnu`).
+- Do not pipe the runner through `tail`/`head` when its exit status matters: it already exits
+  non-zero when any workload fails to build or diverges, and a pipe replaces that status with the
+  last command's. Use `set -o pipefail`.
+- Identical binaries are a legitimate result, and worth confirming rather than assuming. When a
+  codegen change leaves every workload neutral with a `size` column of `+0.0%`, check whether the
+  change survives at all: build one workload with `--emit=obj` in both checkouts and `cmp` the
+  objects. `noalias` on a function LLVM inlines changes the IR and nothing else — see
+  `PERF-FINDINGS.md`.
