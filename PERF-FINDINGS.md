@@ -155,6 +155,10 @@ result-slot transform already passes the caller's `dst` straight down instead of
 lowered body ends in a call followed only by `ret void`. Disassembly shows the compiler did **not**
 turn that into a loop: the function contains exactly one self-`call` and no self-`jmp`.
 
+**Update: this hypothesis was tested in section 9 and partly refuted — the dead check is free
+(LLVM already deletes it), and the marker alone is what pays (-7.0%). Read section 9 before acting
+on this one.** The mechanism stands as described:
+
 So the candidate is to mark that call (a plain `tail`, or a hard `musttail`) when the emitter can
 see that a result-slot entry's body ends in a call to itself followed by `return`. That is a
 statement-level pattern the IR makes visible: `record-results.fill` rewrites `return f(...)` into
@@ -222,6 +226,53 @@ the harness prints RSS at all. Process workloads are never asked for it. The num
 from a `/proc` poll instead. Installing GNU `time` (or teaching the runner to read
 `/proc/<pid>/status` itself) would make memory regressions visible in the normal flow; until then
 a memory claim needs its own measurement.
+
+## 9. Tail calls: what the recursion is worth, and why it is not landed
+
+Section 6 left a candidate: mark the recursive producer's tail call so LLVM turns the recursion
+into a loop. This measures what that is worth and what it costs.
+
+**The dead pending check is not the blocker.** Round 3's hypothesis was that the exception check
+after the call prevents tail-call elimination. It does not. Taking the compiler's real IR for
+`record-boundaries`, removing the check after the self-call leaves the generated code
+**byte-identical**: at machine level LLVM had already deleted the check (both unwind paths were
+bare `ret void`, so the flag read was dead). An emitter change to elide it would buy exactly
+nothing.
+
+**The marker is the lever, and the payoff is real.** Replacing that same call with
+`musttail call` (everything else unchanged, compiled by `clang -O2` from the same IR and linked
+against the same runtime objects using the compiler's own `--print=native-link-info`) changes the
+object dramatically: `nm` finds **no `widen` symbols at all** — the recursion becomes a loop and
+the whole function is then inlined into `main`.
+
+| variant | median | vs plain |
+| --- | ---: | ---: |
+| plain (`call`) | 132.3 ms | — |
+| `musttail` | 123.0 ms | **-7.0%** |
+
+Both are byte-identical to Node on stdout. Measured as medians of 40 interleaved runs, alternating
+which variant goes first. For scale: main is 173.9 ms on this workload, the inline hint brought it
+to 132.8 ms, and this would take it to ~123 ms — about 29% below where this work started.
+Recursion-heavy workloads elsewhere in the suite are bigger still (`alloc-trees` spends 39.7% in
+the recursive `build` and 19.7% in the recursive `TreeNode_check`), so the aggregate could be
+larger than this one row.
+
+**Why it is not landed.** It is a semantic change, not just a codegen change: **Node does not
+implement tail calls**, so a scriptc binary that loops where Node grows the stack diverges on
+stack exhaustion — an unbounded tail-recursive program would hang instead of raising `RangeError`.
+The project's promise is byte-for-byte differential parity with Node, so that is a maintainer
+decision rather than something to slip in as an optimization, however favourable the number is.
+The corpus pins no stack-exhaustion behaviour today (the one file matching "Maximum call stack" is
+about an array used as a work stack), so landing it would be silent by construction.
+
+If it is ever taken, the emitter can only emit the marker when all of these hold, and must
+otherwise emit the ordinary call: the call is the last action before `ret` of the same value
+(tail position); the unwind cleanup for that call is empty, or a tail call would skip the releases
+and leak; no `try` is active; and the callee's signature, including the i32-ABI variant, matches
+the caller's exactly — `musttail` is a hard requirement, so a mismatch is an LLVM verifier error
+(fail loud, not miscompile). The empty-cleanup condition is the one to get right; it is also what
+makes the sanitized RC-audit lane the right gate, since a skipped release shows up there as a
+nonzero live count at exit.
 
 ## The trap that produced the first (wrong) table
 
