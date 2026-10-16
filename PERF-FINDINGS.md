@@ -95,7 +95,7 @@ where time is, so optimizing them further would buy little. It is also the check
 claim honest per program instead of by assumption. The report stays off unless the environment
 variable is set, so a measured binary's stdout/stderr still match Node byte-for-byte.
 
-## 4. Where the time actually goes (next lead)
+## 4. Where the time actually goes (the lead that paid off)
 
 `record-boundaries` has the worst ratio against Node of the suite (0.84x, 174ms vs 208ms), so it
 is the workload with the most headroom. `perf record -F 2000 -g -- ./record-boundaries 8`, 355
@@ -116,6 +116,33 @@ place each.
 
 The suite's other near-Node row, `log-lines` (0.44x), is I/O-bound: it writes 200k lines into the
 runner's pipe, so its ratio says more about the pipe than about codegen.
+
+## 5. `perf/inlinehint-result-entries` — a real win: record-boundaries −23.6%
+
+Acting on the section 4 profile: result-slot producers (`%into.<name>`) are the callee behind
+every `makePoint(...)`-shaped call, and the hot ones sit inside counted loops with one or two calls
+per iteration. LLVM left two of them out of line, so each call kept a frame and the slot writes
+could not be promoted into the caller.
+
+The emitter already carries the fix for the identical situation two lines away, on the shared
+indexed-read helper, with the comment "Without the hint LLVM keeps the hot instances out of line
+once they have many callers: every read pays a call". The change applies the same `inlinehint` to
+`%into.` entries. It lowers the inliner's threshold rather than forcing inlining, so a large entry
+still stays out of line.
+
+| workload | baseline ms | candidate ms | change | 95% CI | ratio vs Node |
+| --- | ---: | ---: | ---: | --- | --- |
+| record-boundaries | 173.9 | 132.8 | **-23.6%** | -23.7% .. -23.0% | 0.84x -> 0.64x |
+| the other 19 workloads | — | — | neutral | every CI spans 0 | unchanged |
+
+Every `size` column is `+0.0%`, `http-api` throughput and peak RSS are unchanged, and the run's
+geomean is -1.2%. The object for `record-boundaries` grows 11088 -> 11584 bytes; one of the two
+producers is inlined and the other (the recursive `widen`) is not.
+
+Correctness: the full differential corpus passes 2554/2554 (compiled binaries byte-identical to
+Node on stdout, stderr and exit status), the harness exits 0 — no workload failed to build or
+diverged — and `emitter.test.ts` pins the attribute on a result-slot entry and its absence on an
+ordinary function.
 
 ## The trap that produced the first (wrong) table
 
