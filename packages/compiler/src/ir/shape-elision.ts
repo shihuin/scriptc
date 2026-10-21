@@ -233,8 +233,13 @@ export function elideViewShapes(mod: IrModule): void {
       found = source.id;
     }
     if (found !== null) {
+      // The view must be produced by a conversion FROM that source and from
+      // nothing else. A shape with no producer at all — a parsed JSON value
+      // typed narrower than the object it describes — has no recorded source,
+      // and guessing one from "has all my fields and more" is how a customer
+      // `{ name }` borrowed a user's `{ name, score }` layout.
       const produced = producers.get(view.id);
-      if (produced === undefined || [...produced].every((from) => from === found))
+      if (produced !== undefined && [...produced].every((from) => from === found))
         candidates.set(view.id, found);
     }
   }
