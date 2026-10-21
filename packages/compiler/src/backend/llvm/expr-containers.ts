@@ -17,7 +17,7 @@ import {
   vAdapters,
 } from "./shapes.js";
 import type { LlvmEmitterContext, LlValue } from "./expr-context.js";
-import { F64_INF, f64Lit, loadArrCount, sizeToDouble } from "./common.js";
+import { F64_INF, f64Lit, loadArrCount } from "./common.js";
 import { MUTATING_COLLECTION_METHODS } from "../publication.js";
 import { borrowsStringInputs, emitStringInputs } from "./string-lifetimes.js";
 import {
@@ -57,7 +57,12 @@ import {
   emitUnitCharCode,
   STRING_UTF16_LEN_DECL,
 } from "./string-reads.js";
-import { exactInteger, widenInteger } from "./integer-values.js";
+import { exactInteger, integerNumber, widenInteger } from "./integer-values.js";
+
+/** What integer-ranges.ts proves for a length, kept as the fallback for an
+ * expression the analysis has no entry for: a length is never negative and
+ * never exceeds the array index space. */
+const UNSIGNED32 = { min: 0, max: 4294967295 };
 import {
   emitDenseArrayNumber,
   emitDenseArrayPop,
@@ -657,13 +662,13 @@ export function emitArrIntrinsic(
   switch (method) {
     case "length": {
       const p = B.tmp(),
-        len = B.tmp(),
-        t = B.tmp();
+        len = B.tmp();
       B.line(`${p} = getelementptr inbounds %ScrArr, ptr ${r.name}, i32 0, i32 1`);
       host.markMemoryPointer(p, "array:header");
       loadArrCount(host, len, p, host.fieldAliasAttachment(p));
-      B.line(`${t} = ${sizeToDouble(host.sizeType)} ${host.sizeType} ${len} to double`);
-      return { name: t, type: e.type };
+      const wide = host.sizeType === "i64" ? len : B.tmp();
+      if (host.sizeType !== "i64") B.line(`${wide} = zext ${host.sizeType} ${len} to i64`);
+      return integerNumber(host, wide, host.integerRanges.get(e) ?? UNSIGNED32, e.type);
     }
     case "getNumber": {
       const index = host.emitExpr(e.args[0]!);
