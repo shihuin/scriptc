@@ -8804,6 +8804,14 @@ export function lowerExprStatement(lowerer: Lowerer, expr: ts.Expression): IrStm
  * that needs no result value. Diagnostics outside the statement, and
  * internal errors, keep the original failure. */
 function lowerDiscardedLogical(lowerer: Lowerer, expr: ts.BinaryExpression): IrStmt {
+  // A discarded logical whose right operand is void has no value form to try:
+  // React's reconciler writes `flags & 512 && (mode === "manual" ? attach() :
+  // detach())`, whose arms are void calls, and the IR has no void-valued
+  // ternary. The validator says so as SC9001 — after lowering, so probing the
+  // value form cannot catch it. Lower the control flow directly.
+  if (lowerer.checker.getTypeAtLocation(expr.right).flags & ts.TypeFlags.Void) {
+    return lowerDiscardedLogicalControlFlow(lowerer, expr);
+  }
   const diagsBefore = lowerer.diags.length;
   try {
     const value = lowerer.lowerExpr(expr);
@@ -8828,6 +8836,13 @@ function lowerDiscardedLogical(lowerer: Lowerer, expr: ts.BinaryExpression): IrS
     if (!local) throw e;
     lowerer.diags.length = diagsBefore;
   }
+  return lowerDiscardedLogicalControlFlow(lowerer, expr);
+}
+
+/** The control-flow form of a discarded `a && b` / `a || b`: `if (a) b;` for
+ * the conjunction, `if (!a) b;` for the disjunction, with the left operand's
+ * truthiness narrowing applied to the right. */
+function lowerDiscardedLogicalControlFlow(lowerer: Lowerer, expr: ts.BinaryExpression): IrStmt {
   const and = expr.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken;
   const cond = lowerer.lowerCondition(expr.left);
   if (cond.kind === "boolLit") {
