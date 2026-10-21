@@ -1750,6 +1750,14 @@ export interface IrRecordShape {
    * can carry the frozen bit, which their release ignores, and every write
    * to them checks it. */
   freezable?: true;
+  /** View-shape elision (ir/shape-elision.ts): this shape is never
+   * constructed and narrows `aliasedTo`, so its values ARE that shape's
+   * values — same representation, same keys, same key order. `fields` then
+   * carries the SOURCE's field list (the layout every GEP, entry point and
+   * walker follows) and `declaredOrder` the source's key order: a narrowed
+   * value is the source object in the language, so reflection over it sees
+   * the source's shape. */
+  aliasedTo?: string;
   /** Field names in FIRST-SEEN declaration order (the checker's property
    * order of the first ts.Type interned to this shape) — metadata, NOT
    * part of the interned identity: a later structurally-equal type with a

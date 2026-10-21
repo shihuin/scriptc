@@ -9,6 +9,7 @@ import {
   type ScrDiagnostic,
 } from "../diagnostics/diagnostic.js";
 import type { IrModule, SrcLoc } from "../ir/ir.js";
+import { elideViewShapes } from "../ir/shape-elision.js";
 import { validateModule } from "../ir/validate.js";
 import { checkContracts } from "../contracts/check.js";
 import {
@@ -84,6 +85,11 @@ export function prepareExecutableModule(
       ]);
     }
     if (lowered.module === null) return fail(lowered.diagnostics);
+
+    // View-shape elision re-represents never-constructed narrowing shapes
+    // and shares their conversions; it runs on the finished module so both
+    // the IR artifact and codegen see one decision (ir/shape-elision.ts).
+    elideViewShapes(lowered.module);
 
     const validation = validateModule(lowered.module);
     timing("ir-validate");

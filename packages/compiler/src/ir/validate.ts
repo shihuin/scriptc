@@ -2979,6 +2979,28 @@ function validateFunction(
         // exactly when D strictly descends from C AND the two completed
         // constructor ABIs agree (what newValue completion rests on).
         checkExpr(e.value);
+        if (e.kind === "upcast" && e.type.kind === "record" && e.value.type.kind === "record") {
+          // View-shape elision re-represents the target as the source
+          // (ir/shape-elision.ts), so this widening is the same reference,
+          // type-only — legal exactly when the module says so.
+          const view = records.get(e.type.shapeId);
+          if (!view || view.aliasedTo !== e.value.type.shapeId)
+            err("record upcast requires an elided view shape", e.loc);
+          break;
+        }
+        if (e.kind === "upcast" && e.type.kind === "array" && e.value.type.kind === "array") {
+          // The same relation one level down: an array whose element shape
+          // is an elided view of the source's element shape shares storage
+          // (the element conversion is the identity).
+          const view = e.type.elem.kind === "record" ? records.get(e.type.elem.shapeId) : undefined;
+          const elided =
+            view !== undefined &&
+            e.value.type.elem.kind === "record" &&
+            view.aliasedTo === e.value.type.elem.shapeId;
+          if (!elided && !typeEquals(e.value.type, e.type))
+            err("array upcast requires an elided view element shape", e.loc);
+          break;
+        }
         if (e.kind === "upcast" && e.type.kind === "func" && e.value.type.kind === "func") {
           const source = e.value.type;
           const target = e.type;
