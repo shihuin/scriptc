@@ -1,0 +1,6 @@
+{
+ "order": [
+  "<repo>/tests/corpus/8345-void-logical-short-circuit.ts"
+ ],
+ "diags": []
+}
