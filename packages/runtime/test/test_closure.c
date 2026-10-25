@@ -91,8 +91,7 @@ int main(void) {
 
   /* union boxes: only a box whose trace visits its payload can be a cycle
    * root, so only such a box is buffered when a release leaves it alive */
-  ScrUnion *su = scr_union_new_ref(0, scr_str_new("u", 1), &scr_str_retain_v,
-                                   &scr_str_release_v, NULL);
+  ScrUnion *su = scr_union_new_ref(0, scr_str_new("u", 1), &scr_str_release_v, 0);
   scr_union_retain(su);
   scr_union_release(su);
   CHECK(!scr_cyc_is_buffered(scr_cyc_hdr(su)));
@@ -104,8 +103,7 @@ int main(void) {
   CHECK(!scr_cyc_is_buffered(scr_cyc_hdr(fu)));
   scr_union_release(fu);
   ScrUnion *cu = scr_union_new_ref(0, scr_closure_new((void *)&dummy_fn, 0),
-                                   &scr_closure_retain_v, &scr_closure_release_v,
-                                   &scr_closure_trace_v);
+                                   &scr_closure_release_v, 1);
   scr_union_retain(cu);
   scr_union_release(cu);
   CHECK(scr_cyc_is_buffered(scr_cyc_hdr(cu)));
@@ -119,9 +117,7 @@ int main(void) {
                                &scr_union_trace_v);
   loop->caps[0] = ub; /* the closure owns the box's only reference */
   scr_box_set_ref(ub, scr_union_new_ref(0, scr_closure_retain(loop),
-                                        &scr_closure_retain_v,
-                                        &scr_closure_release_v,
-                                        &scr_closure_trace_v));
+                                        &scr_closure_release_v, 1));
   scr_closure_release(loop); /* only the cycle keeps it alive now */
   CHECK(scr_closure_live_count() == 1);
   scr_collect_cycles();

@@ -542,7 +542,7 @@ static void test_identity_scalar_values(void) {
 }
 
 static ScrUnion *wrap_key(uint32_t tag, ScrArr *key, ScrTraceFn trace) {
-  return scr_union_new_ref(tag, scr_arr_retain(key), scr_arr_retain_v, scr_arr_release_v, trace);
+  return scr_union_new_ref(tag, scr_arr_retain(key), scr_arr_release_v, trace != NULL);
 }
 
 static void test_reboxed_keys_and_rehash(void) {

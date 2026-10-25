@@ -132,8 +132,9 @@ SCR_COLD void scr_throw_f64(double v);
 SCR_COLD void scr_throw_bool(bool v);
 SCR_COLD void scr_throw_str(ScrStr *v); /* takes ownership */
 /* Takes ownership of v; retain/release must be non-NULL (the compiler
- * passes the payload type's `_v` adapters, like scr_union_new_ref); trace
- * is non-NULL iff the payload type carries a cycle header. */
+ * passes the payload type's `_v` adapters); trace is non-NULL iff the
+ * payload type carries a cycle header. The union box instead stores only
+ * the release adapter and a traced flag (see scr_union_new_ref). */
 SCR_COLD void scr_throw_ref(void *v, void *(*retain)(void *), void (*release)(void *),
                             ScrTraceFn trace);
 /* Store a reference whose JS typeof was checked at the throw site. */
