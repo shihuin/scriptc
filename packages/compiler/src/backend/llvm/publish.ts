@@ -283,7 +283,7 @@ export class PublishWalkers {
           lines.push(
             `  %tagp = getelementptr inbounds %ScrUnion, ptr %o, i64 0, i32 1`,
             `  %tag = load i32, ptr %tagp`,
-            `  %slotp = getelementptr inbounds %ScrUnion, ptr %o, i64 0, i32 5`,
+            `  %slotp = getelementptr inbounds %ScrUnion, ptr %o, i64 0, i32 4`,
             `  %slot = load ptr, ptr %slotp`,
             `  switch i32 %tag, label %done [ ${live.map((a) => `i32 ${a.tag}, label %arm${a.tag}`).join(" ")} ]`,
           );

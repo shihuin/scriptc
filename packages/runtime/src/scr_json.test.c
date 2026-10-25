@@ -751,7 +751,7 @@ static void *test_key_box(uint32_t tag, uint64_t bits) {
     memcpy(&d, &bits, sizeof d);
     return scr_union_new_f64(0, d);
   }
-  return scr_union_new_ref(1, (void *)(uintptr_t)bits, scr_str_retain_v, scr_str_release_v, NULL);
+  return scr_union_new_ref(1, (void *)(uintptr_t)bits, scr_str_release_v, 0);
 }
 #define NO_ARM SCR_JSCHEMA_NO_ARM
 static const ScrJsonUnion test_name_union = {

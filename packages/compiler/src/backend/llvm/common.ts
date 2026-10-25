@@ -270,7 +270,7 @@ export function emitFieldAbsentTest(B: BlockBuilder, value: string, undefinedTag
   B.line(`${tp} = getelementptr inbounds %ScrUnion, ptr ${value}, i64 0, i32 1`);
   B.line(`${tag} = load i32, ptr ${tp}`);
   B.line(`${isUndef} = icmp eq i32 ${tag}, ${undefinedTag}`);
-  B.line(`${sp} = getelementptr inbounds %ScrUnion, ptr ${value}, i64 0, i32 5`);
+  B.line(`${sp} = getelementptr inbounds %ScrUnion, ptr ${value}, i64 0, i32 4`);
   B.line(`${payload} = load i64, ptr ${sp}`);
   B.line(`${marked} = icmp eq i64 ${payload}, ${ABSENT_FIELD_PAYLOAD}`);
   B.line(`${absent} = and i1 ${isUndef}, ${marked}`);

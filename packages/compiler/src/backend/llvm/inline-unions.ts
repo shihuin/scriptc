@@ -109,7 +109,7 @@ export function unionBoxBits(
   B.line(`${source} = select i1 ${isNull}, ptr ${none}, ptr ${box}`);
   B.line(`${tagPtr} = getelementptr inbounds %ScrUnion, ptr ${source}, i64 0, i32 1`);
   B.line(`${tag} = load i32, ptr ${tagPtr}`);
-  B.line(`${bitsPtr} = getelementptr inbounds %ScrUnion, ptr ${source}, i64 0, i32 5`);
+  B.line(`${bitsPtr} = getelementptr inbounds %ScrUnion, ptr ${source}, i64 0, i32 4`);
   B.line(`${bits} = load i64, ptr ${bitsPtr}`);
   return { tag, bits };
 }
@@ -146,7 +146,7 @@ export function stackUnionBox(
   B.line(`store ${sizeType} -1, ptr ${box}`);
   B.line(`${tagPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 1`);
   B.line(`store i32 ${tag}, ptr ${tagPtr}`);
-  B.line(`${bitsPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 5`);
+  B.line(`${bitsPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 4`);
   B.line(`store i64 ${bits}, ptr ${bitsPtr}`);
   return box;
 }
@@ -158,7 +158,7 @@ export function inlineUnionCopyLines(box: string, slot: string, out: string): st
   return [
     `  ${out}.tp = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 1`,
     `  ${out}.tag = load i32, ptr ${out}.tp`,
-    `  ${out}.bp = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 5`,
+    `  ${out}.bp = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 4`,
     `  ${out}.bits = load i64, ptr ${out}.bp`,
     `  ${out}.stp = getelementptr inbounds ${INLINE_UNION_FIELD}, ptr ${slot}, i32 0, i32 0`,
     `  store i32 ${out}.tag, ptr ${out}.stp`,

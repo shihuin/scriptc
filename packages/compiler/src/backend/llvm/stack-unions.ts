@@ -75,7 +75,7 @@ export function emitStackUnion(host: LlvmEmitterContext, expr: UnionWrap): Stack
     slot = B.slot();
   B.entryAllocas.push(`${box} = alloca %ScrUnion`);
   B.entryAllocas.push(`${tag} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 1`);
-  B.entryAllocas.push(`${slot} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 5`);
+  B.entryAllocas.push(`${slot} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 4`);
   const type = expr.value.type;
   let payload: LlValue | null = null;
   if (isUnitType(type)) {

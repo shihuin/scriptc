@@ -409,7 +409,7 @@ export function emitStackRecordKeyGet(
     bitsPtr = B.tmp();
   B.line(`store ${host.sizeType} -1, ptr ${box}`);
   B.line(`${tagPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 1`);
-  B.line(`${bitsPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 5`);
+  B.line(`${bitsPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 4`);
   const join = B.newLabel("rks.j");
   const storeScalar = (t: IrType, value: string): void => {
     const bits = B.tmp();

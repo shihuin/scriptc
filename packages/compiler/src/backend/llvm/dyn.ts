@@ -58,7 +58,7 @@ import {
   mapFlagsOffset,
   releaseSym,
   traceAdapter,
-  traceArg,
+  traceFlag,
   vAdapters,
 } from "./shapes.js";
 import { LlvmUnsupportedError } from "./unsupported.js";
@@ -1843,10 +1843,10 @@ export class LlDyn {
           );
         } else {
           const rc = vAdapters(host, arm);
-          host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+          host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
           blocks.push(
             `  %p${tag} = inttoptr i64 %bits to ptr`,
-            `  %u${tag} = call ptr @scr_union_new_ref(i32 ${tag}, ptr %p${tag}, ptr ${rc.retain}, ptr ${rc.release}, ptr ${traceArg(host, arm)})`,
+            `  %u${tag} = call ptr @scr_union_new_ref(i32 ${tag}, ptr %p${tag}, ptr ${rc.release}, i8 ${traceFlag(host, arm)})`,
           );
         }
         blocks.push(`  ret ptr %u${tag}`);
@@ -2877,7 +2877,7 @@ export class LlDyn {
             B.terminate(`ret ptr ${x}`);
           } else {
             const rc = vAdapters(host, arm);
-            host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+            host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
             const x = B.tmp();
             const u = B.tmp();
             trustedCall(() =>
@@ -2886,7 +2886,7 @@ export class LlDyn {
               ),
             );
             B.line(
-              `${u} = call ptr @scr_union_new_ref(i32 ${i}, ptr ${x}, ptr ${rc.retain}, ptr ${rc.release}, ptr ${traceArg(host, arm)})`,
+              `${u} = call ptr @scr_union_new_ref(i32 ${i}, ptr ${x}, ptr ${rc.release}, i8 ${traceFlag(host, arm)})`,
             );
             B.terminate(`ret ptr ${u}`);
           }
@@ -2995,10 +2995,9 @@ export class LlDyn {
         B.startBlock(lRefresh);
         const fields: [number, string, string][] = [
           [1, "i32", "tag"],
-          [2, "ptr", "retain"],
+          [2, "i8", "traced"],
           [3, "ptr", "release"],
-          [4, "ptr", "trace"],
-          [5, "i64", "slot"],
+          [4, "i64", "slot"],
         ];
         fields.forEach(([index, fieldType, fieldName]) => {
           const cachedPtr = B.tmp();
@@ -5652,9 +5651,9 @@ export class LlDyn {
             B.line(`${u} = call ptr @scr_union_new_bool(i32 ${i}, i1 ${v})`);
           } else {
             const rc = vAdapters(host, arm);
-            host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+            host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
             B.line(
-              `${u} = call ptr @scr_union_new_ref(i32 ${i}, ptr ${v}, ptr ${rc.retain}, ptr ${rc.release}, ptr ${traceArg(host, arm)})`,
+              `${u} = call ptr @scr_union_new_ref(i32 ${i}, ptr ${v}, ptr ${rc.release}, i8 ${traceFlag(host, arm)})`,
             );
           }
           B.terminate(`ret ptr ${u}`);

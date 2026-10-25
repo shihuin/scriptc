@@ -3,7 +3,7 @@ import { InternalCompilerError } from "../../errors.js";
 import { type IrType } from "../../ir/ir.js";
 import { MAY_THROW_LIB_FNS } from "../../ir/builtin-effects.js";
 import type { LibCallExpr, LlValue, LlvmEmitterContext } from "./expr-context.js";
-import { vAdapters } from "./shapes.js";
+import { traceFlag, vAdapters } from "./shapes.js";
 
 export interface AbiArgument {
   type: string;
@@ -156,9 +156,8 @@ export function nullableReference(
   const wrapped = callRuntime(host, "scr_union_new_ref", "ptr", [
     { type: "i32", name: String(presentTag) },
     ptr(value),
-    ptr(adapters.retain),
     ptr(adapters.release),
-    ptr(),
+    { type: "i8", name: traceFlag(host.shapeHost, arms[presentTag]!) },
   ]);
   B.br(done);
   B.startBlock(no);

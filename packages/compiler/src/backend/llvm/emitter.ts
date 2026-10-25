@@ -360,6 +360,7 @@ import {
   releaseSym,
   retainSym,
   traceArg,
+  traceFlag,
   vAdapters,
 } from "./shapes.js";
 import type { ExprOf, LibCallExpr, LlStreamTypedRefAdapter, LlValue } from "./expr-context.js";
@@ -4355,7 +4356,7 @@ export class LlEmitter {
   unionGetF64(uName: string): string {
     const p = this.B.tmp();
     const t = this.B.tmp();
-    this.B.line(`${p} = getelementptr inbounds %ScrUnion, ptr ${uName}, i64 0, i32 5`);
+    this.B.line(`${p} = getelementptr inbounds %ScrUnion, ptr ${uName}, i64 0, i32 4`);
     this.B.line(`${t} = load double, ptr ${p}`);
     return t;
   }
@@ -4365,7 +4366,7 @@ export class LlEmitter {
     const p = this.B.tmp();
     const bits = this.B.tmp();
     const t = this.B.tmp();
-    this.B.line(`${p} = getelementptr inbounds %ScrUnion, ptr ${uName}, i64 0, i32 5`);
+    this.B.line(`${p} = getelementptr inbounds %ScrUnion, ptr ${uName}, i64 0, i32 4`);
     this.B.line(`${bits} = load i64, ptr ${p}`);
     this.B.line(`${t} = icmp ne i64 ${bits}, 0`);
     return t;
@@ -4401,9 +4402,9 @@ export class LlEmitter {
       return t;
     }
     const rc = vAdapters(this.shapeHost, v.type);
-    this.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+    this.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
     B.line(
-      `${t} = call ptr @scr_union_new_ref(i32 ${tag}, ptr ${v.name}, ptr ${rc.retain}, ptr ${rc.release}, ptr ${traceArg(this.shapeHost, v.type)})`,
+      `${t} = call ptr @scr_union_new_ref(i32 ${tag}, ptr ${v.name}, ptr ${rc.release}, i8 ${traceFlag(this.shapeHost, v.type)})`,
     );
     return t;
   }
@@ -5506,7 +5507,7 @@ export class LlEmitter {
       bits = B.tmp(),
       partial = B.tmp(),
       pair = B.tmp();
-    B.line(`${payload} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 5`);
+    B.line(`${payload} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 4`);
     B.line(`${bits} = load i64, ptr ${payload}`);
     B.line(`${partial} = insertvalue ${SCALAR_UNION_RESULT} poison, i32 ${tag}, 0`);
     B.line(`${pair} = insertvalue ${SCALAR_UNION_RESULT} ${partial}, i64 ${bits}, 1`);
@@ -5522,7 +5523,7 @@ export class LlEmitter {
     B.entryAllocas.push(`${box} = alloca %ScrUnion`);
     B.entryAllocas.push(`${tagSlot} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 1`);
     B.entryAllocas.push(
-      `${payloadSlot} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 5`,
+      `${payloadSlot} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 4`,
     );
     const tag = B.tmp(),
       bits = B.tmp();
@@ -7082,7 +7083,7 @@ export class LlEmitter {
     B.line(`${tag} = select i1 ${isNull}, i32 ${nullable.unitTag}, i32 ${nullable.refTag}`);
     B.line(`${tagPtr} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 1`);
     B.line(`store i32 ${tag}, ptr ${tagPtr}`);
-    B.line(`${slot} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 5`);
+    B.line(`${slot} = getelementptr inbounds %ScrUnion, ptr ${box}, i64 0, i32 4`);
     B.line(`store i64 0, ptr ${slot}`);
     B.line(`store ptr ${p}, ptr ${slot}`);
     return box;

@@ -40,6 +40,6 @@ test("comparing a union with a number or boolean reads its payload inline", asyn
     // The tag test and the payload load stay in the function, so the
     // union's stack box has no escaping use.
     expect(fn).not.toMatch(/@scr_union_get_(f64|bool)\(/);
-    expect(fn).toMatch(/getelementptr inbounds %ScrUnion, ptr %\S+, i64 0, i32 5/);
+    expect(fn).toMatch(/getelementptr inbounds %ScrUnion, ptr %\S+, i64 0, i32 4/);
   }
 });

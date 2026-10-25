@@ -1,7 +1,7 @@
 /* Focused LLVM expression emission extracted from emitter.ts. */
 import { InternalCompilerError } from "../../errors.js";
 import { type IrType, isRefCounted, typeKey } from "../../ir/ir.js";
-import { FN_ATTRS, releaseSym, retainSym, traceArg } from "./shapes.js";
+import { FN_ATTRS, releaseSym, retainSym } from "./shapes.js";
 import type { LlvmEmitterContext } from "./expr-context.js";
 import { unionPeekLines, unionTagLines } from "./union-repr.js";
 import { registerReplay } from "./emit-journal.js";
@@ -123,7 +123,7 @@ export function streamDataAdapter(
       throw new InternalCompilerError(
         "llvm emitter bug: stream data listener union is not Buffer | string (frontend must fence)",
       );
-    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
     host.declare(`declare ptr @scr_bytes_retain_v(ptr)`);
     host.declare(`declare void @scr_bytes_release_v(ptr)`);
     host.declare(`declare ptr @scr_str_retain_v(ptr)`);
@@ -137,7 +137,7 @@ export function streamDataAdapter(
       `  br i1 %isb, label %buf, label %str`,
       `buf:`,
       `  %rb = call ptr @scr_bytes_retain_v(ptr %a0)`,
-      `  %ub = call ptr @scr_union_new_ref(i32 ${bytesTag}, ptr %rb, ptr @scr_bytes_retain_v, ptr @scr_bytes_release_v, ptr null)`,
+      `  %ub = call ptr @scr_union_new_ref(i32 ${bytesTag}, ptr %rb, ptr @scr_bytes_release_v, i8 0)`,
       `  store ptr %ub, ptr %uslot`,
       `  br label %go`,
       `str:`,
@@ -151,7 +151,7 @@ export function streamDataAdapter(
       `  ret void`,
       `strok:`,
       `  %rs = call ptr @scr_str_retain_v(ptr %a1)`,
-      `  %us = call ptr @scr_union_new_ref(i32 ${strTag}, ptr %rs, ptr @scr_str_retain_v, ptr @scr_str_release_v, ptr null)`,
+      `  %us = call ptr @scr_union_new_ref(i32 ${strTag}, ptr %rs, ptr @scr_str_release_v, i8 0)`,
       `  store ptr %us, ptr %uslot`,
       `  br label %go`,
       `go:`,
@@ -401,10 +401,10 @@ export function fsRenameThunkFor(host: LlvmEmitterContext, cbT: IrType & { kind:
     host.declare(`declare ptr @scr_error_retain(ptr)`);
     host.declare(`declare ptr @scr_error_retain_v(ptr)`);
     host.declare(`declare void @scr_error_release_v(ptr)`);
-    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
     d.push(
       `  %er = call ptr @scr_error_retain(ptr %err)`,
-      `  %eu = call ptr @scr_union_new_ref(i32 ${errTag}, ptr %er, ptr @scr_error_retain_v, ptr @scr_error_release_v, ptr null)`,
+      `  %eu = call ptr @scr_union_new_ref(i32 ${errTag}, ptr %er, ptr @scr_error_release_v, i8 0)`,
       `  store ptr %eu, ptr %slot`,
       `  br label %go`,
       `no:`,
@@ -546,10 +546,10 @@ export function zlibBytesThunkFor(
       host.declare(`declare ptr @scr_error_retain(ptr)`);
       host.declare(`declare ptr @scr_error_retain_v(ptr)`);
       host.declare(`declare void @scr_error_release_v(ptr)`);
-      host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+      host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
       d.push(
         `  %er = call ptr @scr_error_retain(ptr %err)`,
-        `  %eu = call ptr @scr_union_new_ref(i32 ${errTag}, ptr %er, ptr @scr_error_retain_v, ptr @scr_error_release_v, ptr null)`,
+        `  %eu = call ptr @scr_union_new_ref(i32 ${errTag}, ptr %er, ptr @scr_error_release_v, i8 0)`,
         `  store ptr %eu, ptr %eslot`,
       );
     } else {
@@ -906,7 +906,7 @@ export function streamCbThunkFor(
         throw new InternalCompilerError(
           "llvm emitter bug: stream destroy err union lacks its arms",
         );
-      host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+      host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
       host.declare(`declare ptr @scr_error_retain_v(ptr)`);
       host.declare(`declare void @scr_error_release_v(ptr)`);
       d.push(
@@ -915,7 +915,7 @@ export function streamCbThunkFor(
         `  br i1 %euh${i}, label %euy${i}, label %eun${i}`,
         `euy${i}:`,
         `  %eur${i} = call ptr @scr_error_retain_v(ptr %err)`,
-        `  %euu${i} = call ptr @scr_union_new_ref(i32 ${errTag}, ptr %eur${i}, ptr @scr_error_retain_v, ptr @scr_error_release_v, ptr ${traceArg(host.shapeHost, def!.arms[errTag]!)})`,
+        `  %euu${i} = call ptr @scr_union_new_ref(i32 ${errTag}, ptr %eur${i}, ptr @scr_error_release_v, i8 1)`,
         `  store ptr %euu${i}, ptr %euslot${i}`,
         `  br label %eug${i}`,
         `eun${i}:`,

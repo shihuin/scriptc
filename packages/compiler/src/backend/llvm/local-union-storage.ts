@@ -170,7 +170,7 @@ export function allocateLocalUnion(
     payload = B.slot();
   B.entryAllocas.push(`${box} = alloca %ScrUnion`);
   B.entryAllocas.push(`${tag} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 1`);
-  B.entryAllocas.push(`${payload} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 5`);
+  B.entryAllocas.push(`${payload} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 4`);
   const owner = proof.ownerType ? B.slot() : null;
   if (owner) {
     B.entryAllocas.push(`${owner} = alloca ptr`);
@@ -286,7 +286,7 @@ export function storeLocalUnion(
   const tag = host.unionTag(source, unionId);
   const slot = B.tmp(),
     bits = B.tmp();
-  B.line(`${slot} = getelementptr inbounds %ScrUnion, ptr ${source}, i32 0, i32 5`);
+  B.line(`${slot} = getelementptr inbounds %ScrUnion, ptr ${source}, i32 0, i32 4`);
   B.line(`${bits} = load i64, ptr ${slot}`);
   B.line(`store i32 ${tag}, ptr ${storage.tag}`);
   B.line(`store i64 ${bits}, ptr ${storage.payload}`);

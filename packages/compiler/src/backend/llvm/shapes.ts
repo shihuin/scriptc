@@ -919,10 +919,10 @@ function releaseHelper(host: ShapeHost, family: string, row: InlineRcFamily): st
     ...(family === "union"
       ? [
           // scr_union_release buffers a surviving box only when its arm can
-          // reach a cycle: a box whose arm_trace is NULL visits nothing.
-          `  %atp = getelementptr i8, ptr %o, ${S} ${S === "i64" ? 32 : 16} ; ScrUnion.arm_trace`,
-          `  %at = load ptr, ptr %atp`,
-          `  %untraced = icmp eq ptr %at, null`,
+          // reach a cycle: a box whose traced byte is zero visits nothing.
+          `  %atp = getelementptr i8, ptr %o, ${S} ${S === "i64" ? 12 : 8} ; ScrUnion.traced`,
+          `  %at = load i8, ptr %atp`,
+          `  %untraced = icmp eq i8 %at, 0`,
           `  br i1 %untraced, label %done, label %root`,
           `root:`,
         ]
@@ -1082,6 +1082,13 @@ export function traceAdapter(host: ShapeHost, t: IrType): string | null {
 /** `@trace` or `null` — the trace argument at a container call site. */
 export function traceArg(host: ShapeHost, t: IrType): string {
   return traceAdapter(host, t) ?? "null";
+}
+
+/** Whether the arm type carries a cycle header, as the `traced` byte of a
+ * union box: the compiler knows the answer, so the box stores one byte instead
+ * of a trace function pointer. */
+export function traceFlag(host: ShapeHost, t: IrType): string {
+  return traceAdapter(host, t) === null ? "0" : "1";
 }
 
 /** Keep native capsule edges visible when the referent is cycle-capable. */

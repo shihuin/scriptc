@@ -301,8 +301,7 @@ static void qs_add_key_val(QsSink *out, ScrStr *key, ScrStr *value,
   ScrUnion *cell = scr_map_get_str_ref(out->map, key);
   if (!cell) {
     scr_map_set_str_ref(out->map, key,
-                        scr_union_new_ref(str_tag, value, &scr_str_retain_v,
-                                          &scr_str_release_v, NULL));
+                        scr_union_new_ref(str_tag, value, &scr_str_release_v, 0));
     scr_str_release(key);
     return;
   }
@@ -312,8 +311,7 @@ static void qs_add_key_val(QsSink *out, ScrStr *key, ScrStr *value,
     scr_arr_push_ref(rows, scr_str_retain_v(scr_union_peek(cell)));
     scr_arr_push_ref(rows, value);
     scr_map_set_str_ref(out->map, key,
-                        scr_union_new_ref(arr_tag, rows, &scr_arr_retain_v,
-                                          &scr_arr_release_v, NULL));
+                        scr_union_new_ref(arr_tag, rows, &scr_arr_release_v, 0));
   } else {
     scr_arr_push_ref((ScrArr *)scr_union_peek(cell), value);
   }

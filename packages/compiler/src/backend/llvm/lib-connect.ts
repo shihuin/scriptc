@@ -24,14 +24,14 @@ function connectAdapter(host: LlvmEmitterContext, cb: LlValue, h2: boolean): str
   const release = h2 ? "scr_http_res_release_v" : "scr_net_sock_release_v";
   host.declare(`declare ptr @${retain}(ptr)`);
   host.declare(`declare void @${release}(ptr)`);
-  host.declare("declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)");
+  host.declare("declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)");
   const third = !h2 && type.params.length === 3;
   if (!h2 && !third) host.declare("declare void @scr_bytes_release(ptr)");
   host.resolveThunkDefs.push(
     `define internal void @${symbol}(ptr %cb, ptr %request, ptr %value${h2 ? "" : ", ptr %head"}) ${FN_ATTRS} {`,
     "entry:",
     ...(!h2 && !third ? ["  call void @scr_bytes_release(ptr %head)"] : []),
-    `  %union = call ptr @scr_union_new_ref(i32 ${tag}, ptr %value, ptr @${retain}, ptr @${release}, ptr null)`,
+    `  %union = call ptr @scr_union_new_ref(i32 ${tag}, ptr %value, ptr @${release}, i8 0)`,
     "  %fnp = getelementptr inbounds %ScrClosure, ptr %cb, i64 0, i32 1",
     "  %fn = load ptr, ptr %fnp",
     `  call void %fn(ptr %cb, ptr %request, ptr %union${third ? ", ptr %head" : ""})`,

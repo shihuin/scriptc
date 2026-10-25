@@ -10,6 +10,13 @@ import {
 } from "../../ir/ir.js";
 import { mangleGenResThunk, mangleRecordNew, mangleRecordStruct } from "../mangle.js";
 import { FN_ATTRS, llFieldType, releaseSym, retainSym, traceArg, vAdapters } from "./shapes.js";
+
+/** The release adapter and the traced byte of a union box, in call order:
+ * the box stores the arm's release and whether the arm can reach a cycle. */
+function unionArmArgs(release: string, trace: string): string {
+  return `ptr ${release}, i8 ${trace === "null" ? "0" : "1"}`;
+}
+
 import { LlvmUnsupportedError } from "./unsupported.js";
 import type { LlvmEmitterContext } from "./expr-context.js";
 import { unionPeekLines, unionTagLines } from "./union-repr.js";
@@ -29,9 +36,9 @@ function unionWrapRefLines(
   if (host.nullableUnions.has(unionId))
     return [`  ${out} = getelementptr i8, ptr ${payload}, i64 0`];
   const av = vAdapters(host.shapeHost, arm);
-  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
   return [
-    `  ${out} = call ptr @scr_union_new_ref(i32 ${tag}, ptr ${payload}, ptr ${av.retain}, ptr ${av.release}, ptr ${traceArg(host.shapeHost, arm)})`,
+    `  ${out} = call ptr @scr_union_new_ref(i32 ${tag}, ptr ${payload}, ${unionArmArgs(av.release, traceArg(host.shapeHost, arm))})`,
   ];
 }
 
@@ -134,10 +141,10 @@ export function raceAdapterFor(host: LlvmEmitterContext, from: IrType, to: IrTyp
     } else {
       const fv = vAdapters(host.shapeHost, from);
       host.declare(`declare ptr @scr_promise_payload_ref(ptr)`);
-      host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+      host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
       d.push(
         `  %x = call ptr @scr_promise_payload_ref(ptr %src)`,
-        `  %u = call ptr @scr_union_new_ref(i32 ${tag}, ptr %x, ptr ${fv.retain}, ptr ${fv.release}, ptr ${traceArg(host.shapeHost, from)})`,
+        `  %u = call ptr @scr_union_new_ref(i32 ${tag}, ptr %x, ${unionArmArgs(fv.release, traceArg(host.shapeHost, from))})`,
       );
     }
     d.push(`  ${fulfill("%u")}`, `  ret void`, `}`, ``);
@@ -532,7 +539,7 @@ export function childExitSignalThunkFor(
     throw new InternalCompilerError("llvm emitter bug: exit listener unions lack their arms");
   }
   host.declare(`declare ptr @scr_union_new_f64(i32, double)`);
-  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
   host.declare(`declare ptr @scr_str_new(ptr, ${host.sizeType})`);
   host.declare(`declare ${host.sizeType} @strlen(ptr)`);
   host.declare(`declare ptr @scr_str_retain_v(ptr)`);
@@ -587,7 +594,6 @@ export function execFileThunkFor(host: LlvmEmitterContext, cbT: IrType & { kind:
   let errorTag = -1;
   let nullTag = -1;
   let errorArm: IrType | null = null;
-  let errorTrace = "null";
   if (errorParam !== undefined) {
     if (errorParam.kind !== "union")
       throw new InternalCompilerError("llvm emitter bug: execFile error param not a union");
@@ -600,8 +606,7 @@ export function execFileThunkFor(host: LlvmEmitterContext, cbT: IrType & { kind:
     if (errorTag < 0 || nullTag < 0 || errorArm === null) {
       throw new InternalCompilerError("llvm emitter bug: execFile error union lacks its arms");
     }
-    errorTrace = traceArg(host.shapeHost, errorArm);
-    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
     host.declare(`declare ptr @scr_error_retain_v(ptr)`);
     host.declare(`declare void @scr_error_release_v(ptr)`);
   } else {
@@ -618,7 +623,7 @@ export function execFileThunkFor(host: LlvmEmitterContext, cbT: IrType & { kind:
       `  %haserr = icmp ne ptr %err, null`,
       `  br i1 %haserr, label %errsome, label %errnone`,
       `errsome:`,
-      `  %eu = call ptr @scr_union_new_ref(i32 ${errorTag}, ptr %err, ptr @scr_error_retain_v, ptr @scr_error_release_v, ptr ${errorTrace})`,
+      `  %eu = call ptr @scr_union_new_ref(i32 ${errorTag}, ptr %err, ${unionArmArgs("@scr_error_release_v", errorArm === null ? "null" : traceArg(host.shapeHost, errorArm))})`,
       `  store ptr %eu, ptr %eslot`,
       `  br label %go`,
       `errnone:`,
@@ -731,7 +736,7 @@ export function ipcSendThunkFor(host: LlvmEmitterContext, cbT: IrType & { kind: 
     if (errorTag < 0 || nullTag < 0 || !errorArm) {
       throw new InternalCompilerError("llvm emitter bug: IPC send callback union lacks Error|null");
     }
-    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
     host.declare(`declare ptr @scr_error_retain_v(ptr)`);
     host.declare(`declare void @scr_error_release_v(ptr)`);
     d.push(
@@ -739,7 +744,7 @@ export function ipcSendThunkFor(host: LlvmEmitterContext, cbT: IrType & { kind: 
       `  %has = icmp ne ptr %error, null`,
       `  br i1 %has, label %some, label %none`,
       `some:`,
-      `  %wrapped = call ptr @scr_union_new_ref(i32 ${errorTag}, ptr %error, ptr @scr_error_retain_v, ptr @scr_error_release_v, ptr ${traceArg(host.shapeHost, errorArm)})`,
+      `  %wrapped = call ptr @scr_union_new_ref(i32 ${errorTag}, ptr %error, ${unionArmArgs("@scr_error_release_v", errorArm === null ? "null" : traceArg(host.shapeHost, errorArm))})`,
       `  store ptr %wrapped, ptr %slot`,
       `  br label %invoke`,
       `none:`,
@@ -773,14 +778,14 @@ export function childDataThunkFor(host: LlvmEmitterContext, param: IrType): stri
     throw new InternalCompilerError(
       "llvm emitter bug: stream data listener union lacks its Buffer arm",
     );
-  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
   host.declare(`declare ptr @scr_bytes_retain_v(ptr)`);
   host.declare(`declare void @scr_bytes_release_v(ptr)`);
   host.resolveThunkDefs.push(
     `define internal void @${sym}(ptr %cb, ptr %chunk) ${FN_ATTRS} { ; child 'data' → ${param.unionId}`,
     `entry:`,
     `  %r = call ptr @scr_bytes_retain_v(ptr %chunk)`,
-    `  %u = call ptr @scr_union_new_ref(i32 ${bytesTag}, ptr %r, ptr @scr_bytes_retain_v, ptr @scr_bytes_release_v, ptr null)`,
+    `  %u = call ptr @scr_union_new_ref(i32 ${bytesTag}, ptr %r, ptr @scr_bytes_release_v, i8 0)`,
     `  %fnp = getelementptr inbounds %ScrClosure, ptr %cb, i64 0, i32 1`,
     `  %fn = load ptr, ptr %fnp`,
     `  call void %fn(ptr %cb, ptr %u)`,
@@ -993,7 +998,7 @@ export function unwrapNullableClosure(
   B.startBlock(ly);
   const pp = B.tmp();
   const pv = B.tmp();
-  B.line(`${pp} = getelementptr inbounds %ScrUnion, ptr ${u}, i64 0, i32 5`);
+  B.line(`${pp} = getelementptr inbounds %ScrUnion, ptr ${u}, i64 0, i32 4`);
   B.line(`${pv} = load ptr, ptr ${pp}`);
   const r = B.tmp();
   B.line(`${r} = call ptr @scr_closure_retain_v(ptr ${pv})`);
@@ -1077,7 +1082,7 @@ export function closeBindThunkFor(
     `  %isfn = icmp eq i32 %tag, ${funcTag}`,
     `  br i1 %isfn, label %fn, label %go`,
     `fn:`,
-    `  %pp = getelementptr inbounds %ScrUnion, ptr %cbu, i64 0, i32 5`,
+    `  %pp = getelementptr inbounds %ScrUnion, ptr %cbu, i64 0, i32 4`,
     `  %pv = load ptr, ptr %pp`,
   ];
   if (oneParam) {

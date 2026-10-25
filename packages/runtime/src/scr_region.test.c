@@ -189,7 +189,7 @@ static Node *build_graph(int n) {
     scr_map_set_str_ref(root->names, k, node_retain(child));
     scr_str_release(k);
     scr_map_set_ref_f64(set, child, i);
-    child->tag = scr_union_new_ref(1, node_retain(child), node_retain, node_release, NULL);
+    child->tag = scr_union_new_ref(1, node_retain(child), node_release, 0);
     child->plain = plain_new(node_retain(root), i % 2 ? plain_new(node_retain(child), NULL) : NULL);
     ScrDyn *ref = scr_dyn_new_typed_ref(child, node_retain, node_release, "Node", 4, NULL, NULL);
     scr_dyn_arr_push(list, ref);

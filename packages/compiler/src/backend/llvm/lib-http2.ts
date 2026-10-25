@@ -64,7 +64,7 @@ function sniAnswer(host: LlvmEmitterContext, type: IrType): string {
       `  %has.context = icmp eq i32 %context.tag, ${tag}`,
       "  br i1 %has.context, label %present, label %absent",
       "present:",
-      "  %context.ptr = getelementptr inbounds %ScrUnion, ptr %context, i64 0, i32 5",
+      "  %context.ptr = getelementptr inbounds %ScrUnion, ptr %context, i64 0, i32 4",
       "  %context.value = load ptr, ptr %context.ptr",
       "  %retained = call ptr @scr_secure_ctx_retain_v(ptr %context.value)",
       "  br label %join",

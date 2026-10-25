@@ -796,7 +796,7 @@ export function emitPathUrlLibCall(host: LlvmEmitterContext, e: LibCallExpr): Ll
     host.declare(`declare ptr @scr_os_ifaddrs_cidr(ptr, ${host.sizeType})`);
     host.declare(`declare double @scr_os_ifaddrs_scopeid(ptr, ${host.sizeType})`);
     host.declare(`declare void @scr_os_ifaddrs_free(ptr)`);
-    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+    host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
     host.declare(`declare ptr @scr_union_retain_v(ptr)`);
     host.declare(`declare void @scr_union_release(ptr)`);
     host.declare(`declare ptr @scr_str_retain_v(ptr)`);

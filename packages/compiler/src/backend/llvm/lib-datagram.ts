@@ -74,7 +74,7 @@ function lookupAdapter(host: LlvmEmitterContext, cb: LlValue): string {
   host.declare("declare ptr @scr_error_new(i32, ptr)");
   host.declare("declare ptr @scr_error_retain_v(ptr)");
   host.declare("declare void @scr_error_release_v(ptr)");
-  host.declare("declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)");
+  host.declare("declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)");
   host.declare("declare ptr @scr_str_retain_v(ptr)");
   host.resolveThunkDefs.push(
     `define internal void @${symbol}(ptr %cb, ptr %message, ptr %address, double %family) ${FN_ATTRS} {`,
@@ -83,7 +83,7 @@ function lookupAdapter(host: LlvmEmitterContext, cb: LlValue): string {
     "  br i1 %failed, label %error, label %success",
     "error:",
     "  %err.value = call ptr @scr_error_new(i32 0, ptr %message)",
-    `  %boxed = call ptr @scr_union_new_ref(i32 ${errorTag}, ptr %err.value, ptr @scr_error_retain_v, ptr @scr_error_release_v, ptr null)`,
+    `  %boxed = call ptr @scr_union_new_ref(i32 ${errorTag}, ptr %err.value, ptr @scr_error_release_v, i8 0)`,
     "  br label %join",
     "success:",
     "  br label %join",

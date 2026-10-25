@@ -4,10 +4,10 @@
  * file needs to know nothing about per-class/per-record struct layouts.
  *
  * Every union carries a cycle header: an arm can hold a class/record/
- * promise payload that points back (the compiler passes arm_trace for
- * exactly those arm types), and instances of one union type must be
- * uniform, scalar-armed values included. Only boxes with an arm_trace can
- * be cycle roots, so only those are buffered as collector candidates. */
+ * promise payload that points back (the compiler sets traced for exactly
+ * those arm types), and instances of one union type must be uniform,
+ * scalar-armed values included. Only traced boxes can be cycle roots, so
+ * only those are buffered as collector candidates. */
 #include "scr_runtime.h"
 
 #include <stdio.h>
@@ -24,14 +24,14 @@ void scr_union_live_forget(void) { scr_live_unions--; }
 
 static void scr_union_trace(void *o, ScrTraceVisit visit, void *ctx) {
   ScrUnion *u = (ScrUnion *)o;
-  if (u->arm_trace) visit(scr_union_peek(u), ctx);
+  if (u->traced) visit(scr_union_peek(u), ctx);
 }
 
 /* Teardown for the collector: release the payload only when the trace does
  * NOT visit it (the complement — see the contract in scr_runtime.h). */
 static void scr_union_gcfree(void *o) {
   ScrUnion *u = (ScrUnion *)o;
-  if (u->arm_release && !u->arm_trace) u->arm_release(scr_union_peek(u));
+  if (u->arm_release && !u->traced) u->arm_release(scr_union_peek(u));
 #ifdef SCR_RC_AUDIT
   scr_live_unions--;
 #endif
@@ -63,8 +63,8 @@ ScrUnion *scr_union_new_f64(uint32_t tag, double v) {
  * read. Higher tags keep a fresh box. */
 #define SCR_UNION_BOOL_TAGS 16
 #define SCR_UNION_BOOL_PAIR(t)                                  \
-  {{SIZE_MAX, (t), NULL, NULL, NULL, 0},                        \
-   {SIZE_MAX, (t), NULL, NULL, NULL, 1}}
+  {{SIZE_MAX, (t), 0, NULL, 0},                                 \
+   {SIZE_MAX, (t), 0, NULL, 1}}
 static ScrUnion scr_union_bools[SCR_UNION_BOOL_TAGS][2] = {
     SCR_UNION_BOOL_PAIR(0),  SCR_UNION_BOOL_PAIR(1),  SCR_UNION_BOOL_PAIR(2),
     SCR_UNION_BOOL_PAIR(3),  SCR_UNION_BOOL_PAIR(4),  SCR_UNION_BOOL_PAIR(5),
@@ -81,13 +81,12 @@ ScrUnion *scr_union_new_bool(uint32_t tag, bool v) {
   return u;
 }
 
-ScrUnion *scr_union_new_ref(uint32_t tag, void *v, void *(*retain)(void *),
-                             void (*release)(void *), ScrTraceFn trace) {
+ScrUnion *scr_union_new_ref(uint32_t tag, void *v, void (*release)(void *),
+                             uint8_t traced) {
   ScrUnion *u = scr_union_alloc(tag);
   memcpy(&u->slot, &v, sizeof v); /* ownership of v moves in (+1 arrived) */
-  u->arm_retain = retain;
   u->arm_release = release;
-  u->arm_trace = trace;
+  u->traced = traced;
   return u;
 }
 
@@ -106,10 +105,10 @@ void scr_union_release(ScrUnion *u) {
     /* Check the header inline: most boxes were never buffered. A box can
      * have been buffered under an earlier arm (typed-ref cache commits swap
      * arm contents between boxes of one union type), so this reads the
-     * header rather than arm_trace. */
+     * header rather than the traced byte. */
     scr_cyc_dead(u);
     scr_rc_destroy(u, scr_union_destroy);
-  } else if (u->arm_trace) {
+  } else if (u->traced) {
     /* Possible cycle root; may collect — u is done. A box whose trace
      * visits nothing (scalar arms, and ref arms the compiler proved
      * acyclic) cannot be on a collectable cycle, so it is never a root. */

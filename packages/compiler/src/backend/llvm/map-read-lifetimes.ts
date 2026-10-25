@@ -424,7 +424,7 @@ export function emitStackMapRead(host: LlvmEmitterContext, read: LocalMapRead): 
     payload = B.slot(),
     tag = B.slot();
   B.entryAllocas.push(`${box} = alloca %ScrUnion`);
-  B.entryAllocas.push(`${payload} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 5`);
+  B.entryAllocas.push(`${payload} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 4`);
   B.entryAllocas.push(`${tag} = getelementptr inbounds %ScrUnion, ptr ${box}, i32 0, i32 1`);
   let found = B.tmp();
   let owner: StackMapRead["owner"] = null;

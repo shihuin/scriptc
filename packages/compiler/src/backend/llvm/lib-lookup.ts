@@ -62,7 +62,7 @@ function lookupAnswer(host: LlvmEmitterContext, answer: IrType & { kind: "func" 
       `  %failed = icmp ne i32 %tag, ${nullTag}`,
       "  br i1 %failed, label %failure, label %success",
       "failure:",
-      "  %errorp = getelementptr inbounds %ScrUnion, ptr %error, i64 0, i32 5",
+      "  %errorp = getelementptr inbounds %ScrUnion, ptr %error, i64 0, i32 4",
       "  %err = load ptr, ptr %errorp",
       `  %messagep = getelementptr inbounds i8, ptr %err, i64 ${host.abiOffset(24, 12)}`,
       "  %message = load ptr, ptr %messagep",

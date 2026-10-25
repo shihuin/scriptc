@@ -96,7 +96,7 @@ export function emitUnionPeek(
   if (nullable) return u;
   const p = B.tmp();
   const t = B.tmp();
-  B.line(`${p} = getelementptr inbounds %ScrUnion, ptr ${u}, i64 0, i32 5`);
+  B.line(`${p} = getelementptr inbounds %ScrUnion, ptr ${u}, i64 0, i32 4`);
   B.line(`${t} = load ptr, ptr ${p}${alias}`);
   return t;
 }
@@ -128,7 +128,7 @@ export function unionPeekLines(nullable: PointerUnion | null, u: string, out: st
   // A plain copy of the pointer (NULL included) under the template's name.
   if (nullable) return [`  ${out} = getelementptr i8, ptr ${u}, i64 0`];
   return [
-    `  ${out}.p = getelementptr inbounds %ScrUnion, ptr ${u}, i64 0, i32 5`,
+    `  ${out}.p = getelementptr inbounds %ScrUnion, ptr ${u}, i64 0, i32 4`,
     `  ${out} = load ptr, ptr ${out}.p`,
   ];
 }

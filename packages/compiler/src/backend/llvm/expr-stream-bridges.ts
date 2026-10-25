@@ -61,7 +61,7 @@ function nullableFieldUnion(
   nullable: NullableRefField,
 ): string {
   const rc = vAdapters(host.shapeHost, nullable.arm);
-  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, ptr, ptr)`);
+  host.declare(`declare ptr @scr_union_new_ref(i32, ptr, ptr, i8)`);
   const isNull = B.tmp(),
     retained = B.tmp(),
     box = B.tmp(),
@@ -76,7 +76,7 @@ function nullableFieldUnion(
   B.startBlock(ref);
   B.line(`${retained} = call ptr ${rc.retain}(ptr ${p})`);
   B.line(
-    `${box} = call ptr @scr_union_new_ref(i32 ${nullable.refTag}, ptr ${retained}, ptr ${rc.retain}, ptr ${rc.release}, ptr ${traceArg(host.shapeHost, nullable.arm)})`,
+    `${box} = call ptr @scr_union_new_ref(i32 ${nullable.refTag}, ptr ${retained}, ptr ${rc.release}, i8 1)`,
   );
   B.br(join);
   B.startBlock(join);
@@ -386,7 +386,7 @@ export function streamTypedRefCommitAdapter(
           `  %f${index}_tagp = getelementptr inbounds %ScrUnion, ptr %${next}, i64 0, i32 1`,
           `  %f${index}_tag = load i32, ptr %f${index}_tagp`,
           `  %f${index}_isref = icmp eq i32 %f${index}_tag, ${nullable.refTag}`,
-          `  %f${index}_payp = getelementptr inbounds %ScrUnion, ptr %${next}, i64 0, i32 5`,
+          `  %f${index}_payp = getelementptr inbounds %ScrUnion, ptr %${next}, i64 0, i32 4`,
           `  %f${index}_pay = load ptr, ptr %f${index}_payp`,
           `  %f${index}_sel = select i1 %f${index}_isref, ptr %f${index}_pay, ptr null`,
           `  %f${index}_new = call ptr ${rc.retain}(ptr %f${index}_sel)`,

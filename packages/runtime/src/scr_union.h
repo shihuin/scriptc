@@ -28,27 +28,41 @@
 typedef struct ScrUnion {
   size_t rc; /* SIZE_MAX = immortal (unused for unions; kept per convention) */
   uint32_t tag;
-  /* Ref arms only: the payload's RC entry points. NULL for scalar arms.
-   * arm_trace is non-NULL exactly when the arm type carries a cycle header
-   * (like ScrBox.obj_trace: the union's trace then visits the payload). */
-  void *(*arm_retain)(void *);
+  /* 1 exactly when the arm type carries a cycle header, so this box can be a
+   * collector root (like ScrBox.obj_trace: the union's trace then visits the
+   * payload). Kept beside the tag so scr_union_release and the inline release
+   * in shapes.ts test it with one byte load in the box's first cache line,
+   * never through another object. */
+  uint8_t traced;
+  /* Ref arms only: the arm type's `_v` release adapter; NULL for scalar arms.
+   * There is one box per union value and one such adapter per arm type, which
+   * is why the pointer lives here rather than in a table. The arm's retain is
+   * not stored: every ref payload begins with its RC header, so the generic
+   * scr_rc_retain reaches it without an adapter. */
   void (*arm_release)(void *);
-  ScrTraceFn arm_trace;
   uint64_t slot; /* double/bool/pointer via memcpy and casts */
 } ScrUnion;
-/* The speed posture's inline union release (shapes.ts) reads arm_trace at
- * this byte offset to skip buffering untraced boxes, like scr_union_release. */
-_Static_assert(offsetof(ScrUnion, arm_trace) == 2 * sizeof(size_t) + 2 * sizeof(void *),
-               "inline RC fast paths read ScrUnion.arm_trace at 32 (64-bit) / 16 (32-bit)");
+/* The emitted IR declares `%ScrUnion = type { size_t, i32, i8, ptr, i64 }` and
+ * reads `traced` right after the tag — byte 12 on 64-bit, byte 8 on wasm32.
+ * The box is one 32-byte half-cache-line on 64-bit targets and 24 bytes on
+ * wasm32; it was 48/32 bytes with a retain adapter and a trace pointer. */
+_Static_assert(sizeof(ScrUnion) == (sizeof(size_t) == 8 ? 32 : 24),
+               "ScrUnion must fit a 32-byte box on 64-bit and 24 bytes on wasm32");
+_Static_assert(offsetof(ScrUnion, traced) == sizeof(size_t) + sizeof(uint32_t),
+               "inline RC fast paths read ScrUnion.traced right after the tag");
+_Static_assert(offsetof(ScrUnion, arm_release) ==
+                   (offsetof(ScrUnion, traced) + sizeof(uint8_t) + _Alignof(void *) - 1) /
+                           _Alignof(void *) *
+                       _Alignof(void *),
+               "arm_release follows the tag, the traced byte and their padding");
 
 ScrUnion *scr_union_new_f64(uint32_t tag, double v);  /* returns +1 */
 ScrUnion *scr_union_new_bool(uint32_t tag, bool v);   /* returns +1 */
-/* Takes ownership of v (+1 moves in); retain/release must be non-NULL;
- * trace is non-NULL iff the arm type carries a cycle header. */
+/* Takes ownership of v (+1 moves in); release must be non-NULL; traced is 1
+ * iff the arm type carries a cycle header. */
 ScrUnion *scr_union_new_ref(uint32_t tag, void *v,
-                             void *(*retain)(void *),
                              void (*release)(void *),
-                             ScrTraceFn trace);
+                             uint8_t traced);
 
 static inline ScrUnion *scr_union_retain(ScrUnion *u) {
   if (u->rc != SIZE_MAX) {

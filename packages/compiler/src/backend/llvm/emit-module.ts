@@ -613,7 +613,7 @@ export function emitModuleParts(emitter: LlEmitter): string[] {
     `%ScrStr = type { ${emitter.sizeType}, ${emitter.sizeType}, ${emitter.sizeType} }`,
     `%ScrLogArg = type { i32, i64 }`,
     `%ScrVt = type { ${emitter.sizeType}, ${emitter.sizeType}, ptr }`,
-    `%ScrUnion = type { ${emitter.sizeType}, i32, ptr, ptr, ptr, i64 }`,
+    `%ScrUnion = type { ${emitter.sizeType}, i32, i8, ptr, i64 }`,
     `%ScrClosure = type { ${emitter.sizeType}, ptr, ${emitter.sizeType}, ptr, i32, i32, ptr, ptr }`,
     `%ScrFfiTable = type { ptr, ${emitter.sizeType}, ${emitter.sizeType}, ptr, i8, ptr, ptr, ${emitter.sizeType}, ${emitter.sizeType}, ${emitter.sizeType}, ptr, ptr }`,
     `%ScrRegex = type { ${emitter.sizeType}, ptr, ptr, ptr, double, ptr, ptr, ptr }`,
@@ -823,7 +823,7 @@ export function emitModuleParts(emitter: LlEmitter): string[] {
     // rc == SIZE_MAX, so these never join the RC audit or a trace walk.
     const [unionId, tag] = key.split(":");
     out.push(
-      `@${sym} = internal global %ScrUnion { ${emitter.sizeType} -1, i32 ${tag}, ptr null, ptr null, ptr null, i64 0 } ; ${unionId} unit arm`,
+      `@${sym} = internal global %ScrUnion { ${emitter.sizeType} -1, i32 ${tag}, i8 0, ptr null, i64 0 } ; ${unionId} unit arm`,
     );
   }
   if (emitter.unitInstances.size > 0) out.push(``);
@@ -841,7 +841,7 @@ export function emitModuleParts(emitter: LlEmitter): string[] {
     // per-object copies of separately compiled units agree.
     const tag = undefinedArmTag({ kind: "union", unionId }, emitter.unionsById);
     out.push(
-      `@${sym} = internal global %ScrUnion { ${emitter.sizeType} -1, i32 ${tag}, ptr null, ptr null, ptr null, i64 ${ABSENT_FIELD_PAYLOAD} } ; ${unionId} absent field`,
+      `@${sym} = internal global %ScrUnion { ${emitter.sizeType} -1, i32 ${tag}, i8 0, ptr null, i64 ${ABSENT_FIELD_PAYLOAD} } ; ${unionId} absent field`,
     );
   }
   if (emitter.absentInstances.size > 0) out.push(``);
